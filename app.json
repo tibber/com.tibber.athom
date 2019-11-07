@@ -1,0 +1,900 @@
+{
+    "id": "com.tibber",
+    "version": "1.0.12",
+    "compatibility": ">=1.5.0",
+    "author": {
+        "name": "Tibber AS",
+        "email": "hello@tibber.com"
+    },
+    "sdk": 2,
+    "name": {
+        "en": "Tibber"
+    },
+    "description": {
+        "en": "Tibber integration"
+    },
+    "category": [
+        "energy"
+    ],
+    "permissions": [],
+    "images": {
+        "large": "/assets/images/large.png",
+        "small": "/assets/images/small.png"
+    },
+    "capabilities": {
+        "price_total": {
+            "type": "number",
+            "title": {
+                "en": "Current price"
+            },
+            "getable": true,
+            "setable": false,
+            "units": {
+                "en": "kr"
+            },
+            "icon": "/drivers/home/assets/dollar.svg"
+        },
+        "accumulatedCost": {
+            "type": "number",
+            "title": {
+                "en": "Cost since midnight"
+            },
+            "getable": true,
+            "setable": false,
+            "units": {
+                "en": "kr"
+            },
+            "icon": "/drivers/pulse/assets/dollar.svg"
+        }
+    },
+    "drivers": [
+        {
+            "id": "home",
+            "name": {
+                "en": "Home"
+            },
+            "mobile": {
+                "components": [
+                    {
+                        "id": "icon",
+                        "capabilities": []
+                    },
+                    {
+                        "id": "sensor",
+                        "options": {
+                            "icons": {
+                                "price_total": "/drivers/home/assets/dollar.svg"
+                            }
+                        },
+                        "capabilities": [
+                            "price_total"
+                        ]
+                    },
+                    {
+                        "id": "sensor",
+                        "capabilities": [
+                            "measure_temperature"
+                        ]
+                    }
+                ]
+            },
+            "capabilities": [
+                "price_total",
+                "measure_temperature"
+            ],
+            "capabilitiesOptions": {
+                "price_total": {
+                    "preventInsights": true
+                },
+                "measure_temperature": {
+                    "preventInsights": true,
+                    "title": {
+                        "en": "Outdoor"
+                    }
+                }
+            },
+            "class": "other",
+            "pair": [
+                {
+                    "id": "login_oauth2",
+                    "template": "login_oauth2"
+                },
+                {
+                    "id": "list_devices",
+                    "template": "list_devices",
+                    "navigation": {
+                        "next": "add_devices"
+                    }
+                },
+                {
+                    "id": "add_devices",
+                    "template": "add_devices"
+                }
+            ],
+            "images": {
+                "large": "/drivers/home/assets/images/large.png",
+                "small": "/drivers/home/assets/images/small.png"
+            }
+        },
+        {
+            "id": "pulse",
+            "name": {
+                "en": "Pulse"
+            },
+            "mobile": {
+                "components": [
+                    {
+                        "id": "icon",
+                        "capabilities": []
+                    },
+                    {
+                        "id": "sensor",
+                        "capabilities": [
+                            "measure_power",
+                            "meter_power"
+                        ]
+                    },
+                    {
+                        "id": "sensor",
+                        "options": {
+                            "icons": {
+                                "accumulatedCost": "/drivers/pulse/assets/dollar.svg"
+                            }
+                        },
+                        "capabilities": [
+                            "accumulatedCost"
+                        ]
+                    }
+                ]
+            },
+            "capabilities": [
+                "measure_power",
+                "meter_power",
+                "accumulatedCost"
+            ],
+            "energy": {
+                "cumulative": true
+            },
+            "capabilitiesOptions": {
+                "meter_power": {
+                    "title": {
+                        "en": "Consumption since midnight"
+                    }
+                }
+            },
+            "class": "other",
+            "pair": [
+                {
+                    "id": "login_oauth2",
+                    "template": "login_oauth2"
+                },
+                {
+                    "id": "list_devices",
+                    "template": "list_devices",
+                    "navigation": {
+                        "next": "add_devices"
+                    }
+                },
+                {
+                    "id": "add_devices",
+                    "template": "add_devices"
+                }
+            ],
+            "images": {
+                "large": "/drivers/pulse/assets/images/large.png",
+                "small": "/drivers/pulse/assets/images/small.png"
+            },
+            "settings": [
+                {
+                    "id": "pulse_throttle",
+                    "type": "number",
+                    "label": {
+                        "en": "Update interval"
+                    },
+                    "hint": {
+                        "en": "Set a limit to how often the values should update.\nRange: 5 - 3600 seconds, \nDefault: 30"
+                    },
+                    "value": 30,
+                    "attr": {
+                        "min": 5,
+                        "max": 3600,
+                        "step": 5
+                    }
+                },
+                {
+                    "type": "group",
+                    "label": {
+                        "en": "Nordpool elspot fallback"
+                    },
+                    "children": [
+                        {
+                            "id": "pulse_currency",
+                            "type": "dropdown",
+                            "label": {
+                                "en": "Currency"
+                            },
+                            "hint": {
+                                "en": "Currency when using nordpool prices\nDefault: NOK\n\nOnly applicable if you don't have a valid Tibber subscription"
+                            },
+                            "values": [
+                                {
+                                    "id": "NOK",
+                                    "label": {
+                                        "en": "NOK"
+                                    }
+                                },
+                                {
+                                    "id": "DKK",
+                                    "label": {
+                                        "en": "DKK"
+                                    }
+                                },
+                                {
+                                    "id": "SEK",
+                                    "label": {
+                                        "en": "SEK"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": "pulse_area",
+                            "type": "dropdown",
+                            "label": {
+                                "en": "Price area"
+                            },
+                            "hint": {
+                                "en": "Price area when using nordpool prices\nDefault: Oslo\n\nOnly applicable if you don't have a valid Tibber subscription"
+                            },
+                            "values": [
+                                {
+                                    "id": "Oslo",
+                                    "label": {
+                                        "en": "Oslo"
+                                    }
+                                },
+                                {
+                                    "id": "Kr.sand",
+                                    "label": {
+                                        "en": "Kr.sand"
+                                    }
+                                },
+                                {
+                                    "id": "Bergen",
+                                    "label": {
+                                        "en": "Bergen"
+                                    }
+                                },
+                                {
+                                    "id": "Molde",
+                                    "label": {
+                                        "en": "Molde"
+                                    }
+                                },
+                                {
+                                    "id": "Tr.heim",
+                                    "label": {
+                                        "en": "Tr.heim"
+                                    }
+                                },
+                                {
+                                    "id": "Tromsø",
+                                    "label": {
+                                        "en": "Tromsø"
+                                    }
+                                },
+                                {
+                                    "id": "DK1",
+                                    "label": {
+                                        "en": "DK1"
+                                    }
+                                },
+                                {
+                                    "id": "DK2",
+                                    "label": {
+                                        "en": "DK2"
+                                    }
+                                },
+                                {
+                                    "id": "SE1",
+                                    "label": {
+                                        "en": "SE1"
+                                    }
+                                },
+                                {
+                                    "id": "SE2",
+                                    "label": {
+                                        "en": "SE2"
+                                    }
+                                },
+                                {
+                                    "id": "SE3",
+                                    "label": {
+                                        "en": "SE3"
+                                    }
+                                },
+                                {
+                                    "id": "SE4",
+                                    "label": {
+                                        "en": "SE4"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "flow": {
+        "triggers": [
+            {
+                "id": "price_changed",
+                "title": {
+                    "en": "Price changed"
+                },
+                "tokens": [
+                    {
+                        "name": "total",
+                        "type": "number",
+                        "title": {
+                            "en": "total"
+                        }
+                    },
+                    {
+                        "name": "energy",
+                        "type": "number",
+                        "title": {
+                            "en": "energy"
+                        }
+                    },
+                    {
+                        "name": "tax",
+                        "type": "number",
+                        "title": {
+                            "en": "tax"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "temperature_changed",
+                "title": {
+                    "en": "Temperature changed"
+                },
+                "tokens": [
+                    {
+                        "name": "temperature",
+                        "type": "number",
+                        "title": {
+                            "en": "Temperature"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "consumption_report",
+                "title": {
+                    "en": "Consumption report"
+                },
+                "tokens": [
+                    {
+                        "name": "consumption",
+                        "type": "number",
+                        "title": {
+                            "en": "consumption"
+                        }
+                    },
+                    {
+                        "name": "totalCost",
+                        "type": "number",
+                        "title": {
+                            "en": "cost"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "price_below_avg",
+                "title": {
+                    "en": "Current price is [x] percent below average of the next [y] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_above_avg",
+                "title": {
+                    "en": "Current price is [x] percent above average of the next [y] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_below_avg_today",
+                "title": {
+                    "en": "Current price is [x] percent below today's average"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_above_avg_today",
+                "title": {
+                    "en": "Current price is [x] percent above today's average"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_at_lowest",
+                "title": {
+                    "en": "Current price is at the lowest among the next [x] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_at_highest",
+                "title": {
+                    "en": "Current price is at the highest among the next [x] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "price_at_lowest_today",
+                "title": {
+                    "en": "Current price is at today's lowest"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "price_at_highest_today",
+                "title": {
+                    "en": "Current price is at today's highest"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "power_changed",
+                "title": {
+                    "en": "Power changed"
+                },
+                "tokens": [
+                    {
+                        "name": "power",
+                        "type": "number",
+                        "title": {
+                            "en": "Power"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=pulse"
+                    }
+                ]
+            },
+            {
+                "id": "consumption_changed",
+                "title": {
+                    "en": "Consumption since midnight changed"
+                },
+                "tokens": [
+                    {
+                        "name": "consumption",
+                        "type": "number",
+                        "title": {
+                            "en": "Consumption"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=pulse"
+                    }
+                ]
+            },
+            {
+                "id": "cost_changed",
+                "title": {
+                    "en": "Cost since midnight changed"
+                },
+                "tokens": [
+                    {
+                        "name": "cost",
+                        "type": "number",
+                        "title": {
+                            "en": "Cost"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=pulse"
+                    }
+                ]
+            },
+            {
+                "id": "daily_consumption_report",
+                "title": {
+                    "en": "Daily consumption report"
+                },
+                "tokens": [
+                    {
+                        "name": "consumption",
+                        "type": "number",
+                        "title": {
+                            "en": "consumption"
+                        }
+                    },
+                    {
+                        "name": "cost",
+                        "type": "number",
+                        "title": {
+                            "en": "cost"
+                        }
+                    }
+                ],
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=pulse"
+                    }
+                ]
+            }
+        ],
+        "conditions": [
+            {
+                "id": "current_price_below",
+                "title": {
+                    "en": "Current price !{{below|above}}"
+                },
+                "args": [
+                    {
+                        "name": "price",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "price"
+                        }
+                    },
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "temperature_below",
+                "title": {
+                    "en": "Outdoor temperature !{{below|above}}"
+                },
+                "args": [
+                    {
+                        "name": "temperature",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "temperature"
+                        }
+                    },
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_below_avg",
+                "title": {
+                    "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_above_avg",
+                "title": {
+                    "en": "Current price !{{is|isn't}} [x] percent above average of the next [y] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_below_avg_today",
+                "title": {
+                    "en": "Current price !{{is|isn't}} [x] percent below today's average"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_above_avg_today",
+                "title": {
+                    "en": "Current price !{{is|isn't}} [x] percent above today's average"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "percentage",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "percentage"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_at_lowest",
+                "title": {
+                    "en": "Current price !{{is|isn't}} at the lowest among the next [x] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_at_highest",
+                "title": {
+                    "en": "Current price !{{is|isn't}} at the highest among the next [x] hours"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "hours",
+                        "type": "number",
+                        "placeholder": {
+                            "en": "hours"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_at_lowest_today",
+                "title": {
+                    "en": "Current price !{{is|isn't}} at today's lowest"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            },
+            {
+                "id": "cond_price_at_highest_today",
+                "title": {
+                    "en": "Current price !{{is|isn't}} at today's highest"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    }
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "id": "sendPushNotification",
+                "title": {
+                    "en": "Send Tibber push notification"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=home"
+                    },
+                    {
+                        "name": "title",
+                        "type": "text"
+                    },
+                    {
+                        "name": "message",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    }
+}
