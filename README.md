@@ -46,8 +46,7 @@ Integration with Tibber, with Pulse support!
 ### Release Notes
 
 #### 1.1.0
-- Support for Energy API
-
+- Support for Energy API - Pulse and Watty show up as a cumulative devices in the Homey energy section
 #### 1.0.12
 - Fixed app crashing on api timeout #14
 &nbsp;
@@ -80,3 +79,6 @@ Integration with Tibber, with Pulse support!
 &nbsp;
 #### 1.0.0
 - Initial public version
+&nbsp;
+#### 1.2.0
+- Bug fixes. Added Watty as a energy device.
