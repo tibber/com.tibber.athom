@@ -1,0 +1,67 @@
+{
+  "name": {
+    "en": "Home"
+  },
+  "mobile": {
+    "components": [
+      {
+        "id": "icon",
+        "capabilities": []
+      },
+      {
+        "id": "sensor",
+        "options": {
+          "icons": {
+            "price_total": "/drivers/home/assets/dollar.svg"
+          }
+        },
+        "capabilities": [
+          "price_total"
+        ]
+      },
+      {
+        "id": "sensor",
+        "capabilities": [
+          "measure_temperature"
+        ]
+      }
+    ]
+  },
+  "capabilities": [
+    "price_total",
+    "measure_temperature"
+  ],
+  "capabilitiesOptions": {
+    "price_total": {
+      "preventInsights": true
+    },
+    "measure_temperature": {
+      "preventInsights": true,
+      "title": {
+        "en": "Outdoor"
+      }
+    }
+  },
+  "class": "other",
+  "pair": [
+    {
+      "id": "login_oauth2",
+      "template": "login_oauth2"
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "images": {
+    "large": "/drivers/home/assets/images/large.png",
+    "small": "/drivers/home/assets/images/small.png"
+  }
+}

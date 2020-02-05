@@ -1,0 +1,24 @@
+{
+  "id": "com.tibber",
+  "version": "1.2.0",
+  "compatibility": ">=1.5.0",
+  "author": {
+    "name": "Tibber AS",
+    "email": "hello@tibber.com"
+  },
+  "sdk": 2,
+  "name": {
+    "en": "Tibber"
+  },
+  "description": {
+    "en": "Tibber integration"
+  },
+  "category": [
+    "energy"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  }
+}

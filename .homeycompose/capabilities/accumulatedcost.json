@@ -1,0 +1,12 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Cost since midnight"
+  },
+  "getable": true,
+  "setable": false,
+  "units": {
+    "en": "kr"
+  },
+  "icon": "/drivers/pulse/assets/dollar.svg"
+}
