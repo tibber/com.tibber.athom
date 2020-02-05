@@ -336,6 +336,11 @@ class MyDevice extends Homey.Device {
                                     .filter(p => moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'))
                                     .meanBy(x => x.total);
 
+        if (avgPriceNextHours.length == 0) {
+            this.log(`Cannot determine condition. No prices for next hours available.`);
+            return false;
+        }
+
         let diffAvgCurrent = (this._lastPrice.total - avgPriceNextHours) / avgPriceNextHours * 100;
         if (state.below)
             diffAvgCurrent = diffAvgCurrent * -1;
