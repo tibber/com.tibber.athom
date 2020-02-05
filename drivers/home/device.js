@@ -8,7 +8,7 @@ const   Homey               = require('homey'),
         tibber              = require('../../lib/tibber');
 
 class MyDevice extends Homey.Device {
-	
+
 	onInit() {
 
         if(!this.getData().address)
@@ -359,6 +359,11 @@ class MyDevice extends Homey.Device {
             pricesNextHours = _(this._priceInfoNextHours)
                 .filter(p => moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'))
                 .value();
+
+        if (pricesNextHours.length == 0) {
+            this.log(`Cannot determine condition. No prices for next hours available.`);
+            return false;
+        }
 
         const toCompare = state.lowest ? _.minBy(pricesNextHours, 'total').total
             : _.maxBy(pricesNextHours, 'total').total;
