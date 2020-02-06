@@ -8,7 +8,7 @@ const   Homey               = require('homey'),
 
 class MyDevice extends Homey.Device {
 
-	onInit() {
+    onInit() {
         this._deviceId = this.getData().id;
         this._throttle = this.getSetting('pulse_throttle') || 30;
 
@@ -32,6 +32,7 @@ class MyDevice extends Homey.Device {
     }
 
     onSettings(oldSettingsObj, newSettingsObj, changedKeysArr, callback) {
+        this.log('Changing pulse settings');
         if (changedKeysArr.includes('pulse_throttle')) {
             this.log('Updated throttle value: ', newSettingsObj.pulse_throttle);
             this._throttle = Number(newSettingsObj.pulse_throttle) || 30;
@@ -51,8 +52,7 @@ class MyDevice extends Homey.Device {
 
     subscribeToLive() {
         this._resubscribeDebounce();
-        if(this._wsSubsctiption && _.isFunction(this._wsSubsctiption.unsubscribe))
-        {
+        if (this._wsSubsctiption && _.isFunction(this._wsSubsctiption.unsubscribe)) {
             try {
                 this.log('Unsubscribing from previous connection');
                 this._wsSubsctiption.unsubscribe();
@@ -68,13 +68,13 @@ class MyDevice extends Homey.Device {
 
     async subscribeCallback(result) {
         this._resubscribeDebounce();
-        if(this._prevUpdate && moment().diff(this._prevUpdate, 'seconds') < this._throttle)
+        if (this._prevUpdate && moment().diff(this._prevUpdate, 'seconds') < this._throttle)
             return;
 
         this._prevUpdate = moment();
         const power = _.get(result, 'data.liveMeasurement.power');
-        if(power) {
-            if(power !== this._prevPower) {
+        if (power) {
+            if (power !== this._prevPower) {
                 this._prevPower = power;
                 this.setCapabilityValue("measure_power", power).catch(console.error);
                 this._powerChangedTrigger.trigger(this, { power: power }).catch(console.error);
@@ -82,13 +82,13 @@ class MyDevice extends Homey.Device {
         }
 
         const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
-        if(consumption && _.isNumber(consumption)) {
+        if (consumption && _.isNumber(consumption)) {
             const fixedConsumtion = +consumption.toFixed(2);
-            if(fixedConsumtion !== this._prevConsumption) {
-                if(fixedConsumtion < this._prevConsumption) //Consumption has been reset
+            if (fixedConsumtion !== this._prevConsumption) {
+                if (fixedConsumtion < this._prevConsumption) //Consumption has been reset
                 {
                     this.log('Triggering daily consumption report');
-                    this._dailyConsumptionReportTrigger.trigger(this, {consumption: this._prevConsumption, cost: this._prevCost}).catch(console.error)
+                    this._dailyConsumptionReportTrigger.trigger(this, { consumption: this._prevConsumption, cost: this._prevCost }).catch(console.error)
                 }
 
                 this._prevConsumption = fixedConsumtion;
@@ -98,10 +98,10 @@ class MyDevice extends Homey.Device {
         }
 
         let cost = _.get(result, 'data.liveMeasurement.accumulatedCost');
-        if(!cost) {
+        if (!cost) {
             try {
                 const now = moment();
-                if(!this._cachedNordpoolPrice || this._cachedNordpoolPrice.hour !== now.hour()) {
+                if (!this._cachedNordpoolPrice || this._cachedNordpoolPrice.hour !== now.hour()) {
                     const area = this._area || 'Oslo';
                     const currency = this._currency || 'NOK';
                     this.log(`Using nordpool prices. Currency: ${currency} - Area: ${area}`);
@@ -112,12 +112,14 @@ class MyDevice extends Homey.Device {
                         .first()
                         .find(a => a.Name === area);
 
-                    if(areaCurrentPrice) {
+                    if (areaCurrentPrice) {
                         let currentPrice = Number(areaCurrentPrice.Value.replace(',', '.').trim()) / 1000;
                         this._cachedNordpoolPrice = { hour: now.hour(), price: currentPrice };
+                        this.log(`Found price for ${now.format()} for area ${area} ${currentPrice}`);
                     }
+
                 }
-                if(_.isNumber(this._cachedNordpoolPrice.price))
+                if (_.isNumber(this._cachedNordpoolPrice.price))
                     cost = this._cachedNordpoolPrice.price * consumption;
             }
             catch (e) {
@@ -125,12 +127,24 @@ class MyDevice extends Homey.Device {
             }
         }
 
-        if(cost && _.isNumber(cost)) {
+        if (cost && _.isNumber(cost)) {
             const fixedCost = +cost.toFixed(2);
-            if(fixedCost !== this._prevCost) {
+            if (fixedCost !== this._prevCost) {
                 this._prevCost = fixedCost;
                 this.setCapabilityValue("accumulatedCost", fixedCost).catch(console.error);
-                this._costChangedTrigger.trigger(this, { cost: fixedCost}).catch(console.error);
+                this._costChangedTrigger.trigger(this, { cost: fixedCost }).catch(console.error);
+            }
+        }
+    }
+
+    onDeleted() {
+        if (this._wsSubsctiption && _.isFunction(this._wsSubsctiption.unsubscribe)) {
+            try {
+                this.log('Unsubscribing from previous connection');
+                this._wsSubsctiption.unsubscribe();
+            }
+            catch (e) {
+                this.log('Error unsubscribing from previous connection', e);
             }
         }
     };
