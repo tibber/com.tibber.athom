@@ -91,6 +91,7 @@
         {
           "id": "pulse_currency",
           "type": "dropdown",
+          "value": "NOK",
           "label": {
             "en": "Currency"
           },
@@ -121,6 +122,7 @@
         {
           "id": "pulse_area",
           "type": "dropdown",
+          "value": "Oslo",
           "label": {
             "en": "Price area"
           },
