@@ -4,7 +4,7 @@ const 	Homey 				= require('homey'),
 		_					= require('lodash');
 
 class TibberApp extends Homey.App {
-	
+
 	onInit() {
 		this.log('Tibber app is running...');
 

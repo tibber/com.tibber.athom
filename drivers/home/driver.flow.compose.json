@@ -45,28 +45,6 @@
       ]
     },
     {
-      "id": "consumption_report",
-      "title": {
-        "en": "Consumption report"
-      },
-      "tokens": [
-        {
-          "name": "consumption",
-          "type": "number",
-          "title": {
-            "en": "consumption"
-          }
-        },
-        {
-          "name": "totalCost",
-          "type": "number",
-          "title": {
-            "en": "cost"
-          }
-        }
-      ]
-    },
-    {
       "id": "price_below_avg",
       "title": {
         "en": "Current price is [x] percent below average of the next [y] hours"
@@ -181,73 +159,6 @@
       "title": {
         "en": "Current price is at today's highest"
       }
-    },
-    {
-      "id": "power_changed",
-      "title": {
-        "en": "Power changed"
-      },
-      "tokens": [
-        {
-          "name": "power",
-          "type": "number",
-          "title": {
-            "en": "Power"
-          }
-        }
-      ]
-    },
-    {
-      "id": "consumption_changed",
-      "title": {
-        "en": "Consumption since midnight changed"
-      },
-      "tokens": [
-        {
-          "name": "consumption",
-          "type": "number",
-          "title": {
-            "en": "Consumption"
-          }
-        }
-      ]
-    },
-    {
-      "id": "cost_changed",
-      "title": {
-        "en": "Cost since midnight changed"
-      },
-      "tokens": [
-        {
-          "name": "cost",
-          "type": "number",
-          "title": {
-            "en": "Cost"
-          }
-        }
-      ]
-    },
-    {
-      "id": "daily_consumption_report",
-      "title": {
-        "en": "Daily consumption report"
-      },
-      "tokens": [
-        {
-          "name": "consumption",
-          "type": "number",
-          "title": {
-            "en": "consumption"
-          }
-        },
-        {
-          "name": "cost",
-          "type": "number",
-          "title": {
-            "en": "cost"
-          }
-        }
-      ]
     }
   ],
   "conditions": [

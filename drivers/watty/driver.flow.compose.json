@@ -1,0 +1,71 @@
+{
+    "triggers": [
+        {
+            "id": "watty_consumption_changed",
+            "title": {
+                "en": "Consumption since midnight changed"
+            },
+            "tokens": [
+                {
+                    "name": "consumption",
+                    "type": "number",
+                    "title": {
+                        "en": "Consumption"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "watty_cost_changed",
+            "title": {
+                "en": "Cost since midnight changed"
+            },
+            "tokens": [
+                {
+                    "name": "cost",
+                    "type": "number",
+                    "title": {
+                        "en": "Cost"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "watty_daily_consumption_report",
+            "title": {
+                "en": "Daily consumption report"
+            },
+            "tokens": [
+                {
+                    "name": "consumption",
+                    "type": "number",
+                    "title": {
+                        "en": "consumption"
+                    }
+                },
+                {
+                    "name": "cost",
+                    "type": "number",
+                    "title": {
+                        "en": "cost"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "watty_power_changed",
+            "title": {
+                "en": "Power changed"
+            },
+            "tokens": [
+                {
+                    "name": "power",
+                    "type": "number",
+                    "title": {
+                        "en": "Power"
+                    }
+                }
+            ]
+        }
+    ]
+}
