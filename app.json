@@ -1,6 +1,6 @@
 {
   "id": "com.tibber",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "compatibility": ">=1.5.0",
   "author": {
     "name": "Tibber AS",
@@ -1002,8 +1002,8 @@
         }
       ],
       "images": {
-        "large": "/drivers/pulse/assets/images/large.png",
-        "small": "/drivers/pulse/assets/images/small.png"
+        "large": "/drivers/watty/assets/images/large.png",
+        "small": "/drivers/watty/assets/images/small.png"
       },
       "settings": [
         {
