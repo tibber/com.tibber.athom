@@ -62,8 +62,8 @@
     }
   ],
   "images": {
-    "large": "/drivers/wattty/assets/images/large.png",
-    "small": "/drivers/wattty/assets/images/small.png"
+    "large": "/drivers/watty/assets/images/large.png",
+    "small": "/drivers/watty/assets/images/small.png"
   },
   "settings": [
     {
