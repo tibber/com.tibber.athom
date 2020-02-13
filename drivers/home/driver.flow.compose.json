@@ -159,6 +159,26 @@
       "title": {
         "en": "Current price is at today's highest"
       }
+    },
+    {
+        "id": "consumption_report",
+        "title": {
+            "en": "Consumption report"
+        },
+        "tokens": [{
+                "name": "consumption",
+                "type": "number",
+                "title": {
+                    "en": "consumption"
+                }
+            }, {
+                "name": "totalCost",
+                "type": "number",
+                "title": {
+                    "en": "cost"
+                }
+            }
+        ]
     }
   ],
   "conditions": [

@@ -242,6 +242,35 @@
         ]
       },
       {
+        "id": "consumption_report",
+        "title": {
+          "en": "Consumption report"
+        },
+        "tokens": [
+          {
+            "name": "consumption",
+            "type": "number",
+            "title": {
+              "en": "consumption"
+            }
+          },
+          {
+            "name": "totalCost",
+            "type": "number",
+            "title": {
+              "en": "cost"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          }
+        ]
+      },
+      {
         "id": "consumption_changed",
         "title": {
           "en": "Consumption since midnight changed"
