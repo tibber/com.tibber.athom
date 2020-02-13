@@ -1,5 +1,7 @@
 Integration with Tibber, with Pulse and Watty support.
 
+Note! After latest update some users are experiencing timeout errors when fetching Pulse or Watty data. Removing and re-adding the device seems help solve the problem.
+
 Flow cards
 
 Device: Home

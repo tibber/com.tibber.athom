@@ -77,6 +77,7 @@ class MyDevice extends Homey.Device {
             if (power !== this._prevPower) {
                 this._prevPower = power;
                 this.setCapabilityValue("measure_power", power).catch(console.error);
+                this.log(`Trigger power changed`, power);
                 this._powerChangedTrigger.trigger(this, { power: power }).catch(console.error);
             }
         }
