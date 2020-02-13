@@ -10,5 +10,8 @@
   },
   "1.2.3": {
     "en": "Fixed fetching current temperature for home location"
+  },
+  "1.2.4": {
+    "en": "Added a note about re-adding a Pulse/Watty device in case fetching data timeouts"
   }
 }
