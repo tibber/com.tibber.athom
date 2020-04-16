@@ -73,6 +73,9 @@ class MyDevice extends Homey.Device {
 
         this._prevUpdate = moment();
         const power = _.get(result, 'data.liveMeasurement.power');
+        if (power === 0)
+            power = -1 * _.get(result, 'data.liveMeasurement.powerProduction');
+
         if (power) {
             if (power !== this._prevPower) {
                 this._prevPower = power;

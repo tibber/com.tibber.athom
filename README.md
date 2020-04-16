@@ -45,6 +45,18 @@ Integration with Tibber, with Pulse support!
 &nbsp;
 ### Release Notes
 
+#### 1.2.5
+- Support for retrieving production power from Pulse
+#### 1.2.4
+- Added a note about re-adding a Pulse/Watty device in case fetching data timeouts
+#### 1.2.3
+- Fixed fetching current temperature for home location
+#### 1.2.2
+- Bug fix for missing flowcard id
+#### 1.2.1
+- Correct Watty images
+#### 1.2.0
+- Support for pairing Watty and bug fixes
 #### 1.1.0
 - Support for Energy API - Pulse and Watty show up as a cumulative devices in the Homey energy section
 #### 1.0.12
