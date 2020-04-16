@@ -13,5 +13,8 @@
   },
   "1.2.4": {
     "en": "Added a note about re-adding a Pulse/Watty device in case fetching data timeouts"
+  },
+  "1.2.5": {
+    "en": "Support for retrieving production power from Pulse"
   }
 }
