@@ -68,20 +68,23 @@ class MyDevice extends Homey.Device {
 
     async subscribeCallback(result) {
         this._resubscribeDebounce();
-        if (this._prevUpdate && moment().diff(this._prevUpdate, 'seconds') < this._throttle)
-            return;
 
-        this._prevUpdate = moment();
         let power = _.get(result, 'data.liveMeasurement.power');
         this.log(`Received data.liveMeasurement.power`, power);
         let powerProduction = _.get(result, 'data.liveMeasurement.powerProduction');
         this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
+        if (powerProduction)
+            this._prevPowerProduction = powerProduction;
 
-        const measure_power = power || -1 * powerProduction;
+        if (this._prevUpdate && moment().diff(this._prevUpdate, 'seconds') < this._throttle)
+            return;
+
+        const measure_power = power || -powerProduction || -this._prevPowerProduction;
         this.log(`Set measure_power capability to`, measure_power);
         this.setCapabilityValue("measure_power", measure_power).catch(console.error);
+        this._prevUpdate = moment();
 
-        if(measure_power !== this._prevPower) {
+        if (measure_power !== this._prevPower) {
             this._prevPower = measure_power;
             this.log(`Trigger power changed`, measure_power);
             this._powerChangedTrigger.trigger(this, { power: measure_power }).catch(console.error);
