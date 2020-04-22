@@ -72,17 +72,19 @@ class MyDevice extends Homey.Device {
             return;
 
         this._prevUpdate = moment();
-        const power = _.get(result, 'data.liveMeasurement.power');
-        if (power === 0)
-            power = -1 * _.get(result, 'data.liveMeasurement.powerProduction');
+        let power = _.get(result, 'data.liveMeasurement.power');
+        this.log(`Received data.liveMeasurement.power`, power);
+        let powerProduction = _.get(result, 'data.liveMeasurement.powerProduction');
+        this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
 
-        if (power) {
-            if (power !== this._prevPower) {
-                this._prevPower = power;
-                this.setCapabilityValue("measure_power", power).catch(console.error);
-                this.log(`Trigger power changed`, power);
-                this._powerChangedTrigger.trigger(this, { power: power }).catch(console.error);
-            }
+        const measure_power = power || -1 * powerProduction;
+        this.log(`Set measure_power capability to`, measure_power);
+        this.setCapabilityValue("measure_power", measure_power).catch(console.error);
+
+        if(measure_power !== this._prevPower) {
+            this._prevPower = measure_power;
+            this.log(`Trigger power changed`, measure_power);
+            this._powerChangedTrigger.trigger(this, { power: measure_power }).catch(console.error);
         }
 
         const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
