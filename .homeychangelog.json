@@ -19,5 +19,8 @@
   },
   "1.2.6": {
     "en": "Update measure_power even when it's 0 or same as previous"
+  },
+  "1.2.7": {
+    "en": "Allow production power being reported less frequently than power"
   }
 }
