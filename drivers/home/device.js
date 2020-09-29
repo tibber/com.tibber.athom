@@ -341,6 +341,9 @@ class MyDevice extends Homey.Device {
             return false;
         }
 
+        if (!this._lastPrice)
+            return false;
+
         let diffAvgCurrent = (this._lastPrice.total - avgPriceNextHours) / avgPriceNextHours * 100;
         if (state.below)
             diffAvgCurrent = diffAvgCurrent * -1;
