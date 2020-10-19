@@ -192,7 +192,7 @@ class MyDevice extends Homey.Device {
     }
 
     scheduleFetchData(seconds) {
-	    this.log(`Fetching data in ${seconds} seconds`);
+	    this.log(`Scheduling data fetch again in ${seconds} seconds`);
         setTimeout(this.fetchData.bind(this), seconds * 1000);
     }
 

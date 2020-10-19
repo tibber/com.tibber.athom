@@ -1,4 +1,5 @@
 'use strict';
+require('newrelic');
 
 const 	Homey 				= require('homey'),
 		_					= require('lodash');
