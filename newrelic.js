@@ -1,4 +1,5 @@
 'use strict'
+const Homey = require('homey');
 /**
  * New Relic agent configuration.
  *
@@ -13,15 +14,23 @@ exports.config = {
   /**
    * Your New Relic license key.
    */
-  license_key: 'eu01xx43ffe1e57f42ea2f7006c7fa6f024e63e1',
+  license_key: Homey.env.NEW_RELIC_LICENCE_KEY,
+
   logging: {
+    //enabled: false,
+    enabled: false,
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
      * issues with the agent, 'info' and higher will impose the least overhead on
      * production applications.
      */
-    level: 'info'
+    //level: 'info',
+    level: 'info',
+    filepath: 'stdout',
+    diagnostics: false
   },
+  agent_enabled: true,
+
   /**
    * When true, all request headers except for those listed in attributes.exclude
    * will be captured for all traces, unless otherwise specified in a destination's
@@ -52,5 +61,13 @@ exports.config = {
       'response.headers.setCookie*',
       'response.headers.x*'
     ]
+  },
+  // serverless_mode: { enabled: true },
+  plugins: {
+    /**
+     * Controls usage of the native metrics module which samples VM and event
+     * loop data.
+     */
+    native_metrics: { enabled: false }
   }
 }
