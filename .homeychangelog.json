@@ -52,5 +52,11 @@
   },
   "1.3.9": {
     "en": "Improved api request tracing"
+  },
+  "1.3.10": {
+    "en": "New dark sky api key"
+  },
+  "1.3.11": {
+    "en": "Increase data fetch timeout. Fix data fetch retry logic."
   }
 }
