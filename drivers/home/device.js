@@ -5,7 +5,8 @@ const   Homey               = require('homey'),
         http                = require('http.min'),
         moment				= require('moment-timezone'),
         Promise             = require('bluebird'),
-        tibber              = require('../../lib/tibber');
+        tibber              = require('../../lib/tibber'),
+        newrelic = require('newrelic');
 
 class MyDevice extends Homey.Device {
 
@@ -137,8 +138,18 @@ class MyDevice extends Homey.Device {
 
 	async getTemperature() {
 	    try {
-	        const forecast = await http.json(`https://api.darksky.net/forecast/${Homey.env.DS_API_KEY}/${this._location.lat},${this._location.lon}?units=si`);
-	        const temperature = _.get(forecast, 'currently.temperature');
+            this.log(`Fetching temperature with api key ${Homey.env.DS_API_KEY} for coordinates ${this._location.lat},${this._location.lon}`);
+            let temperature;
+            try
+            {
+                const forecast = await newrelic.startWebTransaction('Get temperature', () => http.json(`https://api.darksky.net/forecast/${Homey.env.DS_API_KEY}/${this._location.lat},${this._location.lon}?units=si`));
+                temperature = _.get(forecast, 'currently.temperature');
+                this.log(`Fetched temperature ${temperature}`);
+            }
+            catch (error)
+            {
+                this.log(`Error fetching temperature ${JSON.stringify(error)}`);
+            }
 
             if(temperature && temperature !== this._lastTemperature)
             {
@@ -166,6 +177,13 @@ class MyDevice extends Homey.Device {
         try {
             this.log(`Fetching data...`);
             let data = await tibber.getData(this.getData().t, this._deviceId);
+            if (!data) {
+                this.log('Error fetching data');
+                //Try again in two minutes
+                this.scheduleFetchData(120);
+                return;
+            }
+
             let startAt = _.get(data, 'viewer.home.currentSubscription.priceInfo.current.startsAt');
             if(startAt) {
                 let startAtDate = moment(startAt);
