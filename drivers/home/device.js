@@ -5,22 +5,26 @@ const   Homey               = require('homey'),
         http                = require('http.min'),
         moment				= require('moment-timezone'),
         Promise             = require('bluebird'),
-        tibber              = require('../../lib/tibber'),
+        { tibber, getRandomDelay } = require('../../lib/tibber'),
         newrelic = require('newrelic');
 
 class MyDevice extends Homey.Device {
 
 	onInit() {
 
+        this._tibber = tibber({
+            log: this.log,
+            homeId: this.getData().id,
+            token: this.getData().t
+        });
+
         if(!this.getData().address)
             return this.setUnavailable("You will need to remove and add this home as new device");
 
-        this._deviceId = this.getData().id;
         this._deviceLabel = this.getName();
         this._insightId = this._deviceLabel.replace(/[^a-z0-9]/ig,'_').toLowerCase();
         this._lastPrice = undefined;
         this._lastTemperature = undefined;
-        this._lastFetchedStartAt = undefined;
         this._location = { lat:this.getData().address.latitude, lon:this.getData().address.longitude };
 
         this._priceChangedTrigger = new Homey.FlowCardTriggerDevice('price_changed');
@@ -124,7 +128,7 @@ class MyDevice extends Homey.Device {
             .registerRunListener(args => tibber.sendPush(this.getData().t, args.title, args.message));
 
         this.log(`Tibber home device ${this.getName()} has been initialized`);
-        return this.fetchData();
+        return this.updateData();
 	}
 
 	onDeleted() {
@@ -159,9 +163,8 @@ class MyDevice extends Homey.Device {
                 this.log('Triggering temperature_changed', temperature);
                 this._temperatureChangedTrigger.trigger(this, temperature);
 
-                const loggerPrefix = this.getDriver().getDevices().length > 1 ? (`${this._deviceLabel} `) : '';
                 let temperatureLogger = await this._createGetLog(`${this._insightId}_temperature`, {
-                    label: `${loggerPrefix}Outdoor temperature`,
+                    label: `${this.getLoggerPrefix()}Outdoor temperature`,
                     type: 'number',
                     decimals: true
                 });
@@ -173,65 +176,87 @@ class MyDevice extends Homey.Device {
         }
     }
 
-    async fetchData() {
-        try {
-            this.log(`Fetching data...`);
-            let data = await tibber.getData(this.getData().t, this._deviceId);
-            if (!data) {
-                this.log('Error fetching data');
-                //Try again in two minutes
-                this.scheduleFetchData(120);
-                return;
-            }
+    isConsumptionReportEnabled() {
+        return this.getSetting('enable_consumption_report') || false;
+    }
 
-            let startAt = _.get(data, 'viewer.home.currentSubscription.priceInfo.current.startsAt');
-            if(startAt) {
-                let startAtDate = moment(startAt);
-                if(startAtDate.valueOf() === this._lastFetchedStartAt)
-                {
-                    this.log('Price startAt unchanged, trying again in 30 seconds');
-                    return this.scheduleFetchData(30);
+    async updateData() {
+        try {
+            this.log(`Begin update`);
+
+            // Fetch and update price triggers
+            const priceInfoNextHours = await this._tibber.getPriceInfoCached();
+            this.onPriceData(priceInfoNextHours);
+
+            // Fetch and update temperature
+            await this.getTemperature();
+
+            // Fetch and update consumption report if enabled
+            if (this.isConsumptionReportEnabled()) {
+                this.log(`Consumption report enabled. Begin update`);
+                const now = moment();
+                const lastLoggedDailyConsumption = this.getLastLoggedDailyConsumption();
+                let daysToFetch = 14;
+                if (lastLoggedDailyConsumption) {
+                    const durationSinceLastDailyConsumption = moment.duration(now.diff(moment(lastLoggedDailyConsumption)));
+                    daysToFetch = Math.ceil(durationSinceLastDailyConsumption.asDays());
                 }
 
-                this._lastFetchedStartAt = startAtDate.valueOf();
-                let next = startAtDate.add(1, 'hour').add(10, 'seconds');
-                this.scheduleFetchData(next.diff(moment(), 'seconds'));
-            }
-            else //Unable to schedule next fetch based on timestamp, fetching again in one hour
-                this.scheduleFetchData(60 * 60);
+                const lastLoggedHourlyConsumption = this.getLastLoggedHourlyConsumption();
+                let hoursToFetch = 200;
+                if (lastLoggedHourlyConsumption) {
+                    var durationSinceLastHourlyConsumption = moment.duration(now.diff(moment(lastLoggedHourlyConsumption)));
+                    hoursToFetch = Math.ceil(durationSinceLastHourlyConsumption.asHours());
+                }
 
-            return Promise.all([this.onData(data), this.getTemperature()]);
+                if (!lastLoggedDailyConsumption || !lastLoggedHourlyConsumption) {
+                    const consumptionData = await this._tibber.getConsumptionData(daysToFetch, hoursToFetch);
+                    await this.onConsumptionData(consumptionData);
+                }
+                else {
+                    const delay = getRandomDelay(0, 59 * 60);
+                    this.log(`Schedule consumption fetch after ${delay} seconds.`);
+                    setTimeout(async () => {
+                        const consumptionData = await this._tibber.getConsumptionData(daysToFetch, hoursToFetch);
+                        await this.onConsumptionData(consumptionData);
+                    }, delay * 1000);
+                }
+            }
+
+            const nextHour = moment().add(1, 'hour').startOf('hour');
+            this.log(`Next time to run update is at ${nextHour.format()}`);
+            const delay = moment.duration(nextHour.diff(moment()));
+            this.scheduleUpdate(delay.asSeconds());
+
+            this.log(`End update`);
         }
         catch(e) {
             this.log('Error fetching data', e);
-            //Try again in two minutes
-            this.scheduleFetchData(120);
+            //Try again after a delay
+            const delay = getRandomDelay(0, 5 * 60);
+            this.scheduleUpdate(delay);
         }
     }
 
-    scheduleFetchData(seconds) {
-	    this.log(`Scheduling data fetch again in ${seconds} seconds`);
-        setTimeout(this.fetchData.bind(this), seconds * 1000);
+    scheduleUpdate(seconds) {
+	    this.log(`Scheduling update again in ${seconds} seconds`);
+        setTimeout(this.updateData.bind(this), seconds * 1000);
     }
 
-    async onData(data) {
-        const priceInfoCurrent = _.get(data, 'viewer.home.currentSubscription.priceInfo.current');
-        if(!priceInfoCurrent)
-            return;
+    getLoggerPrefix() {
+        return this.getDriver().getDevices().length > 1 ? (`${this._deviceLabel} `) : '';
+    }
 
-        const loggerPrefix = this.getDriver().getDevices().length > 1 ? (`${this._deviceLabel} `) : '';
+    async onPriceData(priceInfoNextHours) {
+        const currentHour = moment().startOf('hour');
+        const priceInfoCurrent = _.find(priceInfoNextHours, (p) => currentHour.isSame(moment(p.startsAt)))
+        if (!priceInfoCurrent) {
+            this.log(`Error finding current price info for ${currentHour.format()}. Abort.`, priceInfoNextHours);
+            return;
+        }
 
         if(_.get(priceInfoCurrent, 'startsAt') !== _.get(this._lastPrice, 'startsAt')) {
-        	this._lastPrice = priceInfoCurrent;
-
-            const priceInfoToday = _.get(data, 'viewer.home.currentSubscription.priceInfo.today');
-            const priceInfoTomorrow = _.get(data, 'viewer.home.currentSubscription.priceInfo.tomorrow');
-            let priceInfoNextHours;
-            if(priceInfoToday && priceInfoTomorrow)
-                priceInfoNextHours = priceInfoToday.concat(priceInfoTomorrow);
-            else if (priceInfoToday)
-                priceInfoNextHours = priceInfoToday;
-
+            this._lastPrice = priceInfoCurrent;
             this._priceInfoNextHours = priceInfoNextHours;
 
             if(priceInfoCurrent.total !== null) {
@@ -241,7 +266,7 @@ class MyDevice extends Homey.Device {
                 this.log('Triggering price_changed', priceInfoCurrent);
 
                 let priceLogger = await this._createGetLog(`${this._insightId}_price`, {
-                    label: `${loggerPrefix}Current price`,
+                    label: `${this.getLoggerPrefix()}Current price`,
                     type: 'number',
                     decimals: true
                 });
@@ -261,10 +286,29 @@ class MyDevice extends Homey.Device {
                         this._priceAtHighestTodayTrigger.trigger(this, null, { lowest: false }).catch(console.error);
                 }
             }
-		}
+        }
+    }
+
+    getLastLoggedDailyConsumption() {
+        return Homey.ManagerSettings.get(`${this._insightId}_lastLoggedDailyConsumption`);
+    }
+
+    setLastLoggedHourlyConsumption(value) {
+        Homey.ManagerSettings.set(`${this._insightId}_lastLoggedDailyConsumption`, value);
+    }
+
+    getLastLoggedHourlyConsumption() {
+        return Homey.ManagerSettings.get(`${this._insightId}_lastLoggerHourlyConsumption`);
+    }
+
+    setLastLoggedHourlyConsumption(value) {
+        Homey.ManagerSettings.set(`${this._insightId}_lastLoggerHourlyConsumption`, value);
+    }
+
+    async onConsumptionData(data) {
 
 		try {
-            const lastLoggedDailyConsumption = Homey.ManagerSettings.get(`${this._insightId}_lastLoggedDailyConsumption`);
+            const lastLoggedDailyConsumption = this.getLastLoggedDailyConsumption();
             const consumptionsSinceLastReport = [];
             const dailyConsumptions = _.get(data, 'viewer.home.daily.nodes') || [];
             await Promise.mapSeries(dailyConsumptions, async dailyConsumption => {
@@ -273,11 +317,11 @@ class MyDevice extends Homey.Device {
                         return;
 
                     consumptionsSinceLastReport.push(dailyConsumption);
-                    Homey.ManagerSettings.set(`${this._insightId}_lastLoggedDailyConsumption`, dailyConsumption.to);
+                    this.setLastLoggedDelayConsumption(dailyConsumption.to);
 
                     this.log('Got daily consumption', dailyConsumption);
                     let consumptionLogger = await this._createGetLog(`${this._insightId}_dailyConsumption`, {
-                        label: `${loggerPrefix}Daily consumption`,
+                        label: `${this.getLoggerPrefix()}Daily consumption`,
                         type: 'number',
                         decimals: true
                     });
@@ -285,7 +329,7 @@ class MyDevice extends Homey.Device {
                     consumptionLogger.createEntry(dailyConsumption.consumption, moment(dailyConsumption.to).toDate()).catch(console.error);
 
                     let costLogger = await this._createGetLog(`${this._insightId}_dailyCost`, {
-                        label: `${loggerPrefix}Daily total cost`,
+                        label: `${this.getLoggerPrefix()}Daily total cost`,
                         type: 'number',
                         decimals: true
                     });
@@ -306,18 +350,18 @@ class MyDevice extends Homey.Device {
         }
 
         try {
-            const lastLoggedHourlyConsumption = Homey.ManagerSettings.get(`${this._insightId}_lastLoggerHourlyConsumption`);
+            const lastLoggedHourlyConsumption = this.getLastLoggedHourlyConsumption();
             const hourlyConsumptions = _.get(data, 'viewer.home.hourly.nodes') || [];
             await Promise.mapSeries(hourlyConsumptions, async hourlyConsumption => {
                 if (hourlyConsumption.consumption !== null) {
                     if (lastLoggedHourlyConsumption && moment(hourlyConsumption.to) <= moment(lastLoggedHourlyConsumption))
                         return;
 
-                    Homey.ManagerSettings.set(`${this._insightId}_lastLoggerHourlyConsumption`, hourlyConsumption.to);
+                    this.setLastLoggedHourlyConsumption(hourlyConsumption.to);
 
                     this.log('Got hourly consumption', hourlyConsumption);
                     let consumptionLogger = await this._createGetLog(`${this._insightId}hourlyConsumption`, {
-                        label: `${loggerPrefix}Hourly consumption`,
+                        label: `${this.getLoggerPrefix()}Hourly consumption`,
                         type: 'number',
                         decimals: true
                     });
@@ -325,7 +369,7 @@ class MyDevice extends Homey.Device {
                     consumptionLogger.createEntry(hourlyConsumption.consumption, moment(hourlyConsumption.to).toDate()).catch(console.error);
 
                     let costLogger = await this._createGetLog(`${this._insightId}_hourlyCost`, {
-                        label: `${loggerPrefix}Hourly total cost`,
+                        label: `${this.getLoggerPrefix()}Hourly total cost`,
                         type: 'number',
                         decimals: true
                     });

@@ -31,7 +31,10 @@
   "capabilities": [
     "measure_power",
     "meter_power",
-    "accumulatedCost"
+    "accumulatedCost",
+    "measure_current.L1",
+    "measure_current.L2",
+    "measure_current.L3"
   ],
   "energy": {
     "cumulative": true
@@ -40,6 +43,21 @@
     "meter_power": {
       "title": {
         "en": "Consumption since midnight"
+      }
+    },
+    "measure_current.L1": {
+      "title": {
+        "en": "Current phase 1"
+      }
+    },
+    "measure_current.L2": {
+      "title": {
+        "en": "Current phase 2"
+      }
+    },
+    "measure_current.L3": {
+      "title": {
+        "en": "Current phase 3"
       }
     }
   },

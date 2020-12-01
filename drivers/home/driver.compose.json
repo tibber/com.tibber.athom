@@ -63,5 +63,17 @@
   "images": {
     "large": "/drivers/home/assets/images/large.png",
     "small": "/drivers/home/assets/images/small.png"
-  }
+  },
+  "settings": [
+    {
+      "id": "enable_consumption_report",
+      "type": "checkbox",
+      "label": {
+        "en": "Enable non-realtime consumption reporting"
+      },
+      "hint": {
+        "en": "Enable periodical fetch of Tibber consumption data to Homey Insights. Periodical fetch produces a lot of traffic towards Tibber API so enable only if needed."
+      },
+      "value": false
+    }]
 }

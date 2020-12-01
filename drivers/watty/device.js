@@ -4,11 +4,16 @@ const   Homey               = require('homey'),
         _                   = require('lodash'),
         moment              = require('moment-timezone'),
         http                = require('http.min'),
-        tibber              = require('../../lib/tibber');
+        { tibber }          = require('../../lib/tibber');
 
 class MyDevice extends Homey.Device {
 
 	onInit() {
+        this._tibber = tibber({
+            log: this.log,
+            homeId: this.getData().id,
+            token: this.getData().t
+        });
         this._deviceId = this.getData().id;
         this._throttle = this.getSetting('pulse_throttle') || 30;
 
@@ -63,7 +68,7 @@ class MyDevice extends Homey.Device {
         }
 
         this.log('Subscribing to live data for homeId', this._deviceId);
-        this._wsSubsctiption = tibber.subscribeToLive(this.getData().t, this._deviceId, this.subscribeCallback.bind(this));
+        this._wsSubsctiption = this._tibber.subscribeToLive(this.subscribeCallback.bind(this));
     }
 
     async subscribeCallback(result) {
@@ -89,6 +94,13 @@ class MyDevice extends Homey.Device {
             this.log(`Trigger power changed`, measure_power);
             this._powerChangedTrigger.trigger(this, { power: measure_power }).catch(console.error);
         }
+
+        const currentL1 = _.get(result, 'data.liveMeasurement.currentL1');
+        if (currentL1) this.setCapabilityValue("measure_current.L1", currentL1).catch(console.error);
+        const currentL2 = _.get(result, 'data.liveMeasurement.currentL2');
+        if (currentL2) this.setCapabilityValue("measure_current.L2", currentL2).catch(console.error);
+        const currentL3 = _.get(result, 'data.liveMeasurement.currentL3');
+        if (currentL3) this.setCapabilityValue("measure_current.L3", currentL3).catch(console.error);
 
         const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
         if(consumption && _.isNumber(consumption)) {

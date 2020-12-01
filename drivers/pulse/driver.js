@@ -3,27 +3,28 @@
 const 	Homey 				= require('homey'),
 		_                   = require('lodash'),
         oauth               = require('../../lib/oauth'),
-        tibber              = require('../../lib/tibber');
+        { tibber }          = require('../../lib/tibber');
 
 class MyDriver extends Homey.Driver {
 
 	onInit() {
-		this.log('Tibber pulse driver has been initialized');
+        this.log('Tibber pulse driver has been initialized');
 	}
     onPair( socket ) {
-        socket.on('list_devices', this.onPairListDevices);
-        oauth.initiateOauth(socket);
+        this._tibber = tibber({log: this.log});
+        socket.on('list_devices', this.onPairListDevices.bind(this));
+        oauth.initiateOauth(socket, this._tibber);
     }
 
 	onPairListDevices(data, callback) {
-        tibber.getHomes()
+        this._tibber.getHomes()
             .then(data => {
                 let devices = _.reject(_.map(_.get(data, 'viewer.homes'), home => {
                     let hasPulse = !!_.get(home, 'features.realTimeConsumptionEnabled');
                     if(!hasPulse)
                         return null;
 
-                    _.assign(home, {t:tibber.getDefaultToken()});
+                    _.assign(home, { t: this._tibber.getDefaultToken() });
                     let address = _.get(home, 'address.address1');
                     return {
                         data: home,
