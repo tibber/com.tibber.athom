@@ -58,5 +58,11 @@
   },
   "1.3.11": {
     "en": "Increase data fetch timeout. Fix data fetch retry logic."
+  },
+  "1.4.0": {
+    "en": "Rewrite of Tibber API data access to reduce load at hour shift. Use a cache for day-ahead-prices for today and tomorrow. Home non-real time consumption report is now enabled with an advanced parameter (default to false). Support for displaying real time current per phase for Pulse and Watty."
+  },
+  "1.4.1": {
+    "en": "Bug fix for calculating amount of hours to be fetched for consumption report"
   }
 }
