@@ -70,5 +70,8 @@
   },
   "1.4.3": {
     "en": "New triggers for currents reported by Pulse and Watty"
+  },
+  "1.4.4": {
+    "en": "Update readme"
   }
 }
