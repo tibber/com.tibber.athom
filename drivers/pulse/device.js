@@ -27,6 +27,13 @@ class MyDevice extends Homey.Device {
         this._costChangedTrigger = new Homey.FlowCardTriggerDevice('cost_changed');
         this._costChangedTrigger.register();
 
+        this._currentL1ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L1_changed');
+        this._currentL1ChangedTrigger.register();
+        this._currentL2ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L2_changed');
+        this._currentL2ChangedTrigger.register();
+        this._currentL3ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L3_changed');
+        this._currentL3ChangedTrigger.register();
+
         this._dailyConsumptionReportTrigger = new Homey.FlowCardTriggerDevice('daily_consumption_report');
         this._dailyConsumptionReportTrigger.register();
 
@@ -98,10 +105,25 @@ class MyDevice extends Homey.Device {
 
         const currentL1 = _.get(result, 'data.liveMeasurement.currentL1');
         if (currentL1) this.setCapabilityValue("measure_current.L1", currentL1).catch(console.error);
+        if (currentL1 !== this._prevCurrentL1) {
+            this._prevCurrentL1 = currentL1;
+            this.log(`Trigger current L1 changed`, currentL1);
+            this._currentL1ChangedTrigger.trigger(this, { currentL1: currentL1 }).catch(console.error);
+        }
         const currentL2 = _.get(result, 'data.liveMeasurement.currentL2');
         if (currentL2) this.setCapabilityValue("measure_current.L2", currentL2).catch(console.error);
+        if (currentL2 !== this._prevCurrentL2) {
+            this._prevCurrentL2 = currentL2;
+            this.log(`Trigger current L2 changed`, currentL2);
+            this._currentL1ChangedTrigger.trigger(this, { currentL2: currentL2 }).catch(console.error);
+        }
         const currentL3 = _.get(result, 'data.liveMeasurement.currentL3');
         if (currentL3) this.setCapabilityValue("measure_current.L3", currentL3).catch(console.error);
+        if (currentL3 !== this._prevCurrentL3) {
+            this._prevCurrentL3 = currentL3;
+            this.log(`Trigger current L3 changed`, currentL3);
+            this._currentL1ChangedTrigger.trigger(this, { currentL3: currentL3 }).catch(console.error);
+        }
 
         const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
         if (consumption && _.isNumber(consumption)) {
@@ -164,6 +186,7 @@ class MyDevice extends Homey.Device {
             try {
                 this.log('Unsubscribing from previous connection');
                 this._wsSubsctiption.unsubscribe();
+                this._resubscribeDebounce.cancel();
             }
             catch (e) {
                 this.log('Error unsubscribing from previous connection', e);

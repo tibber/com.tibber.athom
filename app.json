@@ -368,6 +368,72 @@
         ]
       },
       {
+        "id": "current.L1_changed",
+        "title": {
+          "en": "Current phase 1 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL1",
+            "type": "number",
+            "title": {
+              "en": "Current phase 1"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
+        "id": "current.L2_changed",
+        "title": {
+          "en": "Current phase 2 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL2",
+            "type": "number",
+            "title": {
+              "en": "Current phase 2"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
+        "id": "current.L3_changed",
+        "title": {
+          "en": "Current phase 3 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL3",
+            "type": "number",
+            "title": {
+              "en": "Current phase 3"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
         "id": "watty_consumption_changed",
         "title": {
           "en": "Consumption since midnight changed"
@@ -451,6 +517,72 @@
             "type": "number",
             "title": {
               "en": "Power"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=watty"
+          }
+        ]
+      },
+      {
+        "id": "current.L1_changed",
+        "title": {
+          "en": "Current phase 1 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL1",
+            "type": "number",
+            "title": {
+              "en": "Current phase 1"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=watty"
+          }
+        ]
+      },
+      {
+        "id": "current.L2_changed",
+        "title": {
+          "en": "Current phase 2 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL2",
+            "type": "number",
+            "title": {
+              "en": "Current phase 2"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=watty"
+          }
+        ]
+      },
+      {
+        "id": "current.L3_changed",
+        "title": {
+          "en": "Current phase 3 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL3",
+            "type": "number",
+            "title": {
+              "en": "Current phase 3"
             }
           }
         ],
