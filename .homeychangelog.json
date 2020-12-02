@@ -64,5 +64,8 @@
   },
   "1.4.1": {
     "en": "Bug fix for calculating amount of hours to be fetched for consumption report"
+  },
+  "1.4.2": {
+    "en": "Bug fix for keeping track of last logged daily consumption"
   }
 }
