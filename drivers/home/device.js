@@ -293,7 +293,7 @@ class MyDevice extends Homey.Device {
         return Homey.ManagerSettings.get(`${this._insightId}_lastLoggedDailyConsumption`);
     }
 
-    setLastLoggedHourlyConsumption(value) {
+    setLastLoggedDailyConsumption(value) {
         Homey.ManagerSettings.set(`${this._insightId}_lastLoggedDailyConsumption`, value);
     }
 
@@ -317,7 +317,7 @@ class MyDevice extends Homey.Device {
                         return;
 
                     consumptionsSinceLastReport.push(dailyConsumption);
-                    this.setLastLoggedDelayConsumption(dailyConsumption.to);
+                    this.setLastLoggedDailyConsumption(dailyConsumption.to);
 
                     this.log('Got daily consumption', dailyConsumption);
                     let consumptionLogger = await this._createGetLog(`${this._insightId}_dailyConsumption`, {
