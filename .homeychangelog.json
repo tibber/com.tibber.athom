@@ -67,5 +67,8 @@
   },
   "1.4.2": {
     "en": "Bug fix for keeping track of last logged daily consumption"
+  },
+  "1.4.3": {
+    "en": "New triggers for currents reported by Pulse and Watty"
   }
 }
