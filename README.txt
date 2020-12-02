@@ -1,6 +1,6 @@
 Integration with Tibber, with Pulse and Watty support.
 
-Note! After latest update some users are experiencing timeout errors when fetching Pulse or Watty data. Removing and re-adding the device seems help solve the problem.
+Note! Pulse and Watty now supports displaying current for phase 1, 2 and 3. In order to show new values in Homey you will need to remove and re-add Pulse/Watty device.
 
 Flow cards
 
@@ -36,6 +36,7 @@ Actions
 Device: Pulse and Watty
 Triggers
 - Power changed
+- Current for phase 1, 2 or 3 changed
 - Consumption since midnight changed
 - Cost since midnight changed
 - Daily consumption report
