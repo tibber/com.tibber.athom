@@ -12,7 +12,7 @@
     "en": "Tibber"
   },
   "description": {
-    "en": "Tibber integration"
+    "en": "Be in charge of your household energy"
   },
   "category": [
     "energy"
@@ -21,5 +21,9 @@
   "images": {
     "large": "/assets/images/large.png",
     "small": "/assets/images/small.png"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/tibbercom/com.tibber.athom/issues"
+  },
+  "support": "mailto:hello@tibber.com"
 }
