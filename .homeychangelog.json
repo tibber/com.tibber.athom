@@ -73,5 +73,8 @@
   },
   "1.4.4": {
     "en": "Update readme"
+  },
+  "1.4.5": {
+    "en": "Set description and support url"
   }
 }
