@@ -125,7 +125,7 @@ class MyDevice extends Homey.Device {
         this._sendPushNotificationAction = new Homey.FlowCardAction('sendPushNotification');
         this._sendPushNotificationAction
             .register()
-            .registerRunListener(args => tibber.sendPush(this.getData().t, args.title, args.message));
+            .registerRunListener(args => tibber.sendPush(args.title, args.message));
 
         this.log(`Tibber home device ${this.getName()} has been initialized`);
         return this.updateData();
@@ -199,23 +199,28 @@ class MyDevice extends Homey.Device {
                 let daysToFetch = 14;
                 if (lastLoggedDailyConsumption) {
                     const durationSinceLastDailyConsumption = moment.duration(now.diff(moment(lastLoggedDailyConsumption)));
-                    daysToFetch = Math.ceil(durationSinceLastDailyConsumption.asDays());
+                    daysToFetch = Math.floor(durationSinceLastDailyConsumption.asDays());
                 }
 
                 const lastLoggedHourlyConsumption = this.getLastLoggedHourlyConsumption();
                 let hoursToFetch = 200;
                 if (lastLoggedHourlyConsumption) {
                     var durationSinceLastHourlyConsumption = moment.duration(now.diff(moment(lastLoggedHourlyConsumption)));
-                    hoursToFetch = Math.ceil(durationSinceLastHourlyConsumption.asHours());
+                    hoursToFetch = Math.floor(durationSinceLastHourlyConsumption.asHours());
                 }
+
+                this.log(`Last logged daily consumption at ${lastLoggedDailyConsumption} hourly consumption at ${lastLoggedHourlyConsumption}. Fetch ${daysToFetch} days ${hoursToFetch} hours`);
 
                 if (!lastLoggedDailyConsumption || !lastLoggedHourlyConsumption) {
                     const consumptionData = await this._tibber.getConsumptionData(daysToFetch, hoursToFetch);
                     await this.onConsumptionData(consumptionData);
                 }
+                else if (!hoursToFetch && !daysToFetch) {
+                    this.log(`Consumption data up to date. Skip fetch.`);
+                }
                 else {
                     const delay = getRandomDelay(0, 59 * 60);
-                    this.log(`Schedule consumption fetch after ${delay} seconds.`);
+                    this.log(`Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`);
                     setTimeout(async () => {
                         const consumptionData = await this._tibber.getConsumptionData(daysToFetch, hoursToFetch);
                         await this.onConsumptionData(consumptionData);

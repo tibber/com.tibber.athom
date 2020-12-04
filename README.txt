@@ -1,6 +1,7 @@
 Integration with Tibber, with Pulse and Watty support.
 
-Note! Pulse and Watty now supports displaying current for phase 1, 2 and 3. In order to show new values in Homey you will need to remove and re-add Pulse/Watty device.
+New: Pulse and Watty now supports displaying current for phase 1, 2 and 3. In order to show new values in Homey you will need to remove and re-add Pulse/Watty device.
+New: Home hourly and daily consumption report is now disabled by default. You can enable it in the Home device's advanced settings.
 
 Flow cards
 
