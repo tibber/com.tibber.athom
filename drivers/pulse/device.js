@@ -28,11 +28,11 @@ class MyDevice extends Homey.Device {
         this._costChangedTrigger.register();
 
         this._currentL1ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L1_changed');
-        this._currentL1ChangedTrigger.register().catch(console.error);
+        this._currentL1ChangedTrigger.register();
         this._currentL2ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L2_changed');
-        this._currentL2ChangedTrigger.register().catch(console.error);
+        this._currentL2ChangedTrigger.register();
         this._currentL3ChangedTrigger = new Homey.FlowCardTriggerDevice('current.L3_changed');
-        this._currentL3ChangedTrigger.register().catch(console.error);
+        this._currentL3ChangedTrigger.register();
 
         this._dailyConsumptionReportTrigger = new Homey.FlowCardTriggerDevice('daily_consumption_report');
         this._dailyConsumptionReportTrigger.register();
