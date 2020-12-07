@@ -125,7 +125,7 @@ class MyDevice extends Homey.Device {
         this._sendPushNotificationAction = new Homey.FlowCardAction('sendPushNotification');
         this._sendPushNotificationAction
             .register()
-            .registerRunListener(args => tibber.sendPush(args.title, args.message));
+            .registerRunListener(args => this._tibber.sendPush(args.title, args.message));
 
         this.log(`Tibber home device ${this.getName()} has been initialized`);
         return this.updateData();
