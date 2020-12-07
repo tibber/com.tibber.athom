@@ -82,5 +82,8 @@
   },
   "1.4.7": {
     "en": "Fix crash related to Pulse/Watty trigger registration"
+  },
+  "1.4.8": {
+    "en": "Fix push notification flow"
   }
 }
