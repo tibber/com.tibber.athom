@@ -88,5 +88,8 @@
   },
   "1.4.9": {
     "en": "Deactivate device if home can't be found anymore. Add price level indicator. Fix current triggers for L2 and L3."
+  },
+  "1.4.10": {
+    "en": "Change price level to an enumeration"
   }
 }
