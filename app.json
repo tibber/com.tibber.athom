@@ -55,6 +55,13 @@
             "title": {
               "en": "tax"
             }
+          },
+          {
+            "name": "level",
+            "type": "string",
+            "title": {
+              "en": "level"
+            }
           }
         ],
         "args": [
@@ -857,6 +864,7 @@
       },
       "capabilities": [
         "price_total",
+        "price_level",
         "measure_temperature"
       ],
       "capabilitiesOptions": {
@@ -1378,6 +1386,15 @@
         "en": "kr"
       },
       "icon": "/drivers/pulse/assets/dollar.svg"
+    },
+    "price_level": {
+      "type": "string",
+      "title": {
+        "en": "Price level"
+      },
+      "getable": true,
+      "setable": true,
+      "icon": "/drivers/home/assets/dollar.svg"
     },
     "price_total": {
       "type": "number",

@@ -1,0 +1,9 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Price level"
+  },
+  "getable": true,
+  "setable": true,
+  "icon": "/drivers/home/assets/dollar.svg"
+}

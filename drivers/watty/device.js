@@ -82,9 +82,9 @@ class MyDevice extends Homey.Device {
         this._resubscribeDebounce();
 
         let power = _.get(result, 'data.liveMeasurement.power');
-        this.log(`Received data.liveMeasurement.power`, power);
+        //this.log(`Received data.liveMeasurement.power`, power);
         let powerProduction = _.get(result, 'data.liveMeasurement.powerProduction');
-        this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
+        //this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
         if (powerProduction)
             this._prevPowerProduction = powerProduction;
 
@@ -114,14 +114,14 @@ class MyDevice extends Homey.Device {
         if (currentL2 !== this._prevCurrentL2) {
             this._prevCurrentL2 = currentL2;
             this.log(`Trigger current L2 changed`, currentL2);
-            this._currentL1ChangedTrigger.trigger(this, { currentL2: currentL2 }).catch(console.error);
+            this._currentL2ChangedTrigger.trigger(this, { currentL2: currentL2 }).catch(console.error);
         }
         const currentL3 = _.get(result, 'data.liveMeasurement.currentL3');
         if (currentL3) this.setCapabilityValue("measure_current.L3", currentL3).catch(console.error);
         if (currentL3 !== this._prevCurrentL3) {
             this._prevCurrentL3 = currentL3;
             this.log(`Trigger current L3 changed`, currentL3);
-            this._currentL1ChangedTrigger.trigger(this, { currentL3: currentL3 }).catch(console.error);
+            this._currentL3ChangedTrigger.trigger(this, { currentL3: currentL3 }).catch(console.error);
         }
 
         const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');

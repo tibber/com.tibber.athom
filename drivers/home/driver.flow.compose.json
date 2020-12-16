@@ -26,6 +26,13 @@
           "title": {
             "en": "tax"
           }
+        },
+        {
+          "name": "level",
+          "type": "string",
+          "title": {
+            "en": "level"
+          }
         }
       ]
     },

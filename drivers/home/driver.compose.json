@@ -29,6 +29,7 @@
   },
   "capabilities": [
     "price_total",
+    "price_level",
     "measure_temperature"
   ],
   "capabilitiesOptions": {

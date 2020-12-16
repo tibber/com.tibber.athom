@@ -237,6 +237,15 @@ class MyDevice extends Homey.Device {
         }
         catch(e) {
             this.log('Error fetching data', e);
+
+            const errorCode = _.get(e, 'response.errors[0].extensions.code');
+            this.log('Received error code', errorCode);
+            if (errorCode == 'HOME_NOT_FOUND') {
+                this.log(`Home with id ${this.getData().id} not found. Set device unavailable`);
+                await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
+                return;
+            }
+
             //Try again after a delay
             const delay = getRandomDelay(0, 5 * 60);
             this.scheduleUpdate(delay);
@@ -266,6 +275,7 @@ class MyDevice extends Homey.Device {
 
             if(priceInfoCurrent.total !== null) {
                 this.setCapabilityValue("price_total", priceInfoCurrent.total).catch(console.error);
+                this.setCapabilityValue("price_level", priceInfoCurrent.level).catch(console.error);
 
                 this._priceChangedTrigger.trigger(this, priceInfoCurrent);
                 this.log('Triggering price_changed', priceInfoCurrent);
