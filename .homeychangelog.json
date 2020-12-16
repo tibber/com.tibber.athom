@@ -85,5 +85,8 @@
   },
   "1.4.8": {
     "en": "Fix push notification flow"
+  },
+  "1.4.9": {
+    "en": "Deactivate device if home can't be found anymore. Add price level indicator. Fix current triggers for L2 and L3."
   }
 }
