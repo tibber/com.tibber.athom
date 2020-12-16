@@ -1388,12 +1388,44 @@
       "icon": "/drivers/pulse/assets/dollar.svg"
     },
     "price_level": {
-      "type": "string",
+      "type": "enum",
       "title": {
         "en": "Price level"
       },
       "getable": true,
-      "setable": true,
+      "setable": false,
+      "values": [
+        {
+          "id": "VERY_CHEAP",
+          "title": {
+            "en": "Very cheap"
+          }
+        },
+        {
+          "id": "CHEAP",
+          "title": {
+            "en": "Cheap"
+          }
+        },
+        {
+          "id": "NORMAL",
+          "title": {
+            "en": "Normal"
+          }
+        },
+        {
+          "id": "EXPENSIVE",
+          "title": {
+            "en": "Expensive"
+          }
+        },
+        {
+          "id": "VERY_EXPENSIVE",
+          "title": {
+            "en": "Very expensive"
+          }
+        }
+      ],
       "icon": "/drivers/home/assets/dollar.svg"
     },
     "price_total": {
