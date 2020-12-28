@@ -91,5 +91,8 @@
   },
   "1.4.10": {
     "en": "Change price level to an enumeration"
+  },
+  "1.4.11": {
+    "en": "Add price level capability automatically"
   }
 }
