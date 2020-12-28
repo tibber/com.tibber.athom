@@ -10,7 +10,7 @@ const   Homey               = require('homey'),
 
 class MyDevice extends Homey.Device {
 
-	onInit() {
+	async onInit() {
 
         this._tibber = tibber({
             log: this.log,
@@ -126,6 +126,9 @@ class MyDevice extends Homey.Device {
         this._sendPushNotificationAction
             .register()
             .registerRunListener(args => this._tibber.sendPush(args.title, args.message));
+
+        if (!this.hasCapability('price_level'))
+            await this.addCapability('price_level');
 
         this.log(`Tibber home device ${this.getName()} has been initialized`);
         return this.updateData();
