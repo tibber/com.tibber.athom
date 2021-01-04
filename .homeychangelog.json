@@ -94,5 +94,11 @@
   },
   "1.4.11": {
     "en": "Add price level capability automatically"
+  },
+  "1.4.12": {
+    "en": "Update readme to include price level trigger"
+  },
+  "1.4.13": {
+    "en": "Bug fix for price fetch scheduling"
   }
 }
