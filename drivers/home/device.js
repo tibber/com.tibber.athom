@@ -72,6 +72,16 @@ class MyDevice extends Homey.Device {
         this._priceAtHighestTodayTrigger = new Homey.FlowCardTriggerDevice('price_at_highest_today');
         this._priceAtHighestTodayTrigger.register(); //Cannot use registerRunListener as the card have no arguments
 
+        this._priceAmongLowestTrigger = new Homey.FlowCardTriggerDevice('price_among_lowest_today');
+        this._priceAmongLowestTrigger
+            .register()
+            .registerRunListener(this._priceMinMaxComparer.bind(this));
+
+        this._priceAmongHighestTrigger = new Homey.FlowCardTriggerDevice('price_among_highest_today');
+        this._priceAmongHighestTrigger
+            .register()
+            .registerRunListener(this._priceMinMaxComparer.bind(this));
+
         this._currentPriceBelowCondition = new Homey.FlowCardCondition('current_price_below');
         this._currentPriceBelowCondition
             .register()
@@ -114,6 +124,16 @@ class MyDevice extends Homey.Device {
 
         this._currentPriceAtHighestTodayCondition = new Homey.FlowCardCondition('cond_price_at_highest_today');
         this._currentPriceAtHighestTodayCondition
+            .register()
+            .registerRunListener(args => this._priceMinMaxComparer(args, { lowest: false }));
+
+        this._currentPriceAmongLowestTodayCondition = new Homey.FlowCardCondition('cond_price_among_lowest_today');
+        this._currentPriceAmongLowestTodayCondition
+            .register()
+            .registerRunListener(args => this._priceMinMaxComparer(args, { lowest: true }));
+
+        this._currentPriceAmongHighestTodayCondition = new Homey.FlowCardCondition('cond_price_among_highest_today');
+        this._currentPriceAmongHighestTodayCondition
             .register()
             .registerRunListener(args => this._priceMinMaxComparer(args, { lowest: false }));
 
@@ -297,6 +317,8 @@ class MyDevice extends Homey.Device {
                     this._priceAboveAvgTodayTrigger.trigger(this, null, { below: false }).catch(console.error);
                     this._priceAtLowestTrigger.trigger(this, null, { lowest: true }).catch(console.error);
                     this._priceAtHighestTrigger.trigger(this, null, { lowest: false }).catch(console.error);
+                    this._priceAmongLowestTrigger.trigger(this, null, { lowest: true }).catch(console.error);
+                    this._priceAmongHighestTrigger.trigger(this, null, { lowest: true }).catch(console.error);
 
                     if(this._priceMinMaxComparer({}, { lowest: true }))
                         this._priceAtLowestTodayTrigger.trigger(this, null, { lowest: true }).catch(console.error);
@@ -433,7 +455,7 @@ class MyDevice extends Homey.Device {
     }
 
     _priceMinMaxComparer(args, state) {
-        if (args.hours === 0)
+        if (args.hours === 0 || args.ranked_hours === 0)
             return false;
 
         const now = moment();
@@ -453,13 +475,29 @@ class MyDevice extends Homey.Device {
             return false;
         }
 
-        const toCompare = state.lowest ? _.minBy(pricesNextHours, 'total').total
-            : _.maxBy(pricesNextHours, 'total').total;
+        let conditionMet;
+        if(args.ranked_hours) {
+            sortedHours = _.sortBy(pricesNextHours, ['total']);
+            currentHourRank = _.findIndex(pricesNextHours, ['startsAt', this._lastPrice.startsAt]);
+            if (currentHourRank < 0) {
+                this.log(`Could not find the current hour rank among today's hours`);
+                return false
+            }
 
-        const conditionMet = state.lowest ? this._lastPrice.total <= toCompare
-            : this._lastPrice.total >= toCompare;
+            conditionMet = state.lowest ? currentHourRank < args.ranked_hours
+                : currentHourRank >= sortedHours.length - args.ranked_hours
 
-        this.log(`${this._lastPrice.total.toFixed(2)} is ${state.lowest ? 'lower than the lowest' : 'higher than the highest'} (${toCompare}) ${args.hours ? 'among the next ' + args.hours + ' hours' : 'today'} = ${conditionMet}`);
+                this.log(`${this._lastPrice.total.toFixed(2)} is among the ${state.lowest ? 'lowest' : 'highest'} ${args.ranked_hours} hours today = ${conditionMet}`);
+        } else {
+            toCompare = state.lowest ? _.minBy(pricesNextHours, 'total').total
+                : _.maxBy(pricesNextHours, 'total').total;
+    
+            conditionMet = state.lowest ? this._lastPrice.total <= toCompare
+                : this._lastPrice.total >= toCompare;
+
+            this.log(`${this._lastPrice.total.toFixed(2)} is ${state.lowest ? 'lower than the lowest' : 'higher than the highest'} (${toCompare}) ${args.hours ? 'among the next ' + args.hours + ' hours' : 'today'} = ${conditionMet}`);
+        }
+
         return conditionMet;
     }
 

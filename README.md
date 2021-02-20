@@ -17,6 +17,8 @@ Integration with Tibber, with Pulse support!
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
 - Current price is [x] percent above average of the next [y] hours
+- Current price is one of todays lowest [x] prices
+- Current price is one of todays highest [x] prices
 - Consumption report (triggers when new data is available, normally once a week. Every hour if you have a Pulse device)
 &nbsp;
 #### Conditions
@@ -30,6 +32,8 @@ Integration with Tibber, with Pulse support!
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
 - Current price is [x] percent above average of the next [y] hours
+- Current price is one of todays lowest [x] prices
+- Current price is one of todays highest [x] prices
 &nbsp;
 #### Actions
 - Send push notification (through Tibber app)

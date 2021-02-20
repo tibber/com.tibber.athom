@@ -168,6 +168,36 @@
       }
     },
     {
+      "id": "price_among_lowest_today",
+      "title": {
+        "en": "Current price is one of todays lowest [x] prices"
+      },
+      "args": [
+        {
+          "name": "ranked_hours",
+          "type": "number",
+          "placeholder": {
+            "en": "hours"
+          }
+        }
+      ]
+    },
+    {
+      "id": "price_among_highest_today",
+      "title": {
+        "en": "Current price is one of todays highest [x] prices"
+      },
+      "args": [
+        {
+          "name": "ranked_hours",
+          "type": "number",
+          "placeholder": {
+            "en": "hours"
+          }
+        }
+      ]
+    },
+    {
         "id": "consumption_report",
         "title": {
             "en": "Consumption report"
@@ -334,6 +364,36 @@
       "title": {
         "en": "Current price !{{is|isn't}} at today's highest"
       }
+    },
+    {
+      "id": "cond_price_among_lowest_today",
+      "title": {
+        "en": "Current price !{{is|isn't}} one of todays lowest [x] prices"
+      },
+      "args": [
+        {
+          "name": "ranked_hours",
+          "type": "number",
+          "placeholder": {
+            "en": "hours"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cond_price_among_highest_today",
+      "title": {
+        "en": "Current price !{{is|isn't}} one of todays highest [x] prices"
+      },
+      "args": [
+        {
+          "name": "ranked_hours",
+          "type": "number",
+          "placeholder": {
+            "en": "hours"
+          }
+        }
+      ]
     }
   ],
   "actions": [
