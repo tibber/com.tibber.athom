@@ -27,6 +27,6 @@
     "moment-timezone": "^0.5.27",
     "newrelic": "^7.0.1",
     "subscriptions-transport-ws": "^0.9.18",
-    "ws": "^6.2.1"
+    "ws": "^7.4.6"
   }
 }
