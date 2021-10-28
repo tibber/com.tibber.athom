@@ -255,6 +255,46 @@
         ]
       },
       {
+        "id": "price_among_lowest_today",
+        "title": {
+          "en": "Current price is one of todays lowest [x] prices"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "placeholder": {
+              "en": "hours"
+            }
+          }
+        ]
+      },
+      {
+        "id": "price_among_highest_today",
+        "title": {
+          "en": "Current price is one of todays highest [x] prices"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "placeholder": {
+              "en": "hours"
+            }
+          }
+        ]
+      },
+      {
         "id": "consumption_report",
         "title": {
           "en": "Consumption report"
@@ -804,6 +844,46 @@
             "type": "device",
             "name": "device",
             "filter": "driver_id=home"
+          }
+        ]
+      },
+      {
+        "id": "cond_price_among_lowest_today",
+        "title": {
+          "en": "Current price !{{is|isn't}} one of todays lowest [x] prices"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "placeholder": {
+              "en": "hours"
+            }
+          }
+        ]
+      },
+      {
+        "id": "cond_price_among_highest_today",
+        "title": {
+          "en": "Current price !{{is|isn't}} one of todays highest [x] prices"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "placeholder": {
+              "en": "hours"
+            }
           }
         ]
       }
