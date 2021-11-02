@@ -18,7 +18,7 @@ exports.config = {
 
   logging: {
     //enabled: false,
-    enabled: false,
+    enabled: true,
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
      * issues with the agent, 'info' and higher will impose the least overhead on
@@ -61,6 +61,53 @@ exports.config = {
       'response.headers.setCookie*',
       'response.headers.x*'
     ]
+  },
+  utilization: {
+        /**
+     * This flag dictates whether the agent attempts to reach out to AWS
+     * to get info about the vm the process is running on.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_AWS
+     */
+    detect_aws: false,
+    /**
+     * This flag dictates whether the agent attempts to detect if the
+     * the process is running on Pivotal Cloud Foundary.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_PCF
+     */
+    detect_pcf: false,
+    /**
+     * This flag dictates whether the agent attempts to reach out to Azure to
+     * get info about the vm the process is running on.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_AZURE
+     */
+    detect_azure: false,
+    /**
+     * This flag dictates whether the agent attempts to read files
+     * to get info about the container the process is running in.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_DOCKER
+     */
+    detect_docker: false,
+
+    /**
+     * This flag dictates whether the agent attempts to reach out to GCP
+     * to get info about the vm the process is running on.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_GCP
+     */
+    detect_gcp: false,
+
+    /**
+     * This flag dictates whether the agent attempts to reach out to
+     * Kubernetes to get info about the container the process is running on.
+     *
+     * @env NEW_RELIC_UTILIZATION_DETECT_KUBERNETES
+     */
+    detect_kubernetes: false
+
   },
   // serverless_mode: { enabled: true },
   plugins: {

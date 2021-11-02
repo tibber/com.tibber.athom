@@ -1,0 +1,224 @@
+import { Device, FlowCardTriggerDevice } from 'homey';
+import _ from 'lodash';
+import moment from 'moment-timezone';
+import http from 'http.min';
+import { TibberApi } from '../../lib/tibber';
+import { Subscription } from 'apollo-client/util/Observable';
+
+class PulseDevice extends Device {
+    #tibber!: TibberApi;
+    #deviceId!: string; // actually homeId?
+    #throttle!: number;
+    #currency: any;
+    #cachedNordpoolPrice: { hour: number, price: number } | null = null;
+    #area: any;
+    #prevPowerProduction: any;
+    #prevUpdate?: moment.Moment;
+    #prevPower: any;
+    #prevCurrentL1: any;
+    #prevCurrentL2: any;
+    #prevCurrentL3: any;
+    #prevConsumption!: number;
+    #prevCost?: number;
+
+    #wsSubscription!: Subscription;
+    #resubscribeDebounce!: _.DebouncedFunc<() => void>;
+
+    #powerChangedTrigger!: FlowCardTriggerDevice;
+    #consumptionChangedTrigger!: FlowCardTriggerDevice;
+    #costChangedTrigger!: FlowCardTriggerDevice;
+    #currentL1ChangedTrigger!: FlowCardTriggerDevice;
+    #currentL2ChangedTrigger!: FlowCardTriggerDevice;
+    #currentL3ChangedTrigger!: FlowCardTriggerDevice;
+    #dailyConsumptionReportTrigger!: FlowCardTriggerDevice;
+
+    async onInit() {
+        const { id, t: token } = this.getData();
+
+        this.#tibber = new TibberApi(this.log, this.homey.settings, id, token);
+        this.#deviceId = id;
+        this.#throttle = this.getSetting('pulse_throttle') || 30;
+
+        this.#powerChangedTrigger = this.homey.flow.getDeviceTriggerCard('power_changed');
+        //this.#powerChangedTrigger.register();
+
+        this.#consumptionChangedTrigger = this.homey.flow.getDeviceTriggerCard('consumption_changed');
+        //this.#consumptionChangedTrigger.register();
+
+        this.#costChangedTrigger = this.homey.flow.getDeviceTriggerCard('cost_changed');
+        //this.#costChangedTrigger.register();
+
+        this.#currentL1ChangedTrigger = this.homey.flow.getDeviceTriggerCard('current.L1_changed');
+        //this.#currentL1ChangedTrigger.register();
+        this.#currentL2ChangedTrigger = this.homey.flow.getDeviceTriggerCard('current.L2_changed');
+        //this.#currentL2ChangedTrigger.register();
+        this.#currentL3ChangedTrigger = this.homey.flow.getDeviceTriggerCard('current.L3_changed');
+        //this.#currentL3ChangedTrigger.register();
+
+        this.#dailyConsumptionReportTrigger = this.homey.flow.getDeviceTriggerCard('daily_consumption_report');
+        //this.#dailyConsumptionReportTrigger.register();
+
+        this.log(`Tibber pulse device ${this.getName()} has been initialized (throttle: ${this.#throttle})`);
+
+        //Resubscribe if no data for 10 minutes
+        this.#resubscribeDebounce = _.debounce(this.#subscribeToLive.bind(this), 10 * 60 * 1000);
+        this.#subscribeToLive();
+    }
+
+    async onSettings({ oldSettings, newSettings, changedKeys }: {
+        oldSettings: any;
+        newSettings: any;
+        changedKeys: string[];
+    }) {
+        this.log('Changing pulse settings');
+
+        if (changedKeys.includes('pulse_throttle')) {
+            this.log('Updated throttle value: ', newSettings.pulse_throttle);
+            this.#throttle = Number(newSettings.pulse_throttle) || 30;
+        }
+        if (changedKeys.includes('pulse_currency')) {
+            this.log('Updated currency value: ', newSettings.pulse_currency);
+            this.#currency = newSettings.pulse_currency;
+            this.#cachedNordpoolPrice = null;
+        }
+        if (changedKeys.includes('pulse_area')) {
+            this.log('Updated area value: ', newSettings.pulse_area);
+            this.#area = newSettings.pulse_area;
+            this.#cachedNordpoolPrice = null;
+        }
+        //callback(null, true);
+    }
+
+    #subscribeToLive() {
+        this.#resubscribeDebounce();
+        if (this.#wsSubscription && _.isFunction(this.#wsSubscription.unsubscribe)) {
+            try {
+                this.log('Unsubscribing from previous connection');
+                this.#wsSubscription.unsubscribe();
+            }
+            catch (e) {
+                this.log('Error unsubscribing from previous connection', e);
+            }
+        }
+
+        this.log('Subscribing to live data for homeId', this.#deviceId);
+        this.#wsSubscription = this.#tibber.subscribeToLive(this.subscribeCallback.bind(this));
+    }
+
+    async subscribeCallback(result: any) {
+        this.#resubscribeDebounce();
+
+        let power = _.get(result, 'data.liveMeasurement.power');
+        /////this.log(`Received data.liveMeasurement.power`, power);
+        let powerProduction = _.get(result, 'data.liveMeasurement.powerProduction');
+        /////this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
+        if (powerProduction)
+            this.#prevPowerProduction = powerProduction;
+
+        if (this.#prevUpdate && moment().diff(this.#prevUpdate, 'seconds') < this.#throttle)
+            return;
+
+        const measure_power = power || -powerProduction || -this.#prevPowerProduction;
+        this.log(`Set measure_power capability to`, measure_power);
+        this.setCapabilityValue("measure_power", measure_power).catch(console.error);
+        this.#prevUpdate = moment();
+
+        if (measure_power !== this.#prevPower) {
+            this.#prevPower = measure_power;
+            this.log(`Trigger power changed`, measure_power);
+            this.#powerChangedTrigger.trigger(this, { power: measure_power }).catch(console.error);
+        }
+
+        const currentL1 = _.get(result, 'data.liveMeasurement.currentL1');
+        if (currentL1) this.setCapabilityValue("measure_current.L1", currentL1).catch(console.error);
+        if (currentL1 !== this.#prevCurrentL1) {
+            this.#prevCurrentL1 = currentL1;
+            this.log(`Trigger current L1 changed`, currentL1);
+            this.#currentL1ChangedTrigger.trigger(this, { currentL1: currentL1 }).catch(console.error);
+        }
+        const currentL2 = _.get(result, 'data.liveMeasurement.currentL2');
+        if (currentL2) this.setCapabilityValue("measure_current.L2", currentL2).catch(console.error);
+        if (currentL2 !== this.#prevCurrentL2) {
+            this.#prevCurrentL2 = currentL2;
+            this.log(`Trigger current L2 changed`, currentL2);
+            this.#currentL2ChangedTrigger.trigger(this, { currentL2: currentL2 }).catch(console.error);
+        }
+        const currentL3 = _.get(result, 'data.liveMeasurement.currentL3');
+        if (currentL3) this.setCapabilityValue("measure_current.L3", currentL3).catch(console.error);
+        if (currentL3 !== this.#prevCurrentL3) {
+            this.#prevCurrentL3 = currentL3;
+            this.log(`Trigger current L3 changed`, currentL3);
+            this.#currentL3ChangedTrigger.trigger(this, { currentL3: currentL3 }).catch(console.error);
+        }
+
+        const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
+        if (consumption && _.isNumber(consumption)) {
+            const fixedConsumtion = +consumption.toFixed(2);
+            if (fixedConsumtion !== this.#prevConsumption) {
+                if (fixedConsumtion < this.#prevConsumption) //Consumption has been reset
+                {
+                    this.log('Triggering daily consumption report');
+                    this.#dailyConsumptionReportTrigger.trigger(this, { consumption: this.#prevConsumption, cost: this.#prevCost }).catch(console.error)
+                }
+
+                this.#prevConsumption = fixedConsumtion;
+                this.setCapabilityValue("meter_power", fixedConsumtion).catch(console.error);
+                this.#consumptionChangedTrigger.trigger(this, { consumption: fixedConsumtion }).catch(console.error);
+            }
+        }
+
+        let cost = _.get(result, 'data.liveMeasurement.accumulatedCost');
+        if (!cost) {
+            try {
+                const now = moment();
+                if (!this.#cachedNordpoolPrice || this.#cachedNordpoolPrice.hour !== now.hour()) {
+                    const area = this.#area || 'Oslo';
+                    const currency = this.#currency || 'NOK';
+                    this.log(`Using nordpool prices. Currency: ${currency} - Area: ${area}`);
+                    const result = await http.json(`https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format("DD-MM-YYYY")}`);
+                    const areaCurrentPrice = _(_.get(result, 'data.Rows'))
+                        .filter(row => !row.IsExtraRow && moment.tz(row.StartTime, 'Europe/Oslo').isBefore(now) && moment.tz(row.EndTime, 'Europe/Oslo').isAfter(now))
+                        .map(row => row.Columns)
+                        .first()
+                        .find((a: { Name: string }) => a.Name === area);
+
+                    if (areaCurrentPrice) {
+                        let currentPrice = Number(areaCurrentPrice.Value.replace(',', '.').trim()) / 1000;
+                        this.#cachedNordpoolPrice = { hour: now.hour(), price: currentPrice };
+                        this.log(`Found price for ${now.format()} for area ${area} ${currentPrice}`);
+                    }
+
+                }
+                if (_.isNumber(this.#cachedNordpoolPrice?.price))
+                    cost = this.#cachedNordpoolPrice!.price * consumption;
+            }
+            catch (e) {
+                console.error('Error fetching prices from nordpool', e);
+            }
+        }
+
+        if (cost && _.isNumber(cost)) {
+            const fixedCost = +cost.toFixed(2);
+            if (fixedCost !== this.#prevCost) {
+                this.#prevCost = fixedCost;
+                this.setCapabilityValue("accumulatedCost", fixedCost).catch(console.error);
+                this.#costChangedTrigger.trigger(this, { cost: fixedCost }).catch(console.error);
+            }
+        }
+    }
+
+    onDeleted() {
+        if (this.#wsSubscription && _.isFunction(this.#wsSubscription.unsubscribe)) {
+            try {
+                this.log('Unsubscribing from previous connection');
+                this.#wsSubscription.unsubscribe();
+                this.#resubscribeDebounce.cancel();
+            }
+            catch (e) {
+                this.log('Error unsubscribing from previous connection', e);
+            }
+        }
+    };
+}
+
+module.exports = PulseDevice;

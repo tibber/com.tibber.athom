@@ -66,51 +66,6 @@
                     }
                 }
             ]
-        },
-        {
-            "id": "current.L1_changed",
-            "title": {
-                "en": "Current phase 1 changed"
-            },
-            "tokens": [
-                {
-                    "name": "currentL1",
-                    "type": "number",
-                    "title": {
-                        "en": "Current phase 1"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "current.L2_changed",
-            "title": {
-                "en": "Current phase 2 changed"
-            },
-            "tokens": [
-                {
-                    "name": "currentL2",
-                    "type": "number",
-                    "title": {
-                        "en": "Current phase 2"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "current.L3_changed",
-            "title": {
-                "en": "Current phase 3 changed"
-            },
-            "tokens": [
-                {
-                    "name": "currentL3",
-                    "type": "number",
-                    "title": {
-                        "en": "Current phase 3"
-                    }
-                }
-            ]
         }
     ]
 }

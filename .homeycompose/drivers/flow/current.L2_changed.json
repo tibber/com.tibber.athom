@@ -1,0 +1,21 @@
+{
+    "id": "current.L2_changed",
+    "title": {
+        "en": "Current phase 2 changed"
+    },
+    "tokens": [
+        {
+            "name": "currentL2",
+            "type": "number",
+            "title": {
+                "en": "Current phase 2"
+            }
+        }
+    ],
+    "args": [
+        {
+            "type": "device",
+            "filter": "driver_id=pulse|watty"
+        }
+    ]
+}

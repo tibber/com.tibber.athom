@@ -1,4 +1,5 @@
 /.idea
-/test.js
 env.json
-/build
+node_modules/
+build/
+/test.js
