@@ -29,6 +29,6 @@ class PulseDriver extends Driver {
     }
 }
 
-const formatDeviceName = (address: string) => `Pulse ${address}`;
+const formatDeviceName = (address: string | undefined) => `Pulse ${address}`;
 
 module.exports = PulseDriver;

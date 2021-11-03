@@ -19,9 +19,35 @@ export interface PriceInfo {
     level: any;
 }
 
+export interface Homes {
+    viewer: {
+        homes: Home[]
+    }
+}
+
+export type Home = {
+    id: string;
+    name: string;
+    timeZone: string;
+    address: {
+        address1: string;
+        postalCode: string;
+        city: string;
+        latitude: string;
+        longitude: string;
+    };
+    features: Partial<{
+        realTimeConsumptionEnabled: boolean;
+    }> | null;
+    currentSubscription: Partial<{
+        status: 'running' | 'awaiting time restriction'
+    }> | null;
+};
+
 const apiHost = 'https://api.tibber.com';
 const apiPath = '/v1-beta/gql';
 const liveSubscriptionUrl = 'wss://api.tibber.com/v1-beta/gql/subscriptions';
+
 
 export const getRandomDelay = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min) + min);
@@ -62,10 +88,10 @@ export class TibberApi {
         return this.#client;
     }
 
-    async getHomes() {
+    async getHomes(): Promise<Homes> {
         let client = this.#getClient();
         this.#log('Get homes');
-        return client.request(queries.getHomesQuery())
+        return client.request<Homes>(queries.getHomesQuery())
             .then(data => data)
             .catch(e => {
                 console.error(`${new Date()} Error while fetching home data`, e);

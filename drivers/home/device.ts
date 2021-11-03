@@ -1,5 +1,5 @@
 import type { AppInstance } from '../../app';
-import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
+import { env, Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import http from 'http.min';
 import moment from 'moment-timezone';
@@ -165,12 +165,12 @@ class HomeDevice extends Device {
 
     async getTemperature() {
         try {
-            this.log(`Fetching temperature with api key ${this.homey.env.DS_API_KEY} for coordinates ${this.#location.lat},${this.#location.lon}`);
+            this.log(`Fetching temperature with api key ${env.DS_API_KEY} for coordinates ${this.#location.lat},${this.#location.lon}`);
             let temperature;
             try
             {
                 const { lat, lon } = this.#location;
-                const forecast = await http.json(`https://api.darksky.net/forecast/${this.homey.env.DS_API_KEY}/${lat},${lon}?units=si`);
+                const forecast = await http.json(`https://api.darksky.net/forecast/${env.DS_API_KEY}/${lat},${lon}?units=si`);
                 temperature = _.get(forecast, 'currently.temperature');
                 this.log(`Fetched temperature ${temperature}`);
             }

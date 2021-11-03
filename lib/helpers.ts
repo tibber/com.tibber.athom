@@ -1,33 +1,44 @@
 import PairSession from "homey/lib/PairSession";
-import { Logger, TibberApi } from "./tibber";
+import { Home, Logger, TibberApi } from "./tibber";
 import _ from 'lodash';
+import { inspect } from "util";
 
-interface HomeFilterPredicate {
-    (home: any): boolean;
+export interface HomeFilterPredicate {
+    (home: Home): boolean;
+}
+
+export interface HomeDevice {
+    name: string;
+    data: Home & {
+        t: string;
+    };
 }
 
 export const createListDeviceHandler = (
     log: Logger,
     tibber: TibberApi,
     filterPredicate: HomeFilterPredicate,
-    deviceNameFormatter: (address: string) => string
+    deviceNameFormatter: (address: string | undefined) => string
 ): PairSession.Handler =>
-     async (data) => {
+     async (_data): Promise<HomeDevice[]> => {
         try {
-            const homes = await tibber.getHomes();
+            const { viewer: { homes }} = await tibber.getHomes();
 
-            // TODO: simplify
-            return _.reject(_.map(_.get(homes, 'viewer.homes'), home => {
-                if(!filterPredicate) return null;
+            const devices: HomeDevice[] = [];
+            for (const home of homes) {
+                if (!filterPredicate(home)) continue;
 
-                _.assign(home, { t: tibber.getDefaultToken() });
-                let address = _.get(home, 'address.address1');
-                return {
-                    data: home,
-                    name: deviceNameFormatter(address)
-                };
-            }), _.isNull)
-            .sort(sortByName);
+                let address = home.address?.address1;
+                devices.push({
+                    name: deviceNameFormatter(address),
+                    data: {
+                        ...home,
+                        t: tibber.getDefaultToken()
+                    },
+                });
+            }
+            devices.sort(sortByName);
+            return devices;
         }
         catch (err) {
             log('Error in list device handler called from `onPair`', err);

@@ -29,6 +29,6 @@ class HomeDriver extends Driver {
     }
 }
 
-const formatDeviceName = (address: string) => address;
+const formatDeviceName = (address: string | undefined) => `${address}`;
 
 module.exports = HomeDriver;

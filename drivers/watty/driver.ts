@@ -29,6 +29,6 @@ class WattyDriver extends Driver {
     }
 }
 
-const formatDeviceName = (address: string) => `Watty ${address}`;
+const formatDeviceName = (address: string | undefined) => `Watty ${address}`;
 
 module.exports = WattyDriver;
