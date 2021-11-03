@@ -5,7 +5,6 @@ import ApolloClient from 'apollo-client';
 import { GraphQLClient } from 'graphql-request';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { WebSocketLink } from 'apollo-link-ws';
-import newrelic from 'newrelic';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
 
@@ -66,12 +65,12 @@ export class TibberApi {
     async getHomes() {
         let client = this.#getClient();
         this.#log('Get homes');
-        return newrelic.startWebTransaction('Get homes', () => client.request(queries.getHomesQuery())
+        return client.request(queries.getHomesQuery())
             .then(data => data)
             .catch(e => {
                 console.error(`${new Date()} Error while fetching home data`, e);
                 throw e;
-            }));
+            });
     }
 
     async getPriceInfoCached() {
@@ -117,7 +116,7 @@ export class TibberApi {
     async #getPriceInfo(): Promise<PriceInfo[]> {
         let client = this.#getClient();
         this.#log('Get prices');
-        const data = await newrelic.startWebTransaction('Get prices', () => client.request(queries.getPriceQuery(this.#homeId!)))
+        const data = await client.request(queries.getPriceQuery(this.#homeId!))
             .catch((e: any) => {
                 console.error(`${new Date()} Error while fetching price data`, e);
                 throw e;
@@ -136,7 +135,7 @@ export class TibberApi {
     async getConsumptionData(daysToFetch: number, hoursToFetch: number) {
         let client = this.#getClient();
         this.#log(`Get consumption for ${daysToFetch} days ${hoursToFetch} hours`);
-        return newrelic.startWebTransaction('Get consumption', () => client.request(queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch)))
+        return client.request(queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch))
             .catch((e: any) => {
                 console.error(`${new Date()} Error while fetching consumption data`, e);
                 throw e;

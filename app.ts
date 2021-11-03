@@ -1,8 +1,6 @@
 import sourceMapSupport from 'source-map-support';
 sourceMapSupport.install();
 
-import 'newrelic';
-
 import { App } from 'homey';
 import _ from 'lodash';
 

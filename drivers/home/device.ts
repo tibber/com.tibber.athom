@@ -5,7 +5,6 @@ import http from 'http.min';
 import moment from 'moment-timezone';
 import { mapSeries } from 'bluebird';
 import { TibberApi, getRandomDelay, PriceInfo } from '../../lib/tibber';
-import newrelic from 'newrelic';
 
 // TODO: figure these out
 interface Consumption {
@@ -171,9 +170,7 @@ class HomeDevice extends Device {
             try
             {
                 const { lat, lon } = this.#location;
-                const forecast = await newrelic.startWebTransaction(
-                    'Get temperature',
-                    () => http.json(`https://api.darksky.net/forecast/${this.homey.env.DS_API_KEY}/${lat},${lon}?units=si`));
+                const forecast = await http.json(`https://api.darksky.net/forecast/${this.homey.env.DS_API_KEY}/${lat},${lon}?units=si`);
                 temperature = _.get(forecast, 'currently.temperature');
                 this.log(`Fetched temperature ${temperature}`);
             }
