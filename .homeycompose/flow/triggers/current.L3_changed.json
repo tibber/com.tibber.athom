@@ -1,20 +1,21 @@
 {
-    "id": "current.L2_changed",
+    "id": "current.L3_changed",
     "title": {
-        "en": "Current phase 2 changed"
+        "en": "Current phase 3 changed"
     },
     "tokens": [
         {
-            "name": "currentL2",
+            "name": "currentL3",
             "type": "number",
             "title": {
-                "en": "Current phase 2"
+                "en": "Current phase 3"
             }
         }
     ],
     "args": [
         {
             "type": "device",
+            "name": "device",
             "filter": "driver_id=pulse|watty"
         }
     ]
