@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 export const queries = {
-    getHomesQuery: () => `{
+  getHomesQuery: () => `{
       viewer {
         homes {
           id
@@ -23,7 +23,7 @@ export const queries = {
       }
     }`,
 
-    getPriceQuery: (homeId: string) => `{
+  getPriceQuery: (homeId: string) => `{
       viewer {
         home(id:"${homeId}") {
           currentSubscription {
@@ -56,7 +56,11 @@ export const queries = {
       }
     }`,
 
-    getConsumptionQuery: (homeId: string, daysToFetch: number, hoursToFetch: number) => `{
+  getConsumptionQuery: (
+    homeId: string,
+    daysToFetch: number,
+    hoursToFetch: number,
+  ) => `{
       viewer {
         home(id:"${homeId}") {
           daily: consumption(resolution: DAILY, last: ${daysToFetch}) {
@@ -83,7 +87,7 @@ export const queries = {
       }
     }`,
 
-    getPushMessage: (title: string, message: string) => `mutation{
+  getPushMessage: (title: string, message: string) => `mutation{
       sendPushNotification(input: {
         title: "${title}",
           message: "${message}",
@@ -94,7 +98,7 @@ export const queries = {
       }
     }`,
 
-    getSubscriptionQuery: (homeId: string) => gql`subscription{
+  getSubscriptionQuery: (homeId: string) => gql`subscription{
       liveMeasurement(homeId:"${homeId}"){
         timestamp
         power
@@ -109,6 +113,5 @@ export const queries = {
         currentL2
         currentL3
       }
-    }`
-
+    }`,
 };

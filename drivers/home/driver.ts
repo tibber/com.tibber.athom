@@ -7,26 +7,32 @@ import { initiateOauth } from '../../lib/oauth';
 import { TibberApi } from '../../lib/tibber';
 
 class HomeDriver extends Driver {
-    #tibber!: TibberApi;
+  #tibber!: TibberApi;
 
-    async onInit() {
-        this.log('Tibber Home driver has been initialized');
-    }
+  async onInit() {
+    this.log('Tibber Home driver has been initialized');
+  }
 
-    async onPair(session: PairSession) {
-        this.#tibber = new TibberApi(this.log, this.homey.settings);
+  async onPair(session: PairSession) {
+    this.#tibber = new TibberApi(this.log, this.homey.settings);
 
-        session.setHandler(
-            'list_devices',
-            createListDeviceHandler(
-                this.log,
-                this.#tibber,
-                home => home?.currentSubscription?.status === 'running',
-                formatDeviceName));
+    session.setHandler(
+      'list_devices',
+      createListDeviceHandler(
+        this.log,
+        this.#tibber,
+        (home) => home?.currentSubscription?.status === 'running',
+        formatDeviceName,
+      ),
+    );
 
-        // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
-        await initiateOauth(this.homey, session as unknown as EventEmitter, this.#tibber);
-    }
+    // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
+    await initiateOauth(
+      this.homey,
+      session as unknown as EventEmitter,
+      this.#tibber,
+    );
+  }
 }
 
 const formatDeviceName = (address: string | undefined) => `${address}`;

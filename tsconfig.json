@@ -5,9 +5,14 @@
     "outDir": "build/",
     "sourceMap": true,
     "removeComments": true,
-    "typeRoots": [
-      "./@types",
-      "./node_modules/@types"
-    ]
-  }
+    "typeRoots": ["./@types", "./node_modules/@types"]
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.js",
+    "/**/*.json",
+    "./.eslintrc.js",
+    "package.json"
+  ],
+  "exclude": ["./build", "./app.json", "./package-lock.json"]
 }
