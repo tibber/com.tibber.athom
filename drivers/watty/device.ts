@@ -262,13 +262,21 @@ class WattyDevice extends Device {
             .first()
             .find((a: { Name: string }) => a.Name === area);
 
-          if (areaCurrentPrice) {
+          if (areaCurrentPrice !== undefined) {
             const currentPrice =
-              Number(areaCurrentPrice.Value.replace(',', '.').trim()) / 1000;
+              Number(
+                areaCurrentPrice.Value.replace(',', '.')
+                  .replace(' ', '')
+                  .trim(),
+              ) / 1000;
+
             this.#cachedNordpoolPrice = {
               hour: now.hour(),
               price: currentPrice,
             };
+            this.log(
+              `Found price for ${now.format()} for area ${area} ${currentPrice}`,
+            );
           }
         }
 
