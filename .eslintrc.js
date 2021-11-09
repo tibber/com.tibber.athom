@@ -28,6 +28,7 @@ module.exports = {
     ],
 
     // import (part of airbnb) overrides ------------------
+    'import/no-import-module-exports': 'off',
     'import/prefer-default-export': 'off',
 
     // @typescript-eslint/recommended overrides -----------
@@ -38,5 +39,6 @@ module.exports = {
       'error',
       { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
     ],
+    '@typescript-eslint/no-floating-promises': 'error',
   },
 };

@@ -280,7 +280,9 @@ class HomeDevice extends Device {
         );
 
         this.log('Triggering temperature_changed', temperature);
-        this.#temperatureChangedTrigger.trigger(this, temperature);
+        this.#temperatureChangedTrigger
+          .trigger(this, temperature)
+          .catch(console.error);
 
         const temperatureLogger = await this.#createGetLog(
           `${this.#insightId}_temperature`,
@@ -316,7 +318,7 @@ class HomeDevice extends Device {
       const priceInfoNextHours = await this.#tibber.getPriceInfoCached(
         this.homey.setTimeout,
       );
-      this.onPriceData(priceInfoNextHours);
+      this.onPriceData(priceInfoNextHours).catch(() => {});
 
       // Fetch and update temperature
       await this.getTemperature();
@@ -438,7 +440,9 @@ class HomeDevice extends Device {
           console.error,
         );
 
-        this.#priceChangedTrigger.trigger(this, priceInfoCurrent);
+        this.#priceChangedTrigger
+          .trigger(this, priceInfoCurrent)
+          .catch(console.error);
         this.log('Triggering price_changed', priceInfoCurrent);
 
         const priceLogger = await this.#createGetLog(
@@ -580,22 +584,25 @@ class HomeDevice extends Device {
       });
 
       if (consumptionsSinceLastReport.length > 0) {
-        this.#consumptionReportTrigger.trigger(this, {
-          consumption: +_.sumBy(
-            consumptionsSinceLastReport,
-            'consumption',
-          ).toFixed(2),
-          totalCost: +_.sumBy(consumptionsSinceLastReport, 'totalCost').toFixed(
-            2,
-          ),
-          unitCost: +_.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(
-            2,
-          ),
-          unitPrice: +_.meanBy(
-            consumptionsSinceLastReport,
-            'unitPrice',
-          ).toFixed(2),
-        });
+        this.#consumptionReportTrigger
+          .trigger(this, {
+            consumption: +_.sumBy(
+              consumptionsSinceLastReport,
+              'consumption',
+            ).toFixed(2),
+            totalCost: +_.sumBy(
+              consumptionsSinceLastReport,
+              'totalCost',
+            ).toFixed(2),
+            unitCost: +_.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(
+              2,
+            ),
+            unitPrice: +_.meanBy(
+              consumptionsSinceLastReport,
+              'unitPrice',
+            ).toFixed(2),
+          })
+          .catch(console.error);
       }
     } catch (e) {
       console.error('Error logging daily consumption', e);
