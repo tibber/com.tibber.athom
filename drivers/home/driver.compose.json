@@ -2,6 +2,8 @@
   "name": {
     "en": "Home"
   },
+  "platforms": ["local", "cloud"],
+  "connectivity": ["cloud"],
   "mobile": {
     "components": [
       {
@@ -15,23 +17,15 @@
             "price_total": "/drivers/home/assets/dollar.svg"
           }
         },
-        "capabilities": [
-          "price_total"
-        ]
+        "capabilities": ["price_total"]
       },
       {
         "id": "sensor",
-        "capabilities": [
-          "measure_temperature"
-        ]
+        "capabilities": ["measure_temperature"]
       }
     ]
   },
-  "capabilities": [
-    "price_total",
-    "price_level",
-    "measure_temperature"
-  ],
+  "capabilities": ["price_total", "price_level", "measure_temperature"],
   "capabilitiesOptions": {
     "price_total": {
       "preventInsights": true
@@ -76,5 +70,6 @@
         "en": "Enable periodical fetch of Tibber consumption data to Homey Insights. Periodical fetch produces a lot of traffic towards Tibber API so enable only if needed."
       },
       "value": false
-    }]
+    }
+  ]
 }

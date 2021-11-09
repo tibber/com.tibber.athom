@@ -2,6 +2,7 @@
   "id": "com.tibber",
   "version": "1.5.0",
   "compatibility": ">=5.0.0",
+  "platforms": ["local", "cloud"],
   "sdk": 3,
   "author": {
     "name": "Tibber AS",
@@ -14,9 +15,7 @@
   "description": {
     "en": "Be in charge of your household energy"
   },
-  "category": [
-    "energy"
-  ],
+  "category": ["energy"],
   "permissions": [],
   "images": {
     "large": "/assets/images/large.png",

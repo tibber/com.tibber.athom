@@ -313,7 +313,9 @@ class HomeDevice extends Device {
       this.log(`Begin update`);
 
       // Fetch and update price triggers
-      const priceInfoNextHours = await this.#tibber.getPriceInfoCached();
+      const priceInfoNextHours = await this.#tibber.getPriceInfoCached(
+        this.homey.setTimeout,
+      );
       this.onPriceData(priceInfoNextHours);
 
       // Fetch and update temperature
@@ -363,7 +365,7 @@ class HomeDevice extends Device {
           this.log(
             `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
           );
-          setTimeout(async () => {
+          this.homey.setTimeout(async () => {
             const consumptionData = await this.#tibber.getConsumptionData(
               daysToFetch,
               hoursToFetch,

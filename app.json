@@ -3,6 +3,10 @@
   "id": "com.tibber",
   "version": "1.5.0",
   "compatibility": ">=5.0.0",
+  "platforms": [
+    "local",
+    "cloud"
+  ],
   "sdk": 3,
   "author": {
     "name": "Tibber AS",
@@ -49,6 +53,10 @@
             "name": "device",
             "filter": "driver_id=pulse|watty"
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -71,6 +79,10 @@
             "name": "device",
             "filter": "driver_id=pulse|watty"
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -93,6 +105,10 @@
             "name": "device",
             "filter": "driver_id=pulse|watty"
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -908,6 +924,13 @@
       "name": {
         "en": "Home"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {
@@ -990,6 +1013,13 @@
       "name": {
         "en": "Pulse"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {
@@ -1219,6 +1249,13 @@
       "name": {
         "en": "Watty"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {

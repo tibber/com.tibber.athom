@@ -145,7 +145,13 @@ export class TibberApi {
       });
   }
 
-  async getPriceInfoCached() {
+  async getPriceInfoCached(
+    homeySetTimeout: (
+      callback: (...args: unknown[]) => void,
+      ms: number,
+      ...args: unknown[]
+    ) => NodeJS.Timeout,
+  ) {
     // Cache empty. Fetch immediately
     if (!this.#priceInfoNextHours.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
@@ -181,7 +187,7 @@ export class TibberApi {
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00. Schedule re-fetch prices after ${delay} seconds.`,
       );
-      setTimeout(async () => {
+      homeySetTimeout(async () => {
         this.#priceInfoNextHours = await this.#getPriceInfo();
       }, delay * 1000);
 
