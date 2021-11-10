@@ -250,7 +250,7 @@ class HomeDevice extends Device {
       undefined,
     );
 
-    return (this.homey.app as AppInstance).cleanupLogs(this.#insightId);
+    return (this.homey.app as AppInstance)?.cleanupLogs(this.#insightId);
   }
 
   async getTemperature() {
