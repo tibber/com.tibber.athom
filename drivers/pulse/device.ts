@@ -7,7 +7,7 @@ import { LiveMeasurement, TibberApi } from '../../lib/tibber';
 
 class PulseDevice extends Device {
   #tibber!: TibberApi;
-  #deviceId!: string; // actually homeId?
+  #deviceId!: string;
   #throttle!: number;
   #currency?: string;
   #cachedNordpoolPrice: { hour: number; price: number } | null = null;
@@ -39,31 +39,26 @@ class PulseDevice extends Device {
 
     this.#powerChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('power_changed');
-    // this.#powerChangedTrigger.register();
 
     this.#consumptionChangedTrigger = this.homey.flow.getDeviceTriggerCard(
       'consumption_changed',
     );
-    // this.#consumptionChangedTrigger.register();
 
     this.#costChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('cost_changed');
-    // this.#costChangedTrigger.register();
 
     this.#currentL1ChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('current.L1_changed');
-    // this.#currentL1ChangedTrigger.register();
+
     this.#currentL2ChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('current.L2_changed');
-    // this.#currentL2ChangedTrigger.register();
+
     this.#currentL3ChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('current.L3_changed');
-    // this.#currentL3ChangedTrigger.register();
 
     this.#dailyConsumptionReportTrigger = this.homey.flow.getDeviceTriggerCard(
       'daily_consumption_report',
     );
-    // this.#dailyConsumptionReportTrigger.register();
 
     this.log(
       `Tibber pulse device ${this.getName()} has been initialized (throttle: ${
@@ -103,7 +98,6 @@ class PulseDevice extends Device {
       this.#area = newSettings.pulse_area;
       this.#cachedNordpoolPrice = null;
     }
-    // callback(null, true);
   }
 
   #subscribeToLive() {
@@ -129,14 +123,8 @@ class PulseDevice extends Device {
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
 
-    // const power = _.get(result, 'data.liveMeasurement.power');
     const power = result.data?.liveMeasurement?.power;
-    // this.log(`Received data.liveMeasurement.power`, power);
-
-    // const powerProduction = _.get(result, 'data.liveMeasurement.powerProduction');
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
-    // this.log(`Received data.liveMeasurement.powerProduction`, powerProduction);
-
     if (powerProduction) this.#prevPowerProduction = powerProduction;
 
     if (
@@ -159,7 +147,6 @@ class PulseDevice extends Device {
         .catch(console.error);
     }
 
-    // const currentL1 = _.get(result, 'data.liveMeasurement.currentL1');
     const currentL1 = result.data?.liveMeasurement?.currentL1;
     if (currentL1) {
       this.setCapabilityValue('measure_current.L1', currentL1).catch(
@@ -175,7 +162,6 @@ class PulseDevice extends Device {
         .catch(console.error);
     }
 
-    // const currentL2 = _.get(result, 'data.liveMeasurement.currentL2');
     const currentL2 = result.data?.liveMeasurement?.currentL2;
     if (currentL2) {
       this.setCapabilityValue('measure_current.L2', currentL2).catch(
@@ -191,7 +177,6 @@ class PulseDevice extends Device {
         .catch(console.error);
     }
 
-    // const currentL3 = _.get(result, 'data.liveMeasurement.currentL3');
     const currentL3 = result.data?.liveMeasurement?.currentL3;
     if (currentL3) {
       this.setCapabilityValue('measure_current.L3', currentL3).catch(
@@ -207,12 +192,11 @@ class PulseDevice extends Device {
         .catch(console.error);
     }
 
-    // const consumption = _.get(result, 'data.liveMeasurement.accumulatedConsumption');
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
     if (consumption && _.isNumber(consumption)) {
-      const fixedConsumtion = +consumption.toFixed(2);
-      if (fixedConsumtion !== this.#prevConsumption) {
-        if (fixedConsumtion < this.#prevConsumption!) {
+      const fixedConsumption = +consumption.toFixed(2);
+      if (fixedConsumption !== this.#prevConsumption) {
+        if (fixedConsumption < this.#prevConsumption!) {
           // Consumption has been reset
           this.log('Triggering daily consumption report');
           this.#dailyConsumptionReportTrigger
@@ -223,17 +207,16 @@ class PulseDevice extends Device {
             .catch(console.error);
         }
 
-        this.#prevConsumption = fixedConsumtion;
-        this.setCapabilityValue('meter_power', fixedConsumtion).catch(
+        this.#prevConsumption = fixedConsumption;
+        this.setCapabilityValue('meter_power', fixedConsumption).catch(
           console.error,
         );
         this.#consumptionChangedTrigger
-          .trigger(this, { consumption: fixedConsumtion })
+          .trigger(this, { consumption: fixedConsumption })
           .catch(console.error);
       }
     }
 
-    // let cost = _.get(result, 'data.liveMeasurement.accumulatedCost');
     let cost = result.data?.liveMeasurement?.accumulatedCost;
     if (!cost) {
       try {

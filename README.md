@@ -2,103 +2,265 @@
 
 Integration with Tibber, with Pulse support!
 
-&nbsp;
 ## Flow cards
 
 ### Device: *__Home__*
+
 #### Triggers
+
 - Price changed
 - Temperature changed
 - Current price is at today's lowest
 - Current price is at today's highest
-- Current price is at the lowest among the next [x] hours
-- Current price is at the highest among the next [x] hours
+- Current price is at its lowest among the next [x] hours
+- Current price is at its highest among the next [x] hours
 - Current price is [x] percent below today's average
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
 - Current price is [x] percent above average of the next [y] hours
-- Current price is one of todays lowest [x] prices
-- Current price is one of todays highest [x] prices
-- Consumption report (triggers when new data is available, normally once a week. Every hour if you have a Pulse device)
-&nbsp;
+- Current price is one of today's lowest [x] prices
+- Current price is one of today's highest [x] prices
+- Consumption report (triggers when new data is available, normally once a week. Every hour if you
+  have a Pulse device)
+  &nbsp;
+
 #### Conditions
+
 - Current price below/above
 - Outdoor temperature below/above
 - Current price is at today's lowest
 - Current price is at today's highest
-- Current price is at the lowest among the next [x] hours
-- Current price is at the highest among the next [x] hours
+- Current price is at its lowest among the next [x] hours
+- Current price is at its highest among the next [x] hours
 - Current price is [x] percent below today's average
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
 - Current price is [x] percent above average of the next [y] hours
-- Current price is one of todays lowest [x] prices
-- Current price is one of todays highest [x] prices
-&nbsp;
+- Current price is one of today's lowest [x] prices
+- Current price is one of today's highest [x] prices &nbsp;
+
 #### Actions
+
 - Send push notification (through Tibber app)
 
 &nbsp;
+
 ### Device: *__Pulse__*
+
 #### Triggers
+
 - Power changed
 - Consumption since midnight changed
 - Cost since midnight changed
 - Daily consumption report
 
 &nbsp;
+
 ### Release Notes
 
+#### 1.5.0
+
+- Support for Homey Bridge
+- Add trigger and condition for top/bottom X hours today
+- Fix parsing high prices.
+
+#### 1.4.13
+
+- Bug fix for price fetch scheduling
+
+#### 1.4.12
+
+- Update readme to include price level trigger
+
+#### 1.4.11
+
+- Add price level capability automatically
+
+#### 1.4.10
+
+- Change price level to an enumeration
+
+#### 1.4.9
+
+- Deactivate device if home can't be found anymore. Add price level indicator. Fix current triggers
+for L2 and L3.
+
+#### 1.4.8
+
+- Fix push notification flow
+
+#### 1.4.7
+
+- Fix crash related to Pulse/Watty trigger registration
+
+#### 1.4.6
+
+- Update readme
+
+#### 1.4.5
+
+- Set description and support URL
+
+#### 1.4.4
+
+- Update readme
+
+#### 1.4.3
+
+- New triggers for currents reported by Pulse and Watty
+
+#### 1.4.2
+
+- Bug fix for keeping track of last logged daily consumption
+
+#### 1.4.1
+
+- Bug fix for calculating amount of hours to be fetched for consumption report
+
+#### 1.4.0
+
+- Rewrite of Tibber API data access to reduce load at hour shift
+- Use a cache for day-ahead-prices for today and tomorrow
+- Home non-real time consumption report is now enabled with an advanced parameter (default to false)
+- Support for displaying real time current per phase for Pulse and Watty
+
+#### 1.3.11
+
+- Increase data fetch timeout. Fix data fetch retry logic.
+
+#### 1.3.10
+
+- New Dark Sky API key
+
+#### 1.3.9
+
+- Improved API request tracing
+
+#### 1.3.8
+
+- Improved query tracing
+
+#### 1.3.7
+
+- Increase GraphQL client timeout
+
+#### 1.3.6
+
+- Set timeout for GraphQl queries
+
+#### 1.3.5
+
+- Fix Tibber icon color dropped by homey cli
+
+#### 1.3.4
+
+- Avoid error in price triggers when last price is not populated
+
+#### 1.3.3
+
+- Logo and brand color
+
+#### 1.3.2
+
+- Tibber logo and brand color
+
+#### 1.3.1
+
+- Tibber logo and brand color
+
+#### 1.3.0
+
+- New Tibber logo
+
+#### 1.2.7
+
+- Allow production power being reported less frequently than power
+
+#### 1.2.6
+
+- Update measure_power even when it's 0 or same as previous
+
 #### 1.2.5
+
 - Support for retrieving production power from Pulse
+
 #### 1.2.4
+
 - Added a note about re-adding a Pulse/Watty device in case fetching data timeouts
+
 #### 1.2.3
+
 - Fixed fetching current temperature for home location
+
 #### 1.2.2
+
 - Bug fix for missing flowcard id
+
 #### 1.2.1
+
 - Correct Watty images
+
 #### 1.2.0
+
 - Support for pairing Watty and bug fixes
+
 #### 1.1.0
-- Support for Energy API - Pulse and Watty show up as a cumulative devices in the Homey energy section
+
+- Support for Energy API - Pulse and Watty show up as a cumulative devices in the Homey energy
+  section
+
 #### 1.0.12
-- Fixed app crashing on api timeout #14
-&nbsp;
+
+- Fixed app crashing on API timeout (#14)
+
 #### 1.0.10
+
 - Fixed weather forecast (#13)
-&nbsp;
+  &nbsp;
+
 #### 1.0.9
+
 - Fixed #12
-&nbsp;
+
 #### 1.0.8
-- Added 4 new trigger and 4 new condition cards for price at today's lowest/highest and above/below a set average
+
+- Added 4 new trigger and 4 new condition cards for price at today's lowest/highest and above/below
+  a set average
 - Added fallback code for re-initiating Pulse subscription if no data for 10 minutes
-&nbsp;
+
 #### 1.0.6
+
 - Added condition cards for lowest/highest price among the next [x] hours
-- Added cost calculation to Pulse for users without a (paying) subscription, based on nordpool prices. Note: Net spot prices/without any taxes, fees, etc.
+- Added cost calculation to Pulse for users without a (paying) subscription, based on nordpool
+  prices. Note: Net spot prices/without any taxes, fees, etc.
 - Minor fixes
-&nbsp;
+
 #### 1.0.4
+
 - Fixed flow triggers broken in 2.0
-&nbsp;
+
 #### 1.0.3
+
 - Registering capability value before triggering flow action (fixed issue #5)
-&nbsp;
+  &nbsp;
+
 #### 1.0.2
-- Added support for Pulse without a (paying) subscription (N.B. cost is not available without subscription so accumulated cost will never have any value and cost related triggers will never fire)
-&nbsp;
+
+- Added support for Pulse without a (paying) subscription (N.B. cost is not available without
+  subscription so accumulated cost will never have any value and cost related triggers will never
+  fire)
+
 #### 1.0.1
+
 - Added trigger cards for lowest/highest price among the next [x] hours
-&nbsp;
+
 #### 1.0.0
+
 - Initial public version
-&nbsp;
+
 #### 1.2.0
-- Bug fixes. Added Watty as a energy device.
+- Bug fixes. Added Watty as an energy device.
 
 
 ### Known Issues
-- Currently, the users Tibber subscription needs to be be confirmed or started to use the Tibber app.
+- Currently, the user's Tibber subscription needs to be confirmed or started to use the Tibber app.

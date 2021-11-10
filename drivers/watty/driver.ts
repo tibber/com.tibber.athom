@@ -26,10 +26,9 @@ class WattyDriver extends Driver {
       ),
     );
 
-    // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
     await initiateOauth(
       this.homey,
-      session as unknown as EventEmitter,
+      session as unknown as EventEmitter, // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
       this.#tibber,
     );
   }

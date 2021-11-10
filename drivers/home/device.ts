@@ -12,9 +12,6 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 
-// eslint-disable-next-line import/extensions
-import type { AppInstance } from '../../app';
-
 class HomeDevice extends Device {
   #tibber!: TibberApi;
   #deviceLabel!: string;
@@ -73,14 +70,14 @@ class HomeDevice extends Device {
     this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
-      this.homey.flow.getDeviceTriggerCard('price_changed'); // .registerRunListener(() => true);
+      this.homey.flow.getDeviceTriggerCard('price_changed');
 
     this.#temperatureChangedTrigger = this.homey.flow.getDeviceTriggerCard(
       'temperature_changed',
-    ); // .registerRunListener(() => true);
+    );
 
     this.#consumptionReportTrigger =
-      this.homey.flow.getDeviceTriggerCard('consumption_report'); // .registerRunListener(() => true);
+      this.homey.flow.getDeviceTriggerCard('consumption_report');
 
     this.#priceBelowAvgTrigger =
       this.homey.flow.getDeviceTriggerCard('price_below_avg');
@@ -123,12 +120,10 @@ class HomeDevice extends Device {
     this.#priceAtLowestTodayTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_at_lowest_today',
     );
-    // this._priceAtLowestTodayTrigger.register(); //Cannot use registerRunListener as the card have no arguments
 
     this.#priceAtHighestTodayTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_at_highest_today',
     );
-    // this._priceAtHighestTodayTrigger.register(); //Cannot use registerRunListener as the card have no arguments
 
     this.#priceAmongLowestTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_among_lowest_today',
@@ -251,7 +246,7 @@ class HomeDevice extends Device {
       undefined,
     );
 
-    return (this.homey.app as AppInstance)?.cleanupLogs(this.#insightId);
+    return this.homey.app?.cleanupLogs(this.#insightId);
   }
 
   async getTemperature() {
@@ -297,9 +292,7 @@ class HomeDevice extends Device {
             decimals: 1,
           },
         );
-        temperatureLogger
-          .createEntry(temperature /* , new Date() */)
-          .catch(console.error);
+        temperatureLogger.createEntry(temperature).catch(console.error);
       }
     } catch (e) {
       console.error(
@@ -319,16 +312,13 @@ class HomeDevice extends Device {
     try {
       this.log(`Begin update`);
 
-      // Fetch and update price triggers
       const priceInfoNextHours = await this.#tibber.getPriceInfoCached(
         this.homey.setTimeout,
       );
       this.onPriceData(priceInfoNextHours).catch(() => {});
 
-      // Fetch and update temperature
       await this.getTemperature();
 
-      // Fetch and update consumption report if enabled
       if (this.isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
         const now = moment();
@@ -458,11 +448,7 @@ class HomeDevice extends Device {
             decimals: 1,
           },
         );
-        priceLogger
-          .createEntry(
-            priceInfoCurrent.total /* , moment(priceInfoCurrent.startsAt).toDate() */,
-          )
-          .catch(console.error);
+        priceLogger.createEntry(priceInfoCurrent.total).catch(console.error);
 
         if (priceInfoNextHours === undefined) return;
 
@@ -567,9 +553,7 @@ class HomeDevice extends Device {
           );
 
           consumptionLogger
-            .createEntry(
-              dailyConsumption.consumption /* , moment(dailyConsumption.to).toDate() */,
-            )
+            .createEntry(dailyConsumption.consumption)
             .catch(console.error);
 
           const costLogger = await this.#createGetLog(
@@ -581,9 +565,7 @@ class HomeDevice extends Device {
             },
           );
           costLogger
-            .createEntry(
-              dailyConsumption.totalCost /* , moment(dailyConsumption.to).toDate() */,
-            )
+            .createEntry(dailyConsumption.totalCost)
             .catch(console.error);
         }
       });
@@ -637,9 +619,7 @@ class HomeDevice extends Device {
           );
 
           consumptionLogger
-            .createEntry(
-              hourlyConsumption.consumption /* , moment(hourlyConsumption.to).toDate() */,
-            )
+            .createEntry(hourlyConsumption.consumption)
             .catch(console.error);
 
           const costLogger = await this.#createGetLog(
@@ -651,9 +631,7 @@ class HomeDevice extends Device {
             },
           );
           costLogger
-            .createEntry(
-              hourlyConsumption.totalCost /* , moment(hourlyConsumption.to).toDate() */,
-            )
+            .createEntry(hourlyConsumption.totalCost)
             .catch(console.error);
         }
       });

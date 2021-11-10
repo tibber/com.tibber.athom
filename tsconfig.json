@@ -8,6 +8,7 @@
     "typeRoots": ["./@types", "./node_modules/@types"]
   },
   "include": [
+    "./globals.d.ts",
     "./**/*.ts",
     "./**/*.js",
     "/**/*.json",

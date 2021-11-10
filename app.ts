@@ -1,16 +1,10 @@
 import sourceMapSupport from 'source-map-support';
 import 'newrelic';
-
 import { App } from 'homey';
 
 sourceMapSupport.install();
 
-// to get some better typing elsewhere since there is no default export of TibberApp
-export type AppInstance = TibberApp & {
-  cleanupLogs(prefix: string): void;
-};
-
-class TibberApp extends App implements AppInstance {
+class TibberApp extends App {
   async onInit() {
     this.log('Tibber app is running...');
 

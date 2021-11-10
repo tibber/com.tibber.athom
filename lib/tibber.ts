@@ -36,7 +36,7 @@ export interface ConsumptionNode {
   from: string;
   to: string;
   consumption: number;
-  totalCost: number; // this is marked as deprecated
+  totalCost: number;
 }
 
 export interface ConsumptionData {
@@ -95,13 +95,11 @@ export const getRandomDelay = (min: number, max: number) =>
 export class TibberApi {
   #log: Logger;
   #homeySettings: ManagerSettings;
-  #priceInfoNextHours: PriceInfo[] = []; // it looks like this can either be an array of PriceInfo or just a value. double-check.
+  #priceInfoNextHours: PriceInfo[] = [];
   #homeId?: string;
   #token?: string;
   #client?: GraphQLClient;
 
-  // I really don't like that `homeId` and `token` are optional here,
-  // but the oauth flow during drivers `onPair()` currently need them to be
   constructor(
     log: Logger,
     homeySettings: ManagerSettings,

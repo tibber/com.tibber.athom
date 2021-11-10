@@ -4,16 +4,8 @@ import http from 'http.min';
 import { EventEmitter } from 'stream';
 import { TibberApi } from './tibber';
 
-// export interface Socket {
-//     // EventEmitter returns `boolean`, but no idea here
-//     emit: (eventName: string, ...args: any[]) => void;
-//     // EventEmitter returns `this`, but no idea here
-//     on: (eventName: string, listener: (...args: any[]) => void) => void;
-// };
-
 export const initiateOauth = async (
   { app, cloud }: { app: App; cloud: ManagerCloud },
-  // the PairSession interface is missing .emit() even though JS code examples call that
   session: EventEmitter,
   tibber: TibberApi,
 ) => {
@@ -25,7 +17,7 @@ export const initiateOauth = async (
   const apiBaseUrl = 'https://thewall.tibber.com';
   const apiAuthUrl = `${apiBaseUrl}/connect/authorize?state=${state}&scope=tibber_graph&response_type=code&client_id=${env.CLIENT_ID}&redirect_uri=${redirectUrl}`;
 
-  const myOAuth2Callback = await cloud.createOAuth2Callback(apiAuthUrl); //  new Homey.CloudOAuth2Callback(apiAuthUrl);
+  const myOAuth2Callback = await cloud.createOAuth2Callback(apiAuthUrl);
   myOAuth2Callback
     .on('url', (url) => {
       session.emit('url', url);
@@ -64,11 +56,7 @@ export const initiateOauth = async (
         session.emit('error', new Error(`Error fetching tokens`));
         app.error('api -> error fetching tokens:', err);
       }
-      // })
-      // .generate()
-      // .catch( err => {
-      //     console.error(err);
-      //     socket.emit('error', err);
+
       return undefined;
     });
 };

@@ -100,5 +100,8 @@
   },
   "1.4.13": {
     "en": "Bug fix for price fetch scheduling"
+  },
+  "1.5.0": {
+    "en": "Support for Homey Bridge. Add trigger and condition for top/bottom X hours today. Fix parsing high prices."
   }
 }

@@ -11,8 +11,8 @@ Triggers
 - Temperature changed
 - Current price is at today's lowest
 - Current price is at today's highest
-- Current price is at the lowest among the next [x] hours
-- Current price is at the highest among the next [x] hours
+- Current price is at its lowest among the next [x] hours
+- Current price is at its highest among the next [x] hours
 - Current price is [x] percent below today's average
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
@@ -31,8 +31,8 @@ Conditions
 - Outdoor temperature below/above
 - Current price is at today's lowest
 - Current price is at today's highest
-- Current price is at the lowest among the next [x] hours
-- Current price is at the highest among the next [x] hours
+- Current price is at its lowest among the next [x] hours
+- Current price is at its highest among the next [x] hours
 - Current price is [x] percent below today's average
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
