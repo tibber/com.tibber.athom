@@ -1,6 +1,7 @@
 import sourceMapSupport from 'source-map-support';
+import 'newrelic';
+
 import { App } from 'homey';
-import _ from 'lodash';
 
 sourceMapSupport.install();
 
@@ -19,8 +20,6 @@ class TibberApp extends App implements AppInstance {
       this.homey.settings.set('v', 2);
       this.cleanupLogs('*').catch(console.error);
     }
-
-    // this.homey.flow.getDeviceTriggerCard();
   }
 
   async cleanupLogs(prefix: string) {
@@ -29,7 +28,7 @@ class TibberApp extends App implements AppInstance {
 
     await Promise.all(
       logs
-        .filter(({ name }) => _.startsWith(name, prefix))
+        .filter(({ name }) => name.startsWith(prefix))
         .map((log) => {
           console.log('Deleting log', log.name);
           return this.homey.insights.deleteLog(log);

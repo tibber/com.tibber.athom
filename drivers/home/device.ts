@@ -2,6 +2,7 @@ import { env, Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import http from 'http.min';
 import moment from 'moment-timezone';
+import { startWebTransaction } from 'newrelic';
 import { mapSeries } from 'bluebird';
 import {
   TibberApi,
@@ -264,8 +265,10 @@ class HomeDevice extends Device {
       let temperature;
       try {
         const { lat, lon } = this.#location;
-        const forecast = await http.json(
-          `https://api.darksky.net/forecast/${env.DS_API_KEY}/${lat},${lon}?units=si`,
+        const forecast = await startWebTransaction('Get temperature', () =>
+          http.json(
+            `https://api.darksky.net/forecast/${env.DS_API_KEY}/${lat},${lon}?units=si`,
+          ),
         );
         temperature = _.get(forecast, 'currently.temperature');
         this.log(`Fetched temperature ${temperature}`);

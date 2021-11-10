@@ -1,6 +1,5 @@
 import { Driver } from 'homey';
 import PairSession from 'homey/lib/PairSession';
-import _ from 'lodash';
 import { EventEmitter } from 'stream';
 import { createListDeviceHandler } from '../../lib/helpers';
 import { initiateOauth } from '../../lib/oauth';

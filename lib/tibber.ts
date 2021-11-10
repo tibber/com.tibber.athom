@@ -6,6 +6,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { WebSocketLink } from 'apollo-link-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
+import { startWebTransaction } from 'newrelic';
 import { queries } from './queries';
 
 export interface Logger {
@@ -136,13 +137,15 @@ export class TibberApi {
   async getHomes(): Promise<Homes> {
     const client = this.#getClient();
     this.#log('Get homes');
-    return client
-      .request<Homes>(queries.getHomesQuery())
-      .then((data) => data)
-      .catch((e) => {
-        console.error(`${new Date()} Error while fetching home data`, e);
-        throw e;
-      });
+    return startWebTransaction('Get homes', () =>
+      client
+        .request<Homes>(queries.getHomesQuery())
+        .then((data) => data)
+        .catch((e) => {
+          console.error(`${new Date()} Error while fetching home data`, e);
+          throw e;
+        }),
+    );
   }
 
   async getPriceInfoCached(
@@ -203,12 +206,12 @@ export class TibberApi {
     const client = this.#getClient();
 
     this.#log('Get prices');
-    const data = await client
-      .request(queries.getPriceQuery(this.#homeId!))
-      .catch((e) => {
+    const data = await startWebTransaction('Get prices', () =>
+      client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
         console.error(`${new Date()} Error while fetching price data`, e);
         throw e;
-      });
+      }),
+    );
 
     const priceInfoToday = _.get(
       data,
@@ -231,29 +234,36 @@ export class TibberApi {
   ): Promise<ConsumptionData> {
     const client = this.#getClient();
     this.#log(`Get consumption for ${daysToFetch} days ${hoursToFetch} hours`);
-    return client
-      .request(
-        queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch),
-      )
-      .catch((e) => {
-        console.error(`${new Date()} Error while fetching consumption data`, e);
-        throw e;
-      });
+    return startWebTransaction('Get consumption', () =>
+      client
+        .request(
+          queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch),
+        )
+        .catch((e) => {
+          console.error(
+            `${new Date()} Error while fetching consumption data`,
+            e,
+          );
+          throw e;
+        }),
+    );
   }
 
   async sendPush(title: string, message: string) {
     this.#log('Send push notification');
     const client = this.#getClient();
     const push = queries.getPushMessage(title, message);
-    return client
-      .request(push)
-      .then((result) => {
-        console.log(`${new Date()} Push notification sent`, result);
-      })
-      .catch((e) => {
-        console.error(`${new Date()} Error sending push notification`, e);
-        throw e;
-      });
+    return startWebTransaction('Send push notification', () =>
+      client
+        .request(push)
+        .then((result) => {
+          console.log(`${new Date()} Push notification sent`, result);
+        })
+        .catch((e) => {
+          console.error(`${new Date()} Error sending push notification`, e);
+          throw e;
+        }),
+    );
   }
 
   subscribeToLive(callback: (result: LiveMeasurement) => Promise<void>) {

@@ -12,6 +12,7 @@
     "./**/*.js",
     "/**/*.json",
     "./.eslintrc.js",
+    "./newrelic.js",
     "package.json"
   ],
   "exclude": ["./build", "./app.json", "./package-lock.json"]
