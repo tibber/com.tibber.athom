@@ -794,8 +794,10 @@ class HomeDevice extends Device {
     try {
       return await this.homey.insights.getLog(name);
     } catch (e) {
-      console.error(`Could not find log ${name}. Creating new log.`, e);
-      return this.homey.insights.createLog(name, options);
+      console.info(
+        `Could not find log ${name} (error: ${e}). Creating new log.`,
+      );
+      return await this.homey.insights.createLog(name, options);
     }
   }
 }
