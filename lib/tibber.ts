@@ -6,7 +6,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { WebSocketLink } from 'apollo-link-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
-import { startWebTransaction } from 'newrelic';
+import newrelic from 'newrelic';
 import { queries } from './queries';
 
 export interface Logger {
@@ -137,7 +137,7 @@ export class TibberApi {
   async getHomes(): Promise<Homes> {
     const client = this.#getClient();
     this.#log('Get homes');
-    return startWebTransaction('Get homes', () =>
+    return newrelic.startWebTransaction('Get homes', () =>
       client
         .request<Homes>(queries.getHomesQuery())
         .then((data) => data)
@@ -206,7 +206,7 @@ export class TibberApi {
     const client = this.#getClient();
 
     this.#log('Get prices');
-    const data = await startWebTransaction('Get prices', () =>
+    const data = await newrelic.startWebTransaction('Get prices', () =>
       client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
         console.error(`${new Date()} Error while fetching price data`, e);
         throw e;
@@ -234,7 +234,7 @@ export class TibberApi {
   ): Promise<ConsumptionData> {
     const client = this.#getClient();
     this.#log(`Get consumption for ${daysToFetch} days ${hoursToFetch} hours`);
-    return startWebTransaction('Get consumption', () =>
+    return newrelic.startWebTransaction('Get consumption', () =>
       client
         .request(
           queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch),
@@ -253,7 +253,7 @@ export class TibberApi {
     this.#log('Send push notification');
     const client = this.#getClient();
     const push = queries.getPushMessage(title, message);
-    return startWebTransaction('Send push notification', () =>
+    return newrelic.startWebTransaction('Send push notification', () =>
       client
         .request(push)
         .then((result) => {
