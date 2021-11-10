@@ -54,7 +54,7 @@
     {
       "id": "price_below_avg",
       "title": {
-        "en": "Current price is below average..."
+        "en": "Current price is [x] percent below average of the next [y] hours"
       },
       "titleFormatted": {
         "en": "Current price is [[percentage]] percent below average of the next [[hours]] hours"
@@ -79,7 +79,7 @@
     {
       "id": "price_above_avg",
       "title": {
-        "en": "Current price is above average..."
+        "en": "Current price is [x] percent above average of the next [y] hours"
       },
       "titleFormatted": {
         "en": "Current price is [[percentage]] percent above average of the next [[hours]] hours"
@@ -104,7 +104,7 @@
     {
       "id": "price_below_avg_today",
       "title": {
-        "en": "Current price is below today's average..."
+        "en": "Current price is [x] percent below today's average"
       },
       "titleFormatted": {
         "en": "Current price is [[percentage]] percent below today's average"
@@ -122,7 +122,7 @@
     {
       "id": "price_above_avg_today",
       "title": {
-        "en": "Current price is above today's average..."
+        "en": "Current price is [x] percent above today's average"
       },
       "titleFormatted": {
         "en": "Current price is [[percentage]] percent above today's average"
@@ -140,7 +140,7 @@
     {
       "id": "price_at_lowest",
       "title": {
-        "en": "Current price is at its lowest..."
+        "en": "Current price is at its lowest among the next [x] hours"
       },
       "titleFormatted": {
         "en": "Current price is at its lowest among the next [[hours]] hours"
@@ -158,7 +158,7 @@
     {
       "id": "price_at_highest",
       "title": {
-        "en": "Current price is at its highest..."
+        "en": "Current price is at its highest among the next [y] hours"
       },
       "titleFormatted": {
         "en": "Current price is at its highest among the next [[hours]] hours"
@@ -188,7 +188,7 @@
     {
       "id": "price_among_lowest_today",
       "title": {
-        "en": "Current price is one of today's lowest..."
+        "en": "Current price is one of today's lowest [x] prices"
       },
       "titleFormatted": {
         "en": "Current price is one of today's lowest [[ranked_hours]] prices"
@@ -206,7 +206,7 @@
     {
       "id": "price_among_highest_today",
       "title": {
-        "en": "Current price is one of today's highest..."
+        "en": "Current price is one of today's highest [x] prices"
       },
       "titleFormatted": {
         "en": "Current price is one of today's highest [[ranked_hours]] prices"
@@ -284,7 +284,7 @@
     {
       "id": "cond_price_below_avg",
       "title": {
-        "en": "Current price !{{is|isn't}} below average..."
+        "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} [[percentage]] percent below average of the next [[hours]] hours"
@@ -309,7 +309,7 @@
     {
       "id": "cond_price_above_avg",
       "title": {
-        "en": "Current price !{{is|isn't}} above average..."
+        "en": "Current price !{{is|isn't}} [x] percent above average of the next [y] hours"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} [[percentage]] percent above average of the next [[hours]] hours"
@@ -334,7 +334,7 @@
     {
       "id": "cond_price_below_avg_today",
       "title": {
-        "en": "Current price !{{is|isn't}} below today's average"
+        "en": "Current price !{{is|isn't}} [x] percent below today's average"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} [[percentage]] percent below today's average"
@@ -352,7 +352,7 @@
     {
       "id": "cond_price_above_avg_today",
       "title": {
-        "en": "Current price !{{is|isn't}} above today's average"
+        "en": "Current price !{{is|isn't}} [x] percent above today's average"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} [[percentage]] percent above today's average"
@@ -370,7 +370,7 @@
     {
       "id": "cond_price_at_lowest",
       "title": {
-        "en": "Current price !{{is|isn't}} at its lowest..."
+        "en": "Current price !{{is|isn't}} at its lowest among the next [x] hours"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} at its lowest among the next [[hours]] hours"
@@ -388,7 +388,7 @@
     {
       "id": "cond_price_at_highest",
       "title": {
-        "en": "Current price !{{is|isn't}} at its highest..."
+        "en": "Current price !{{is|isn't}} at its highest among the next [x] hours"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} at its highest among the next [[hours]] hours"
@@ -418,7 +418,7 @@
     {
       "id": "cond_price_among_lowest_today",
       "title": {
-        "en": "Current price !{{is|isn't}} one of today's lowest..."
+        "en": "Current price !{{is|isn't}} one of today's lowest [x] prices"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_hours]] prices"
@@ -436,7 +436,7 @@
     {
       "id": "cond_price_among_highest_today",
       "title": {
-        "en": "Current price !{{is|isn't}} one of today's highest..."
+        "en": "Current price !{{is|isn't}} one of today's highest [x] prices"
       },
       "titleFormatted": {
         "en": "Current price !{{is|isn't}} one of today's highest [[ranked_hours]] prices"
