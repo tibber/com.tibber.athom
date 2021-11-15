@@ -155,28 +155,6 @@
         ]
       },
       {
-        "id": "temperature_changed",
-        "title": {
-          "en": "Temperature changed"
-        },
-        "tokens": [
-          {
-            "name": "temperature",
-            "type": "number",
-            "title": {
-              "en": "Temperature"
-            }
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=home"
-          }
-        ]
-      },
-      {
         "id": "price_below_avg",
         "title": {
           "en": "Current price is [x] percent below average of the next [y] hours"
@@ -645,29 +623,6 @@
         ]
       },
       {
-        "id": "temperature_below",
-        "title": {
-          "en": "Outdoor temperature !{{below|above}}"
-        },
-        "titleFormatted": {
-          "en": "Outdoor temperature is !{{below|above}} [[temperature]]"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=home"
-          },
-          {
-            "name": "temperature",
-            "type": "number",
-            "placeholder": {
-              "en": "temperature"
-            }
-          }
-        ]
-      },
-      {
         "id": "cond_price_below_avg",
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
@@ -947,29 +902,16 @@
             "capabilities": [
               "price_total"
             ]
-          },
-          {
-            "id": "sensor",
-            "capabilities": [
-              "measure_temperature"
-            ]
           }
         ]
       },
       "capabilities": [
         "price_total",
-        "price_level",
-        "measure_temperature"
+        "price_level"
       ],
       "capabilitiesOptions": {
         "price_total": {
           "preventInsights": true
-        },
-        "measure_temperature": {
-          "preventInsights": true,
-          "title": {
-            "en": "Outdoor"
-          }
         }
       },
       "class": "other",

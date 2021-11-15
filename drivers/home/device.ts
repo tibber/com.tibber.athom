@@ -1,8 +1,6 @@
-import { env, Device, FlowCard, FlowCardTriggerDevice } from 'homey';
+import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
-import http from 'http.min';
 import moment from 'moment-timezone';
-import newrelic from 'newrelic';
 import { mapSeries } from 'bluebird';
 import {
   TibberApi,
@@ -18,11 +16,8 @@ class HomeDevice extends Device {
   #insightId!: string;
   #priceInfoNextHours!: PriceInfo[];
   #lastPrice?: PriceInfo;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #lastTemperature?: any;
   #location!: { lat: number; lon: number };
   #priceChangedTrigger!: FlowCardTriggerDevice;
-  #temperatureChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
   #priceAboveAvgTrigger!: FlowCardTriggerDevice;
@@ -45,7 +40,6 @@ class HomeDevice extends Device {
   #currentPriceAtHighestTodayCondition!: FlowCard;
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
-  #outdoorTemperatureBelowCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
 
   async onInit() {
@@ -65,16 +59,11 @@ class HomeDevice extends Device {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
     this.#lastPrice = undefined;
-    this.#lastTemperature = undefined;
     const { latitude: lat, longitude: lon } = data.address;
     this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
-
-    this.#temperatureChangedTrigger = this.homey.flow.getDeviceTriggerCard(
-      'temperature_changed',
-    );
 
     this.#consumptionReportTrigger =
       this.homey.flow.getDeviceTriggerCard('consumption_report');
@@ -214,12 +203,6 @@ class HomeDevice extends Device {
       this.#priceMinMaxComparer(args, { lowest: false }),
     );
 
-    this.#outdoorTemperatureBelowCondition =
-      this.homey.flow.getConditionCard('temperature_below');
-    this.#outdoorTemperatureBelowCondition.registerRunListener(
-      (args) => args.temperature > this.#lastTemperature,
-    );
-
     this.#sendPushNotificationAction = this.homey.flow.getActionCard(
       'sendPushNotification',
     );
@@ -229,6 +212,18 @@ class HomeDevice extends Device {
 
     if (!this.hasCapability('price_level'))
       await this.addCapability('price_level');
+
+    if (this.hasCapability('measure_temperature')) {
+      await this.removeCapability('measure_temperature');
+      await this.homey.notifications
+        .createNotification({
+          excerpt:
+            'Please note that this version of the Tibber app deprecates the ' +
+            'temperature sensor from Tibber, please use a separate weather app ' +
+            'if you need temperature actions for your flows (there are plenty).',
+        })
+        .catch(console.error);
+    }
 
     this.log(`Tibber home device ${this.getName()} has been initialized`);
     return this.updateData();
@@ -249,61 +244,6 @@ class HomeDevice extends Device {
     return this.homey.app?.cleanupLogs(this.#insightId);
   }
 
-  async getTemperature() {
-    try {
-      this.log(
-        `Fetching temperature with api key ${env.DS_API_KEY} for coordinates ${
-          this.#location.lat
-        },${this.#location.lon}`,
-      );
-
-      let temperature;
-      try {
-        const { lat, lon } = this.#location;
-        const forecast = await newrelic.startWebTransaction(
-          'Get temperature',
-          () =>
-            http.json(
-              `https://api.darksky.net/forecast/${env.DS_API_KEY}/${lat},${lon}?units=si`,
-            ),
-        );
-        temperature = _.get(forecast, 'currently.temperature');
-        this.log(`Fetched temperature ${temperature}`);
-      } catch (error) {
-        this.log(`Error fetching temperature ${JSON.stringify(error)}`);
-      }
-
-      if (temperature && temperature !== this.#lastTemperature) {
-        this.#lastTemperature = temperature;
-        this.setCapabilityValue('measure_temperature', temperature).catch(
-          console.error,
-        );
-
-        this.log('Triggering temperature_changed', temperature);
-        this.#temperatureChangedTrigger
-          .trigger(this, temperature)
-          .catch(console.error);
-
-        const temperatureLogger = await this.#createGetLog(
-          `${this.#insightId}_temperature`,
-          {
-            title: `${this.getLoggerPrefix()}Outdoor temperature`,
-            type: 'number',
-            decimals: 1,
-          },
-        );
-        temperatureLogger.createEntry(temperature).catch(console.error);
-      }
-    } catch (e) {
-      console.error(
-        `Error fetching weather forecast (${this.#location.lat},${
-          this.#location.lon
-        })`,
-        e,
-      );
-    }
-  }
-
   isConsumptionReportEnabled() {
     return this.getSetting('enable_consumption_report') || false;
   }
@@ -316,8 +256,6 @@ class HomeDevice extends Device {
         this.homey.setTimeout,
       );
       this.onPriceData(priceInfoNextHours).catch(() => {});
-
-      await this.getTemperature();
 
       if (this.isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);

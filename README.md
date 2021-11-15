@@ -9,7 +9,6 @@ Integration with Tibber, with Pulse support!
 #### Triggers
 
 - Price changed
-- Temperature changed
 - Current price is at today's lowest
 - Current price is at today's highest
 - Current price is at its lowest among the next [x] hours
@@ -27,7 +26,6 @@ Integration with Tibber, with Pulse support!
 #### Conditions
 
 - Current price below/above
-- Outdoor temperature below/above
 - Current price is at today's lowest
 - Current price is at today's highest
 - Current price is at its lowest among the next [x] hours
@@ -62,6 +60,7 @@ Integration with Tibber, with Pulse support!
 
 - Support for Homey Bridge
 - Add trigger and condition for top/bottom X hours today
+- Outdoor temperature for Home removed
 - Fix parsing high prices.
 
 #### 1.4.13

@@ -1,14 +1,14 @@
 Integration with Tibber, with Pulse and Watty support.
 
-New: Pulse and Watty now supports displaying current for phase 1, 2 and 3. In order to show new values in Homey you will need to remove and re-add Pulse/Watty device.
-New: Home hourly and daily consumption report is now disabled by default. You can enable it in the Home device's advanced settings.
+New: Support for Homey Bridge
+New: Add trigger and condition for top/bottom X hours today
+New: Outdoor temperature capability for Home has been removed. Any flows that were using this need to be set up anew.
 
 Flow cards
 
 Device: Home
 Triggers
 - Price changed
-- Temperature changed
 - Current price is at today's lowest
 - Current price is at today's highest
 - Current price is at its lowest among the next [x] hours
@@ -28,7 +28,6 @@ Triggers
 
 Conditions
 - Current price below/above
-- Outdoor temperature below/above
 - Current price is at today's lowest
 - Current price is at today's highest
 - Current price is at its lowest among the next [x] hours

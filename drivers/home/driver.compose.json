@@ -18,23 +18,13 @@
           }
         },
         "capabilities": ["price_total"]
-      },
-      {
-        "id": "sensor",
-        "capabilities": ["measure_temperature"]
       }
     ]
   },
-  "capabilities": ["price_total", "price_level", "measure_temperature"],
+  "capabilities": ["price_total", "price_level"],
   "capabilitiesOptions": {
     "price_total": {
       "preventInsights": true
-    },
-    "measure_temperature": {
-      "preventInsights": true,
-      "title": {
-        "en": "Outdoor"
-      }
     }
   },
   "class": "other",

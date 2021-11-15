@@ -37,21 +37,6 @@
       ]
     },
     {
-      "id": "temperature_changed",
-      "title": {
-        "en": "Temperature changed"
-      },
-      "tokens": [
-        {
-          "name": "temperature",
-          "type": "number",
-          "title": {
-            "en": "Temperature"
-          }
-        }
-      ]
-    },
-    {
       "id": "price_below_avg",
       "title": {
         "en": "Current price is [x] percent below average of the next [y] hours"
@@ -259,24 +244,6 @@
           "type": "number",
           "placeholder": {
             "en": "price"
-          }
-        }
-      ]
-    },
-    {
-      "id": "temperature_below",
-      "title": {
-        "en": "Outdoor temperature !{{below|above}}"
-      },
-      "titleFormatted": {
-        "en": "Outdoor temperature is !{{below|above}} [[temperature]]"
-      },
-      "args": [
-        {
-          "name": "temperature",
-          "type": "number",
-          "placeholder": {
-            "en": "temperature"
           }
         }
       ]
