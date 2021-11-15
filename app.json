@@ -162,6 +162,7 @@
         "titleFormatted": {
           "en": "Current price is [[percentage]] percent below average of the next [[hours]] hours"
         },
+        "tokens": [],
         "args": [
           {
             "type": "device",
@@ -171,15 +172,21 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -192,6 +199,7 @@
         "titleFormatted": {
           "en": "Current price is [[percentage]] percent above average of the next [[hours]] hours"
         },
+        "tokens": [],
         "args": [
           {
             "type": "device",
@@ -201,15 +209,21 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "2"
             }
           }
         ]
@@ -231,8 +245,11 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
         ]
@@ -254,8 +271,11 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
         ]
@@ -277,8 +297,11 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -300,8 +323,11 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -349,8 +375,11 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -372,8 +401,11 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -616,8 +648,11 @@
           {
             "name": "price",
             "type": "number",
+            "title": {
+              "en": "Price"
+            },
             "placeholder": {
-              "en": "price"
+              "en": "0.2"
             }
           }
         ]
@@ -639,15 +674,21 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -669,15 +710,21 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -699,8 +746,11 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
         ]
@@ -722,8 +772,11 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
         ]
@@ -745,8 +798,11 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "20"
             }
           }
         ]
@@ -768,8 +824,11 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
         ]
@@ -817,8 +876,11 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "3"
             }
           }
         ]
@@ -840,8 +902,11 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "3"
             }
           }
         ]
@@ -864,11 +929,17 @@
           },
           {
             "name": "title",
-            "type": "text"
+            "type": "text",
+            "title": {
+              "en": "Title"
+            }
           },
           {
             "name": "message",
-            "type": "text"
+            "type": "text",
+            "title": {
+              "en": "Message"
+            }
           }
         ]
       }
