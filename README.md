@@ -98,3 +98,7 @@ Integration with Tibber, with Pulse support!
 &nbsp;
 #### 1.2.0
 - Bug fixes. Added Watty as a energy device.
+
+
+### Known Issues
+- Currently, the users Tibber subscription needs to be be confirmed or started to use the Tibber app.
