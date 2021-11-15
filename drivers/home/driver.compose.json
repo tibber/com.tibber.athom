@@ -14,16 +14,16 @@
         "id": "sensor",
         "options": {
           "icons": {
-            "price_total": "/drivers/home/assets/dollar.svg"
+            "measure_price_total": "/drivers/home/assets/dollar.svg"
           }
         },
-        "capabilities": ["price_total"]
+        "capabilities": ["measure_price_total"]
       }
     ]
   },
-  "capabilities": ["price_total", "price_level"],
+  "capabilities": ["measure_price_total", "price_level"],
   "capabilitiesOptions": {
-    "price_total": {
+    "measure_price_total": {
       "preventInsights": true
     }
   },

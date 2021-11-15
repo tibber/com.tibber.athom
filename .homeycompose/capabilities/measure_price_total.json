@@ -1,0 +1,12 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Current price"
+  },
+  "getable": true,
+  "setable": false,
+  "units": {
+    "en": "kr"
+  },
+  "icon": "/drivers/home/assets/dollar.svg"
+}

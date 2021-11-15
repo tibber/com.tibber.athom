@@ -213,6 +213,9 @@ class HomeDevice extends Device {
     if (!this.hasCapability('price_level'))
       await this.addCapability('price_level');
 
+    if (!this.hasCapability('measure_price_total'))
+      await this.addCapability('measure_price_total');
+
     if (this.hasCapability('measure_temperature')) {
       await this.removeCapability('measure_temperature');
       await this.homey.notifications
@@ -366,9 +369,10 @@ class HomeDevice extends Device {
       this.#priceInfoNextHours = priceInfoNextHours;
 
       if (priceInfoCurrent.total !== null) {
-        this.setCapabilityValue('price_total', priceInfoCurrent.total).catch(
-          console.error,
-        );
+        this.setCapabilityValue(
+          'measure_price_total',
+          priceInfoCurrent.total,
+        ).catch(console.error);
         this.setCapabilityValue('price_level', priceInfoCurrent.level).catch(
           console.error,
         );
