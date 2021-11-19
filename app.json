@@ -1571,7 +1571,8 @@
       "units": {
         "en": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/dollar.svg",
+      "uiComponent": null
     }
   }
 }

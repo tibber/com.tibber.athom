@@ -41,8 +41,13 @@ class HomeDevice extends Device {
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
+  #hasDeprecatedTotalPriceCapability = false;
 
   async onInit() {
+    // `price_total` was deprecated in favor of `measure_price_total` (so it could be used as a device indicator)
+    // we don't want to remove it completely and break users' flow cards using it
+    this.#hasDeprecatedTotalPriceCapability = this.hasCapability('price_total');
+
     const data = this.getData();
     const { id: homeId, t: token } = data;
 
@@ -373,6 +378,14 @@ class HomeDevice extends Device {
           'measure_price_total',
           priceInfoCurrent.total,
         ).catch(console.error);
+
+        // if the user has flow cards using the deprecated `price_total` capability, update that too, so we don't break existing cards
+        if (this.#hasDeprecatedTotalPriceCapability) {
+          this.setCapabilityValue('price_total', priceInfoCurrent.total).catch(
+            console.error,
+          );
+        }
+
         this.setCapabilityValue('price_level', priceInfoCurrent.level).catch(
           console.error,
         );
