@@ -103,5 +103,8 @@
   },
   "1.5.0": {
     "en": "Support for Homey Bridge. Add trigger and condition for top/bottom X hours today. Outdoor temperature for Home removed. Fix parsing high prices."
+  },
+  "1.5.1": {
+    "en": "Fix for showing both old and new price capabilities at the same time"
   }
 }

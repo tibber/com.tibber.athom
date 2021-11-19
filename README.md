@@ -56,6 +56,10 @@ Integration with Tibber, with Pulse support!
 
 ### Release Notes
 
+### 1.5.1
+
+- Fix for showing both old and new price capabilities at the same time
+
 #### 1.5.0
 
 - Support for Homey Bridge
