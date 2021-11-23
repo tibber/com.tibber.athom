@@ -1,0 +1,29 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Price level"
+  },
+  "getable": true,
+  "setable": false,
+  "values": [
+    {
+      "id": "LOW",
+      "title": {
+        "en": "Low"
+      }
+    },
+    {
+      "id": "NORMAL",
+      "title": {
+        "en": "Normal"
+      }
+    },
+    {
+      "id": "HIGH",
+      "title": {
+        "en": "High"
+      }
+    }
+  ],
+  "icon": "/drivers/home/assets/dollar.svg"
+}

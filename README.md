@@ -56,6 +56,10 @@ Integration with Tibber, with Pulse support!
 
 ### Release Notes
 
+### 1.5.2
+
+- Using updated price information from the Tibber API
+
 ### 1.5.1
 
 - Fix for showing both old and new price capabilities at the same time

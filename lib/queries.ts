@@ -27,28 +27,15 @@ export const queries = {
       viewer {
         home(id:"${homeId}") {
           currentSubscription {
-            status
-            priceInfo {
-              current {
-                total
-                energy
-                tax
-                startsAt
-                level
-              }
-              today {
-                total
-                energy
-                tax
-                startsAt
-                level
-              }
-              tomorrow {
-                total
-                energy
-                tax
-                startsAt
-                level
+            priceRating {
+              hourly {
+                entries {
+                  time
+                  total
+                  energy
+                  tax
+                  level
+                }
               }
             }
           }

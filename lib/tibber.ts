@@ -52,12 +52,26 @@ export interface ConsumptionData {
   };
 }
 
-export interface PriceInfo {
-  startsAt: string;
+export interface PriceRatingResponse {
+  viewer: {
+    home: {
+      currentSubscription: {
+        priceRating: {
+          hourly: {
+            entries: PriceRatingEntry[];
+          };
+        } | null;
+      } | null;
+    };
+  };
+}
+
+export interface PriceRatingEntry {
+  time: string;
   total: number;
   energy: number;
   tax: number;
-  level: 'VERY_CHEAP' | 'CHEAP' | 'NORMAL' | 'EXPENSIVE' | 'VERY_EXPENSIVE';
+  level: 'LOW' | 'NORMAL' | 'HIGH';
 }
 
 export interface Homes {
@@ -93,9 +107,9 @@ export const getRandomDelay = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min) + min);
 
 export class TibberApi {
-  #log: Logger;
+  readonly #log: Logger;
   #homeySettings: ManagerSettings;
-  #priceInfoNextHours: PriceInfo[] = [];
+  #priceInfoNextHours: PriceRatingEntry[] = [];
   #homeId?: string;
   #token?: string;
   #client?: GraphQLClient;
@@ -160,8 +174,8 @@ export class TibberApi {
       return this.#priceInfoNextHours;
     }
 
-    const last = _.last(this.#priceInfoNextHours) as PriceInfo;
-    const lastPriceInfoDay = moment(last.startsAt).startOf('day');
+    const last = _.last(this.#priceInfoNextHours) as PriceRatingEntry;
+    const lastPriceInfoDay = moment(last.time).startOf('day');
     this.#log(`last price info entry is for day ${lastPriceInfoDay.format()}`);
 
     const now = moment();
@@ -200,28 +214,21 @@ export class TibberApi {
     return this.#priceInfoNextHours;
   }
 
-  async #getPriceInfo(): Promise<PriceInfo[]> {
+  async #getPriceInfo(): Promise<PriceRatingEntry[]> {
     const client = this.#getClient();
 
     this.#log('Get prices');
-    const data = await newrelic.startWebTransaction('Get prices', () =>
-      client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
-        console.error(`${new Date()} Error while fetching price data`, e);
-        throw e;
-      }),
+    const data: PriceRatingResponse = await newrelic.startWebTransaction(
+      'Get prices',
+      () =>
+        client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
+          console.error(`${new Date()} Error while fetching price data`, e);
+          throw e;
+        }),
     );
 
-    const priceInfoToday = _.get(
-      data,
-      'viewer.home.currentSubscription.priceInfo.today',
-    );
-    const priceInfoTomorrow = _.get(
-      data,
-      'viewer.home.currentSubscription.priceInfo.tomorrow',
-    );
-    if (priceInfoToday && priceInfoTomorrow)
-      this.#priceInfoNextHours = priceInfoToday.concat(priceInfoTomorrow);
-    else if (priceInfoToday) this.#priceInfoNextHours = priceInfoToday;
+    this.#priceInfoNextHours =
+      data.viewer?.home?.currentSubscription?.priceRating?.hourly.entries ?? [];
 
     return this.#priceInfoNextHours;
   }

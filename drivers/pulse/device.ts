@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'apollo-client/util/Observable';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
+import { NordpoolPriceResult } from '../../lib/types';
 
 class PulseDevice extends Device {
   #tibber!: TibberApi;
@@ -141,7 +142,7 @@ class PulseDevice extends Device {
 
     if (measurePower !== this.#prevPower) {
       this.#prevPower = measurePower;
-      this.log(`Trigger power changed`, measurePower);
+      this.log(`Trigger power changed`, measurePower.toFixed(9));
       this.#powerChangedTrigger
         .trigger(this, { power: measurePower })
         .catch(console.error);
@@ -230,21 +231,23 @@ class PulseDevice extends Device {
           this.log(
             `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
           );
-          const priceResult = await http.json(
+          const priceResult: NordpoolPriceResult = await http.json(
             `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
               'DD-MM-YYYY',
             )}`,
           );
-          const areaCurrentPrice = _(_.get(priceResult, 'data.Rows'))
+          const filteredRows = (priceResult.data.Rows ?? [])
             .filter(
               (row) =>
                 !row.IsExtraRow &&
                 moment.tz(row.StartTime, 'Europe/Oslo').isBefore(now) &&
                 moment.tz(row.EndTime, 'Europe/Oslo').isAfter(now),
             )
-            .map((row) => row.Columns)
-            .first()
-            .find((a: { Name: string }) => a.Name === area);
+            .map((row) => row.Columns);
+
+          const areaCurrentPrice = filteredRows.length
+            ? filteredRows[0].find((a: { Name: string }) => a.Name === area)
+            : undefined;
 
           if (areaCurrentPrice !== undefined) {
             const currentPrice =
@@ -272,7 +275,7 @@ class PulseDevice extends Device {
     }
 
     if (cost && _.isNumber(cost)) {
-      const fixedCost = +cost.toFixed(2);
+      const fixedCost = Number(cost.toFixed(2));
       if (fixedCost === this.#prevCost) return;
 
       this.#prevCost = fixedCost;

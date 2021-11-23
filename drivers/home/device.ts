@@ -2,20 +2,27 @@ import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { mapSeries } from 'bluebird';
+import { ClientError } from 'graphql-request/dist/types';
 import {
   TibberApi,
   getRandomDelay,
-  PriceInfo,
+  PriceRatingEntry,
   ConsumptionData,
   ConsumptionNode,
 } from '../../lib/tibber';
+
+const priceLevelMap = {
+  LOW: 'CHEAP',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+};
 
 class HomeDevice extends Device {
   #tibber!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #priceInfoNextHours!: PriceInfo[];
-  #lastPrice?: PriceInfo;
+  #priceInfoNextHours!: PriceRatingEntry[];
+  #lastPrice?: PriceRatingEntry;
   #location!: { lat: number; lon: number };
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
@@ -42,11 +49,14 @@ class HomeDevice extends Device {
   #currentPriceAmongHighestTodayCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
   #hasDeprecatedTotalPriceCapability = false;
+  #hasDeprecatedPriceLevelCapability = false;
 
   async onInit() {
     // `price_total` was deprecated in favor of `measure_price_total` (so it could be used as a device indicator)
-    // we don't want to remove it completely and break users' flow cards using it
+    // and `price_level` was deprecated in favor of `measure_price_level` (because it went from 5 enum values to 3)
+    // we don't want to remove them completely and break users' flow cards using them
     this.#hasDeprecatedTotalPriceCapability = this.hasCapability('price_total');
+    this.#hasDeprecatedTotalPriceCapability = this.hasCapability('price_level');
 
     const data = this.getData();
     const { id: homeId, t: token } = data;
@@ -218,6 +228,9 @@ class HomeDevice extends Device {
     if (!this.hasCapability('price_level'))
       await this.addCapability('price_level');
 
+    if (!this.hasCapability('measure_price_level'))
+      await this.addCapability('measure_price_level');
+
     if (!this.hasCapability('measure_price_total'))
       await this.addCapability('measure_price_total');
 
@@ -327,7 +340,9 @@ class HomeDevice extends Device {
     } catch (e) {
       this.log('Error fetching data', e);
 
-      const errorCode = _.get(e, 'response.errors[0].extensions.code');
+      const errorCode = (e as ClientError).response?.errors?.[0]?.extensions
+        ?.code;
+
       this.log('Received error code', errorCode);
       if (errorCode === 'HOME_NOT_FOUND') {
         this.log(
@@ -354,10 +369,10 @@ class HomeDevice extends Device {
     return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
   }
 
-  async onPriceData(priceInfoNextHours: PriceInfo[]) {
+  async onPriceData(priceInfoNextHours: PriceRatingEntry[]) {
     const currentHour = moment().startOf('hour');
-    const priceInfoCurrent = _.find(priceInfoNextHours, (p) =>
-      currentHour.isSame(moment(p.startsAt)),
+    const priceInfoCurrent = priceInfoNextHours.find((p) =>
+      currentHour.isSame(moment(p.time)),
     );
     if (priceInfoCurrent === undefined) {
       this.log(
@@ -367,9 +382,7 @@ class HomeDevice extends Device {
       return;
     }
 
-    if (
-      _.get(priceInfoCurrent, 'startsAt') !== _.get(this.#lastPrice, 'startsAt')
-    ) {
+    if (priceInfoCurrent.time !== this.#lastPrice?.time) {
       this.#lastPrice = priceInfoCurrent;
       this.#priceInfoNextHours = priceInfoNextHours;
 
@@ -386,9 +399,17 @@ class HomeDevice extends Device {
           );
         }
 
-        this.setCapabilityValue('price_level', priceInfoCurrent.level).catch(
-          console.error,
-        );
+        this.setCapabilityValue(
+          'measure_price_level',
+          priceInfoCurrent.level,
+        ).catch(console.error);
+
+        // if the user has flow cards using the deprecated `price_level` capability, update that too, so we don't break existing cards
+        // this maps `LOW` to the old `CHEAP`, and `HIGH` to the old `EXPENSIVE`
+        if (this.#hasDeprecatedPriceLevelCapability) {
+          const level = priceLevelMap[priceInfoCurrent.level];
+          this.setCapabilityValue('price_level', level).catch(console.error);
+        }
 
         this.#priceChangedTrigger
           .trigger(this, priceInfoCurrent)
@@ -404,8 +425,6 @@ class HomeDevice extends Device {
           },
         );
         priceLogger.createEntry(priceInfoCurrent.total).catch(console.error);
-
-        if (priceInfoNextHours === undefined) return;
 
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
@@ -607,14 +626,14 @@ class HomeDevice extends Device {
       avgPriceNextHours = _(this.#priceInfoNextHours)
         .filter((p) =>
           hours > 0
-            ? moment(p.startsAt).isAfter(now)
-            : moment(p.startsAt).isBefore(now),
+            ? moment(p.time).isAfter(now)
+            : moment(p.time).isBefore(now),
         )
         .take(Math.abs(hours))
         .meanBy((x) => x.total);
     } else {
       avgPriceNextHours = _(this.#priceInfoNextHours)
-        .filter((p) => moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'))
+        .filter((p) => moment(p.time).add(30, 'minutes').isSame(now, 'day'))
         .meanBy((x) => x.total);
     }
 
@@ -655,15 +674,13 @@ class HomeDevice extends Device {
         ? _(this.#priceInfoNextHours)
             .filter((p) =>
               options.hours! > 0
-                ? moment(p.startsAt).isAfter(now)
-                : moment(p.startsAt).isBefore(now),
+                ? moment(p.time).isAfter(now)
+                : moment(p.time).isBefore(now),
             )
             .take(Math.abs(options.hours))
             .value()
         : _(this.#priceInfoNextHours)
-            .filter((p) =>
-              moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'),
-            )
+            .filter((p) => moment(p.time).add(30, 'minutes').isSame(now, 'day'))
             .value();
 
     if (!pricesNextHours.length) {
@@ -681,10 +698,10 @@ class HomeDevice extends Device {
     let conditionMet;
     if (options.ranked_hours !== undefined) {
       const sortedHours = _.sortBy(pricesNextHours, ['total']);
-      const currentHourRank = _.findIndex(pricesNextHours, [
-        'startsAt',
-        this.#lastPrice.startsAt,
-      ]);
+      const currentHourRank = _.findIndex(
+        pricesNextHours,
+        (p) => p.time === this.#lastPrice?.time,
+      );
       if (currentHourRank < 0) {
         this.log(`Could not find the current hour rank among today's hours`);
         return false;

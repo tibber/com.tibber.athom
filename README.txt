@@ -1,5 +1,6 @@
 Integration with Tibber, with Pulse and Watty support.
 
+New: Using updated price information from the Tibber API
 New: Support for Homey Bridge
 New: Add trigger and condition for top/bottom X hours today
 New: Outdoor temperature capability for Home has been removed. Any flows that were using this need to be set up anew.
@@ -19,12 +20,10 @@ Triggers
 - Current price is [x] percent above average of the next [y] hours
 - Consumption report (triggers when new data is available, normally once a week. Every hour if you have a Pulse device)
 - You can use price level to make smart decisions based on the electricity price. These are local to the current day and include:
-  VERY_EXPENSIVE
-  EXPENSIVE
+  HIGH
   NORMAL
-  CHEAP
-  VERY_CHEAP
-  Please note that these are relative bands where VERY_EXPENSIVE can apply for several individual hours or continuous time slots for example.
+  LOW
+  Please note that these are relative bands where HIGH can apply for several individual hours or continuous time slots for example.
 
 Conditions
 - Current price below/above

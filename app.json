@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local",
@@ -971,14 +971,15 @@
               }
             },
             "capabilities": [
-              "measure_price_total"
+              "measure_price_total",
+              "measure_price_level"
             ]
           }
         ]
       },
       "capabilities": [
         "measure_price_total",
-        "price_level"
+        "measure_price_level"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
@@ -1508,6 +1509,35 @@
       },
       "icon": "/drivers/pulse/assets/dollar.svg"
     },
+    "measure_price_level": {
+      "type": "enum",
+      "title": {
+        "en": "Price level"
+      },
+      "getable": true,
+      "setable": false,
+      "values": [
+        {
+          "id": "LOW",
+          "title": {
+            "en": "Low"
+          }
+        },
+        {
+          "id": "NORMAL",
+          "title": {
+            "en": "Normal"
+          }
+        },
+        {
+          "id": "HIGH",
+          "title": {
+            "en": "High"
+          }
+        }
+      ],
+      "icon": "/drivers/home/assets/dollar.svg"
+    },
     "measure_price_total": {
       "type": "number",
       "title": {
@@ -1559,7 +1589,8 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/dollar.svg",
+      "uiComponent": null
     },
     "price_total": {
       "type": "number",

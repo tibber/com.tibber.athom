@@ -106,5 +106,8 @@
   },
   "1.5.1": {
     "en": "Fix for showing both old and new price capabilities at the same time"
+  },
+  "1.5.2": {
+    "en": "Using updated price information from the Tibber API"
   }
 }

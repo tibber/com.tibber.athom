@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'apollo-client/util/Observable';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
+import { NordpoolPriceResult } from '../../lib/types';
 
 class WattyDevice extends Device {
   #tibber!: TibberApi;
@@ -194,7 +195,7 @@ class WattyDevice extends Device {
 
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
     if (consumption && _.isNumber(consumption)) {
-      const fixedConsumption = +consumption.toFixed(2);
+      const fixedConsumption = Number(consumption.toFixed(2));
       if (fixedConsumption !== this.#prevConsumption) {
         if (fixedConsumption < this.#prevConsumption) {
           // consumption has been reset
@@ -230,21 +231,27 @@ class WattyDevice extends Device {
           this.log(
             `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
           );
-          const priceResult = await http.json(
+          const priceResult: NordpoolPriceResult = await http.json(
             `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
               'DD-MM-YYYY',
             )}`,
           );
-          const areaCurrentPrice = _(_.get(priceResult, 'data.Rows'))
+          const filteredRows = (priceResult?.data.Rows ?? [])
             .filter(
-              (row) =>
+              (row: {
+                IsExtraRow: boolean;
+                StartTime: string;
+                EndTime: string;
+              }) =>
                 !row.IsExtraRow &&
                 moment.tz(row.StartTime, 'Europe/Oslo').isBefore(now) &&
                 moment.tz(row.EndTime, 'Europe/Oslo').isAfter(now),
             )
-            .map((row) => row.Columns)
-            .first()
-            .find((a: { Name: string }) => a.Name === area);
+            .map((row) => row.Columns);
+
+          const areaCurrentPrice = filteredRows.length
+            ? filteredRows[0].find((a: { Name: string }) => a.Name === area)
+            : undefined;
 
           if (areaCurrentPrice !== undefined) {
             const currentPrice =
@@ -273,7 +280,7 @@ class WattyDevice extends Device {
     }
 
     if (cost && _.isNumber(cost)) {
-      const fixedCost = +cost.toFixed(2);
+      const fixedCost = Number(cost.toFixed(2));
       if (fixedCost !== this.#prevCost) {
         this.#prevCost = fixedCost;
         this.setCapabilityValue('accumulatedCost', fixedCost).catch(
