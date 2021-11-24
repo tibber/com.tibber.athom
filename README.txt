@@ -1,9 +1,10 @@
 Integration with Tibber, with Pulse and Watty support.
 
-New: Using updated price information from the Tibber API
+Breaking change: Outdoor temperature capability for Home has been removed. Please use a separate weather app if you need temperature actions for your flows (there are plenty). Any flows that were using this need to be set up anew.
 New: Support for Homey Bridge
+New: Using updated price information from the Tibber API. Note that we now have three price levels instead of five (Low/Normal/High)
 New: Add trigger and condition for top/bottom X hours today
-New: Outdoor temperature capability for Home has been removed. Any flows that were using this need to be set up anew.
+New: Fix parsing high prices
 
 Flow cards
 

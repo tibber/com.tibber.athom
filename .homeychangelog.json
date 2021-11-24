@@ -109,5 +109,8 @@
   },
   "1.5.2": {
     "en": "Using updated price information from the Tibber API"
+  },
+  "1.5.3": {
+    "en": "Support Homey Bridge. Add trigger and condition for top/bottom X hours today. Outdoor temperature for Home removed. Using updated price information from the Tibber API. Fix parsing high prices."
   }
 }

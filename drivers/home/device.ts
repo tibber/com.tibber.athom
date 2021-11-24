@@ -239,9 +239,8 @@ class HomeDevice extends Device {
       await this.homey.notifications
         .createNotification({
           excerpt:
-            'Please note that this version of the Tibber app deprecates the ' +
-            'temperature sensor from Tibber, please use a separate weather app ' +
-            'if you need temperature actions for your flows (there are plenty).',
+            'Please note potential breaking changes with this version of the ' +
+            "Tibber app. Details available on the app's store page.",
         })
         .catch(console.error);
     }
