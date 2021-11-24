@@ -547,21 +547,18 @@ class HomeDevice extends Device {
       if (consumptionsSinceLastReport.length > 0) {
         this.#consumptionReportTrigger
           .trigger(this, {
-            consumption: +_.sumBy(
-              consumptionsSinceLastReport,
-              'consumption',
-            ).toFixed(2),
-            totalCost: +_.sumBy(
-              consumptionsSinceLastReport,
-              'totalCost',
-            ).toFixed(2),
-            unitCost: +_.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(
-              2,
+            consumption: Number(
+              _.sumBy(consumptionsSinceLastReport, 'consumption').toFixed(2),
             ),
-            unitPrice: +_.meanBy(
-              consumptionsSinceLastReport,
-              'unitPrice',
-            ).toFixed(2),
+            totalCost: Number(
+              _.sumBy(consumptionsSinceLastReport, 'totalCost').toFixed(2),
+            ),
+            unitCost: Number(
+              _.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(2),
+            ),
+            unitPrice: Number(
+              _.meanBy(consumptionsSinceLastReport, 'unitPrice').toFixed(2),
+            ),
           })
           .catch(console.error);
       }

@@ -195,7 +195,7 @@ class PulseDevice extends Device {
 
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
     if (consumption && _.isNumber(consumption)) {
-      const fixedConsumption = +consumption.toFixed(2);
+      const fixedConsumption = Number(consumption.toFixed(2));
       if (fixedConsumption !== this.#prevConsumption) {
         if (fixedConsumption < this.#prevConsumption!) {
           // Consumption has been reset
