@@ -1,49 +1,5 @@
-Integration with Tibber, with Pulse and Watty support.
+Integration with Tibber, with Pulse and Watty support
 
-Breaking change: Outdoor temperature capability for Home has been removed. Please use a separate weather app if you need temperature actions for your flows (there are plenty). Any flows that were using this need to be set up anew.
-New: Support for Homey Bridge
-New: Using updated price information from the Tibber API. Note that we now have three price levels instead of five (Low/Normal/High)
-New: Add trigger and condition for top/bottom X hours today
-New: Fix parsing high prices
+As a Tibber customer, automate your home based on the current electricity price.
 
-Flow cards
-
-Device: Home
-Triggers
-- Price changed
-- Current price is at today's lowest
-- Current price is at today's highest
-- Current price is at its lowest among the next [x] hours
-- Current price is at its highest among the next [x] hours
-- Current price is [x] percent below today's average
-- Current price is [x] percent above today's average
-- Current price is [x] percent below average of the next [y] hours
-- Current price is [x] percent above average of the next [y] hours
-- Consumption report (triggers when new data is available, normally once a week. Every hour if you have a Pulse device)
-- You can use price level to make smart decisions based on the electricity price. These are local to the current day and include:
-  HIGH
-  NORMAL
-  LOW
-  Please note that these are relative bands where HIGH can apply for several individual hours or continuous time slots for example.
-
-Conditions
-- Current price below/above
-- Current price is at today's lowest
-- Current price is at today's highest
-- Current price is at its lowest among the next [x] hours
-- Current price is at its highest among the next [x] hours
-- Current price is [x] percent below today's average
-- Current price is [x] percent above today's average
-- Current price is [x] percent below average of the next [y] hours
-- Current price is [x] percent above average of the next [y] hours
-
-Actions
-- Send push notification (through Tibber app)
-
-Device: Pulse and Watty
-Triggers
-- Power changed
-- Current for phase 1, 2 or 3 changed
-- Consumption since midnight changed
-- Cost since midnight changed
-- Daily consumption report
+If you also have a Pulse or Watty device, build automations based on your real time electricity consumption.

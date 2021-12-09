@@ -1,6 +1,6 @@
 # Tibber
 
-Integration with Tibber, with Pulse support!
+Integration with Tibber, with Pulse and Watty support.
 
 ## Flow cards
 
@@ -19,7 +19,7 @@ Integration with Tibber, with Pulse support!
 - Current price is [x] percent above average of the next [y] hours
 - Current price is one of today's lowest [x] prices
 - Current price is one of today's highest [x] prices
-- Consumption report (triggers when new data is available, normally once a week. Every hour if you
+- Consumption is reported (triggers when new data is available, normally once a week. Every hour if you
   have a Pulse device)
   &nbsp;
 
@@ -43,20 +43,20 @@ Integration with Tibber, with Pulse support!
 
 &nbsp;
 
-### Device: *__Pulse__*
+### Device: *__Pulse__* / *__Watty__*
 
 #### Triggers
 
 - Power changed
 - Consumption since midnight changed
 - Cost since midnight changed
-- Daily consumption report
+- Daily consumption is reported
 
 &nbsp;
 
 ### Release Notes
 
-### 1.5.3
+### 1.5.4
 
 - Breaking change: Outdoor temperature capability for Home has been removed. Please use a separate weather app if you need temperature actions for your flows (there are plenty). Any flows that were using this need to be set up anew.
 - Support for Homey Bridge
