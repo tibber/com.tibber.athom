@@ -2,8 +2,13 @@
   "name": {
     "en": "Home"
   },
-  "platforms": ["local", "cloud"],
-  "connectivity": ["cloud"],
+  "platforms": [
+    "local",
+    "cloud"
+  ],
+  "connectivity": [
+    "cloud"
+  ],
   "mobile": {
     "components": [
       {
@@ -17,11 +22,17 @@
             "measure_price_total": "/drivers/home/assets/dollar.svg"
           }
         },
-        "capabilities": ["measure_price_total", "measure_price_level"]
+        "capabilities": [
+          "measure_price_total",
+          "measure_price_level"
+        ]
       }
     ]
   },
-  "capabilities": ["measure_price_total", "measure_price_level"],
+  "capabilities": [
+    "measure_price_total",
+    "measure_price_level"
+  ],
   "capabilitiesOptions": {
     "measure_price_total": {
       "preventInsights": true

@@ -1,71 +1,87 @@
 {
-    "triggers": [
+  "triggers": [
+    {
+      "id": "consumption_changed",
+      "title": {
+        "en": "Consumption since midnight changed"
+      },
+      "tokens": [
         {
-            "id": "consumption_changed",
-            "title": {
-                "en": "Consumption since midnight changed"
-            },
-            "tokens": [
-                {
-                    "name": "consumption",
-                    "type": "number",
-                    "title": {
-                        "en": "Consumption"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "cost_changed",
-            "title": {
-                "en": "Cost since midnight changed"
-            },
-            "tokens": [
-                {
-                    "name": "cost",
-                    "type": "number",
-                    "title": {
-                        "en": "Cost"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "daily_consumption_report",
-            "title": {
-                "en": "Daily consumption is reported"
-            },
-            "tokens": [
-                {
-                    "name": "consumption",
-                    "type": "number",
-                    "title": {
-                        "en": "consumption"
-                    }
-                },
-                {
-                    "name": "cost",
-                    "type": "number",
-                    "title": {
-                        "en": "cost"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "power_changed",
-            "title": {
-                "en": "Power changed"
-            },
-            "tokens": [
-                {
-                    "name": "power",
-                    "type": "number",
-                    "title": {
-                        "en": "Power"
-                    }
-                }
-            ]
+          "name": "consumption",
+          "type": "number",
+          "title": {
+            "en": "Consumption"
+          }
         }
-   ]
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    },
+    {
+      "id": "cost_changed",
+      "title": {
+        "en": "Cost since midnight changed"
+      },
+      "tokens": [
+        {
+          "name": "cost",
+          "type": "number",
+          "title": {
+            "en": "Cost"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    },
+    {
+      "id": "daily_consumption_report",
+      "title": {
+        "en": "Daily consumption is reported"
+      },
+      "tokens": [
+        {
+          "name": "consumption",
+          "type": "number",
+          "title": {
+            "en": "consumption"
+          }
+        },
+        {
+          "name": "cost",
+          "type": "number",
+          "title": {
+            "en": "cost"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    },
+    {
+      "id": "power_changed",
+      "title": {
+        "en": "Power changed"
+      },
+      "tokens": [
+        {
+          "name": "power",
+          "type": "number",
+          "title": {
+            "en": "Power"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    }
+  ]
 }

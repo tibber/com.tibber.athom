@@ -1,6 +1,6 @@
 {
   "id": "com.tibber",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local",

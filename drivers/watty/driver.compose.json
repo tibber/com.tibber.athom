@@ -2,8 +2,13 @@
   "name": {
     "en": "Watty"
   },
-  "platforms": ["local", "cloud"],
-  "connectivity": ["cloud"],
+  "platforms": [
+    "local",
+    "cloud"
+  ],
+  "connectivity": [
+    "cloud"
+  ],
   "mobile": {
     "components": [
       {
@@ -12,7 +17,10 @@
       },
       {
         "id": "sensor",
-        "capabilities": ["measure_power", "meter_power"]
+        "capabilities": [
+          "measure_power",
+          "meter_power"
+        ]
       },
       {
         "id": "sensor",
@@ -21,7 +29,9 @@
             "accumulatedCost": "/drivers/pulse/assets/dollar.svg"
           }
         },
-        "capabilities": ["accumulatedCost"]
+        "capabilities": [
+          "accumulatedCost"
+        ]
       }
     ]
   },
