@@ -1,4 +1,4 @@
-'use strict'
+// eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-unresolved
 const Homey = require('homey');
 /**
  * New Relic agent configuration.
@@ -17,17 +17,15 @@ exports.config = {
   license_key: Homey.env.NEW_RELIC_LICENCE_KEY,
 
   logging: {
-    //enabled: false,
     enabled: false,
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
      * issues with the agent, 'info' and higher will impose the least overhead on
      * production applications.
      */
-    //level: 'info',
     level: 'info',
     filepath: 'stdout',
-    diagnostics: false
+    diagnostics: false,
   },
   agent_enabled: true,
 
@@ -38,7 +36,7 @@ exports.config = {
    */
   allow_all_headers: true,
   distributed_tracing: {
-    enabled: true
+    enabled: true,
   },
   attributes: {
     /**
@@ -59,8 +57,8 @@ exports.config = {
       'response.headers.authorization',
       'response.headers.proxyAuthorization',
       'response.headers.setCookie*',
-      'response.headers.x*'
-    ]
+      'response.headers.x*',
+    ],
   },
   // serverless_mode: { enabled: true },
   plugins: {
@@ -68,6 +66,6 @@ exports.config = {
      * Controls usage of the native metrics module which samples VM and event
      * loop data.
      */
-    native_metrics: { enabled: false }
-  }
-}
+    native_metrics: { enabled: false },
+  },
+};

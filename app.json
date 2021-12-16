@@ -1,13 +1,17 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.4.13",
-  "compatibility": ">=1.5.0",
+  "version": "1.5.5",
+  "compatibility": ">=5.0.0",
+  "platforms": [
+    "local",
+    "cloud"
+  ],
+  "sdk": 3,
   "author": {
     "name": "Tibber AS",
     "email": "hello@tibber.com"
   },
-  "sdk": 2,
   "brandColor": "#23B8CC",
   "name": {
     "en": "Tibber"
@@ -29,6 +33,84 @@
   "support": "mailto:hello@tibber.com",
   "flow": {
     "triggers": [
+      {
+        "id": "current.L1_changed",
+        "title": {
+          "en": "Current phase 1 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL1",
+            "type": "number",
+            "title": {
+              "en": "Current phase 1"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse|watty"
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
+        "id": "current.L2_changed",
+        "title": {
+          "en": "Current phase 2 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL2",
+            "type": "number",
+            "title": {
+              "en": "Current phase 2"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse|watty"
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
+        "id": "current.L3_changed",
+        "title": {
+          "en": "Current phase 3 changed"
+        },
+        "tokens": [
+          {
+            "name": "currentL3",
+            "type": "number",
+            "title": {
+              "en": "Current phase 3"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse|watty"
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
       {
         "id": "price_changed",
         "title": {
@@ -64,27 +146,9 @@
             }
           }
         ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=home"
-          }
-        ]
-      },
-      {
-        "id": "temperature_changed",
-        "title": {
-          "en": "Temperature changed"
-        },
-        "tokens": [
-          {
-            "name": "temperature",
-            "type": "number",
-            "title": {
-              "en": "Temperature"
-            }
-          }
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -99,6 +163,10 @@
         "title": {
           "en": "Current price is [x] percent below average of the next [y] hours"
         },
+        "titleFormatted": {
+          "en": "Current price is [[percentage]] percent below average of the next [[hours]] hours"
+        },
+        "tokens": [],
         "args": [
           {
             "type": "device",
@@ -108,17 +176,27 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -126,6 +204,10 @@
         "title": {
           "en": "Current price is [x] percent above average of the next [y] hours"
         },
+        "titleFormatted": {
+          "en": "Current price is [[percentage]] percent above average of the next [[hours]] hours"
+        },
+        "tokens": [],
         "args": [
           {
             "type": "device",
@@ -135,17 +217,27 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "2"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -153,6 +245,9 @@
         "title": {
           "en": "Current price is [x] percent below today's average"
         },
+        "titleFormatted": {
+          "en": "Current price is [[percentage]] percent below today's average"
+        },
         "args": [
           {
             "type": "device",
@@ -162,10 +257,17 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -173,6 +275,9 @@
         "title": {
           "en": "Current price is [x] percent above today's average"
         },
+        "titleFormatted": {
+          "en": "Current price is [[percentage]] percent above today's average"
+        },
         "args": [
           {
             "type": "device",
@@ -182,16 +287,26 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "price_at_lowest",
         "title": {
-          "en": "Current price is at the lowest among the next [x] hours"
+          "en": "Current price is at its lowest among the next [x] hours"
+        },
+        "titleFormatted": {
+          "en": "Current price is at its lowest among the next [[hours]] hours"
         },
         "args": [
           {
@@ -202,16 +317,26 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "price_at_highest",
         "title": {
-          "en": "Current price is at the highest among the next [x] hours"
+          "en": "Current price is at its highest among the next [y] hours"
+        },
+        "titleFormatted": {
+          "en": "Current price is at its highest among the next [[hours]] hours"
         },
         "args": [
           {
@@ -222,10 +347,17 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -233,6 +365,10 @@
         "title": {
           "en": "Current price is at today's lowest"
         },
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -246,6 +382,10 @@
         "title": {
           "en": "Current price is at today's highest"
         },
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -257,7 +397,10 @@
       {
         "id": "price_among_lowest_today",
         "title": {
-          "en": "Current price is one of todays lowest [x] prices"
+          "en": "Current price is one of today's lowest [x] prices"
+        },
+        "titleFormatted": {
+          "en": "Current price is one of today's lowest [[ranked_hours]] prices"
         },
         "args": [
           {
@@ -268,16 +411,26 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "price_among_highest_today",
         "title": {
-          "en": "Current price is one of todays highest [x] prices"
+          "en": "Current price is one of today's highest [x] prices"
+        },
+        "titleFormatted": {
+          "en": "Current price is one of today's highest [[ranked_hours]] prices"
         },
         "args": [
           {
@@ -288,16 +441,23 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "consumption_report",
         "title": {
-          "en": "Consumption report"
+          "en": "Consumption is reported"
         },
         "tokens": [
           {
@@ -314,6 +474,10 @@
               "en": "cost"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -337,6 +501,10 @@
             }
           }
         ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -359,6 +527,10 @@
             }
           }
         ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -370,7 +542,7 @@
       {
         "id": "daily_consumption_report",
         "title": {
-          "en": "Daily consumption report"
+          "en": "Daily consumption is reported"
         },
         "tokens": [
           {
@@ -387,6 +559,10 @@
               "en": "cost"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -410,71 +586,9 @@
             }
           }
         ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=pulse"
-          }
-        ]
-      },
-      {
-        "id": "current.L1_changed",
-        "title": {
-          "en": "Current phase 1 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL1",
-            "type": "number",
-            "title": {
-              "en": "Current phase 1"
-            }
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=pulse"
-          }
-        ]
-      },
-      {
-        "id": "current.L2_changed",
-        "title": {
-          "en": "Current phase 2 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL2",
-            "type": "number",
-            "title": {
-              "en": "Current phase 2"
-            }
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=pulse"
-          }
-        ]
-      },
-      {
-        "id": "current.L3_changed",
-        "title": {
-          "en": "Current phase 3 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL3",
-            "type": "number",
-            "title": {
-              "en": "Current phase 3"
-            }
-          }
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -498,6 +612,10 @@
             }
           }
         ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -520,6 +638,10 @@
             }
           }
         ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -531,7 +653,7 @@
       {
         "id": "watty_daily_consumption_report",
         "title": {
-          "en": "Daily consumption report"
+          "en": "Daily consumption is reported"
         },
         "tokens": [
           {
@@ -548,6 +670,10 @@
               "en": "cost"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -571,71 +697,9 @@
             }
           }
         ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=watty"
-          }
-        ]
-      },
-      {
-        "id": "current.L1_changed",
-        "title": {
-          "en": "Current phase 1 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL1",
-            "type": "number",
-            "title": {
-              "en": "Current phase 1"
-            }
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=watty"
-          }
-        ]
-      },
-      {
-        "id": "current.L2_changed",
-        "title": {
-          "en": "Current phase 2 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL2",
-            "type": "number",
-            "title": {
-              "en": "Current phase 2"
-            }
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=watty"
-          }
-        ]
-      },
-      {
-        "id": "current.L3_changed",
-        "title": {
-          "en": "Current phase 3 changed"
-        },
-        "tokens": [
-          {
-            "name": "currentL3",
-            "type": "number",
-            "title": {
-              "en": "Current phase 3"
-            }
-          }
+        "platforms": [
+          "local",
+          "cloud"
         ],
         "args": [
           {
@@ -652,6 +716,9 @@
         "title": {
           "en": "Current price !{{below|above}}"
         },
+        "titleFormatted": {
+          "en": "Current price is !{{below|above}} [[price]]"
+        },
         "args": [
           {
             "type": "device",
@@ -661,30 +728,17 @@
           {
             "name": "price",
             "type": "number",
+            "title": {
+              "en": "Price"
+            },
             "placeholder": {
-              "en": "price"
+              "en": "0.2"
             }
           }
-        ]
-      },
-      {
-        "id": "temperature_below",
-        "title": {
-          "en": "Outdoor temperature !{{below|above}}"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=home"
-          },
-          {
-            "name": "temperature",
-            "type": "number",
-            "placeholder": {
-              "en": "temperature"
-            }
-          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -692,6 +746,9 @@
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
         },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} [[percentage]] percent below average of the next [[hours]] hours"
+        },
         "args": [
           {
             "type": "device",
@@ -701,17 +758,27 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -719,6 +786,9 @@
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent above average of the next [y] hours"
         },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} [[percentage]] percent above average of the next [[hours]] hours"
+        },
         "args": [
           {
             "type": "device",
@@ -728,17 +798,27 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           },
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -746,6 +826,9 @@
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent below today's average"
         },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} [[percentage]] percent below today's average"
+        },
         "args": [
           {
             "type": "device",
@@ -755,10 +838,17 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -766,6 +856,9 @@
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent above today's average"
         },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} [[percentage]] percent above today's average"
+        },
         "args": [
           {
             "type": "device",
@@ -775,16 +868,26 @@
           {
             "name": "percentage",
             "type": "number",
+            "title": {
+              "en": "Percentage"
+            },
             "placeholder": {
-              "en": "percentage"
+              "en": "20"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "cond_price_at_lowest",
         "title": {
-          "en": "Current price !{{is|isn't}} at the lowest among the next [x] hours"
+          "en": "Current price !{{is|isn't}} at its lowest among the next [x] hours"
+        },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} at its lowest among the next [[hours]] hours"
         },
         "args": [
           {
@@ -795,16 +898,26 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "20"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "cond_price_at_highest",
         "title": {
-          "en": "Current price !{{is|isn't}} at the highest among the next [x] hours"
+          "en": "Current price !{{is|isn't}} at its highest among the next [x] hours"
+        },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} at its highest among the next [[hours]] hours"
         },
         "args": [
           {
@@ -815,10 +928,17 @@
           {
             "name": "hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "1"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
@@ -826,6 +946,10 @@
         "title": {
           "en": "Current price !{{is|isn't}} at today's lowest"
         },
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -839,6 +963,10 @@
         "title": {
           "en": "Current price !{{is|isn't}} at today's highest"
         },
+        "platforms": [
+          "local",
+          "cloud"
+        ],
         "args": [
           {
             "type": "device",
@@ -850,7 +978,10 @@
       {
         "id": "cond_price_among_lowest_today",
         "title": {
-          "en": "Current price !{{is|isn't}} one of todays lowest [x] prices"
+          "en": "Current price !{{is|isn't}} one of today's lowest [x] prices"
+        },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_hours]] prices"
         },
         "args": [
           {
@@ -861,16 +992,26 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "3"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       },
       {
         "id": "cond_price_among_highest_today",
         "title": {
-          "en": "Current price !{{is|isn't}} one of todays highest [x] prices"
+          "en": "Current price !{{is|isn't}} one of today's highest [x] prices"
+        },
+        "titleFormatted": {
+          "en": "Current price !{{is|isn't}} one of today's highest [[ranked_hours]] prices"
         },
         "args": [
           {
@@ -881,10 +1022,17 @@
           {
             "name": "ranked_hours",
             "type": "number",
+            "title": {
+              "en": "Hours"
+            },
             "placeholder": {
-              "en": "hours"
+              "en": "3"
             }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       }
     ],
@@ -894,6 +1042,9 @@
         "title": {
           "en": "Send Tibber push notification"
         },
+        "titleFormatted": {
+          "en": "Send Tibber push notification with [[title]] and [[message]]"
+        },
         "args": [
           {
             "type": "device",
@@ -902,12 +1053,22 @@
           },
           {
             "name": "title",
-            "type": "text"
+            "type": "text",
+            "title": {
+              "en": "Title"
+            }
           },
           {
             "name": "message",
-            "type": "text"
+            "type": "text",
+            "title": {
+              "en": "Message"
+            }
           }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
         ]
       }
     ]
@@ -917,6 +1078,13 @@
       "name": {
         "en": "Home"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {
@@ -927,35 +1095,23 @@
             "id": "sensor",
             "options": {
               "icons": {
-                "price_total": "/drivers/home/assets/dollar.svg"
+                "measure_price_total": "/drivers/home/assets/dollar.svg"
               }
             },
             "capabilities": [
-              "price_total"
-            ]
-          },
-          {
-            "id": "sensor",
-            "capabilities": [
-              "measure_temperature"
+              "measure_price_total",
+              "measure_price_level"
             ]
           }
         ]
       },
       "capabilities": [
-        "price_total",
-        "price_level",
-        "measure_temperature"
+        "measure_price_total",
+        "measure_price_level"
       ],
       "capabilitiesOptions": {
-        "price_total": {
+        "measure_price_total": {
           "preventInsights": true
-        },
-        "measure_temperature": {
-          "preventInsights": true,
-          "title": {
-            "en": "Outdoor"
-          }
         }
       },
       "class": "other",
@@ -999,6 +1155,13 @@
       "name": {
         "en": "Pulse"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {
@@ -1228,6 +1391,13 @@
       "name": {
         "en": "Watty"
       },
+      "platforms": [
+        "local",
+        "cloud"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
       "mobile": {
         "components": [
           {
@@ -1467,6 +1637,47 @@
       },
       "icon": "/drivers/pulse/assets/dollar.svg"
     },
+    "measure_price_level": {
+      "type": "enum",
+      "title": {
+        "en": "Price level"
+      },
+      "getable": true,
+      "setable": false,
+      "values": [
+        {
+          "id": "LOW",
+          "title": {
+            "en": "Low"
+          }
+        },
+        {
+          "id": "NORMAL",
+          "title": {
+            "en": "Normal"
+          }
+        },
+        {
+          "id": "HIGH",
+          "title": {
+            "en": "High"
+          }
+        }
+      ],
+      "icon": "/drivers/home/assets/dollar.svg"
+    },
+    "measure_price_total": {
+      "type": "number",
+      "title": {
+        "en": "Current price"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "kr"
+      },
+      "icon": "/drivers/home/assets/dollar.svg"
+    },
     "price_level": {
       "type": "enum",
       "title": {
@@ -1506,7 +1717,8 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/dollar.svg",
+      "uiComponent": null
     },
     "price_total": {
       "type": "number",
@@ -1518,7 +1730,8 @@
       "units": {
         "en": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/dollar.svg",
+      "uiComponent": null
     }
   }
 }

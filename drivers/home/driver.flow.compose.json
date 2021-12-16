@@ -34,21 +34,10 @@
             "en": "level"
           }
         }
-      ]
-    },
-    {
-      "id": "temperature_changed",
-      "title": {
-        "en": "Temperature changed"
-      },
-      "tokens": [
-        {
-          "name": "temperature",
-          "type": "number",
-          "title": {
-            "en": "Temperature"
-          }
-        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -56,21 +45,35 @@
       "title": {
         "en": "Current price is [x] percent below average of the next [y] hours"
       },
+      "titleFormatted": {
+        "en": "Current price is [[percentage]] percent below average of the next [[hours]] hours"
+      },
+      "tokens": [],
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         },
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -78,21 +81,35 @@
       "title": {
         "en": "Current price is [x] percent above average of the next [y] hours"
       },
+      "titleFormatted": {
+        "en": "Current price is [[percentage]] percent above average of the next [[hours]] hours"
+      },
+      "tokens": [],
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         },
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "2"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -100,14 +117,24 @@
       "title": {
         "en": "Current price is [x] percent below today's average"
       },
+      "titleFormatted": {
+        "en": "Current price is [[percentage]] percent below today's average"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -115,107 +142,171 @@
       "title": {
         "en": "Current price is [x] percent above today's average"
       },
+      "titleFormatted": {
+        "en": "Current price is [[percentage]] percent above today's average"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "price_at_lowest",
       "title": {
-        "en": "Current price is at the lowest among the next [x] hours"
+        "en": "Current price is at its lowest among the next [x] hours"
+      },
+      "titleFormatted": {
+        "en": "Current price is at its lowest among the next [[hours]] hours"
       },
       "args": [
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "price_at_highest",
       "title": {
-        "en": "Current price is at the highest among the next [x] hours"
+        "en": "Current price is at its highest among the next [y] hours"
+      },
+      "titleFormatted": {
+        "en": "Current price is at its highest among the next [[hours]] hours"
       },
       "args": [
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "price_at_lowest_today",
       "title": {
         "en": "Current price is at today's lowest"
-      }
+      },
+      "platforms": [
+        "local",
+        "cloud"
+      ]
     },
     {
       "id": "price_at_highest_today",
       "title": {
         "en": "Current price is at today's highest"
-      }
+      },
+      "platforms": [
+        "local",
+        "cloud"
+      ]
     },
     {
       "id": "price_among_lowest_today",
       "title": {
-        "en": "Current price is one of todays lowest [x] prices"
+        "en": "Current price is one of today's lowest [x] prices"
+      },
+      "titleFormatted": {
+        "en": "Current price is one of today's lowest [[ranked_hours]] prices"
       },
       "args": [
         {
           "name": "ranked_hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "price_among_highest_today",
       "title": {
-        "en": "Current price is one of todays highest [x] prices"
+        "en": "Current price is one of today's highest [x] prices"
+      },
+      "titleFormatted": {
+        "en": "Current price is one of today's highest [[ranked_hours]] prices"
       },
       "args": [
         {
           "name": "ranked_hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
-        "id": "consumption_report",
-        "title": {
-            "en": "Consumption report"
+      "id": "consumption_report",
+      "title": {
+        "en": "Consumption is reported"
+      },
+      "tokens": [
+        {
+          "name": "consumption",
+          "type": "number",
+          "title": {
+            "en": "consumption"
+          }
         },
-        "tokens": [{
-                "name": "consumption",
-                "type": "number",
-                "title": {
-                    "en": "consumption"
-                }
-            }, {
-                "name": "totalCost",
-                "type": "number",
-                "title": {
-                    "en": "cost"
-                }
-            }
-        ]
+        {
+          "name": "totalCost",
+          "type": "number",
+          "title": {
+            "en": "cost"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
     }
   ],
   "conditions": [
@@ -224,29 +315,24 @@
       "title": {
         "en": "Current price !{{below|above}}"
       },
+      "titleFormatted": {
+        "en": "Current price is !{{below|above}} [[price]]"
+      },
       "args": [
         {
           "name": "price",
           "type": "number",
+          "title": {
+            "en": "Price"
+          },
           "placeholder": {
-            "en": "price"
+            "en": "0.2"
           }
         }
-      ]
-    },
-    {
-      "id": "temperature_below",
-      "title": {
-        "en": "Outdoor temperature !{{below|above}}"
-      },
-      "args": [
-        {
-          "name": "temperature",
-          "type": "number",
-          "placeholder": {
-            "en": "temperature"
-          }
-        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -254,21 +340,34 @@
       "title": {
         "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
       },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} [[percentage]] percent below average of the next [[hours]] hours"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         },
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -276,21 +375,34 @@
       "title": {
         "en": "Current price !{{is|isn't}} [x] percent above average of the next [y] hours"
       },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} [[percentage]] percent above average of the next [[hours]] hours"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         },
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -298,14 +410,24 @@
       "title": {
         "en": "Current price !{{is|isn't}} [x] percent below today's average"
       },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} [[percentage]] percent below today's average"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
@@ -313,86 +435,144 @@
       "title": {
         "en": "Current price !{{is|isn't}} [x] percent above today's average"
       },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} [[percentage]] percent above today's average"
+      },
       "args": [
         {
           "name": "percentage",
           "type": "number",
+          "title": {
+            "en": "Percentage"
+          },
           "placeholder": {
-            "en": "percentage"
+            "en": "20"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "cond_price_at_lowest",
       "title": {
-        "en": "Current price !{{is|isn't}} at the lowest among the next [x] hours"
+        "en": "Current price !{{is|isn't}} at its lowest among the next [x] hours"
+      },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} at its lowest among the next [[hours]] hours"
       },
       "args": [
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "20"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "cond_price_at_highest",
       "title": {
-        "en": "Current price !{{is|isn't}} at the highest among the next [x] hours"
+        "en": "Current price !{{is|isn't}} at its highest among the next [x] hours"
+      },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} at its highest among the next [[hours]] hours"
       },
       "args": [
         {
           "name": "hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "1"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "cond_price_at_lowest_today",
       "title": {
         "en": "Current price !{{is|isn't}} at today's lowest"
-      }
+      },
+      "platforms": [
+        "local",
+        "cloud"
+      ]
     },
     {
       "id": "cond_price_at_highest_today",
       "title": {
         "en": "Current price !{{is|isn't}} at today's highest"
-      }
+      },
+      "platforms": [
+        "local",
+        "cloud"
+      ]
     },
     {
       "id": "cond_price_among_lowest_today",
       "title": {
-        "en": "Current price !{{is|isn't}} one of todays lowest [x] prices"
+        "en": "Current price !{{is|isn't}} one of today's lowest [x] prices"
+      },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_hours]] prices"
       },
       "args": [
         {
           "name": "ranked_hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "3"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     },
     {
       "id": "cond_price_among_highest_today",
       "title": {
-        "en": "Current price !{{is|isn't}} one of todays highest [x] prices"
+        "en": "Current price !{{is|isn't}} one of today's highest [x] prices"
+      },
+      "titleFormatted": {
+        "en": "Current price !{{is|isn't}} one of today's highest [[ranked_hours]] prices"
       },
       "args": [
         {
           "name": "ranked_hours",
           "type": "number",
+          "title": {
+            "en": "Hours"
+          },
           "placeholder": {
-            "en": "hours"
+            "en": "3"
           }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     }
   ],
@@ -402,15 +582,28 @@
       "title": {
         "en": "Send Tibber push notification"
       },
+      "titleFormatted": {
+        "en": "Send Tibber push notification with [[title]] and [[message]]"
+      },
       "args": [
         {
           "name": "title",
-          "type": "text"
+          "type": "text",
+          "title": {
+            "en": "Title"
+          }
         },
         {
           "name": "message",
-          "type": "text"
+          "type": "text",
+          "title": {
+            "en": "Message"
+          }
         }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
       ]
     }
   ]
