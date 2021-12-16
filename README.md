@@ -56,7 +56,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-### 1.5.5
+#### 1.5.5
 
 - Breaking change: Outdoor temperature capability for Home has been removed. Please use a separate weather app if you need temperature actions for your flows (there are plenty). Any flows that were using this need to be set up anew.
 - Support for Homey Bridge
@@ -257,9 +257,6 @@ for L2 and L3.
 #### 1.0.0
 
 - Initial public version
-
-#### 1.2.0
-- Bug fixes. Added Watty as an energy device.
 
 
 ### Known Issues
