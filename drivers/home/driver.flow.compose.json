@@ -32,6 +32,9 @@
           "type": "string",
           "title": {
             "en": "level"
+          },
+          "example": {
+            "en": "VERY_EXPENSIVE"
           }
         }
       ],

@@ -1,7 +1,7 @@
 {
   "type": "enum",
   "title": {
-    "en": "Price level (deprecated)"
+    "en": "Price level"
   },
   "getable": true,
   "setable": false,
@@ -37,6 +37,5 @@
       }
     }
   ],
-  "icon": "/drivers/home/assets/dollar.svg",
-  "uiComponent": null
+  "icon": "/drivers/home/assets/dollar.svg"
 }

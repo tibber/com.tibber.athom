@@ -24,14 +24,14 @@
         },
         "capabilities": [
           "measure_price_total",
-          "measure_price_level"
+          "measure_price_info_level"
         ]
       }
     ]
   },
   "capabilities": [
     "measure_price_total",
-    "measure_price_level"
+    "measure_price_info_level"
   ],
   "capabilitiesOptions": {
     "measure_price_total": {

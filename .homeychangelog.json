@@ -112,5 +112,9 @@
   },
   "1.5.5": {
     "en": "Support Homey Bridge. Add trigger and condition for top/bottom X hours today. Outdoor temperature for Home removed. Using updated price information from the Tibber API. Fix parsing high prices."
+  },
+  "1.5.8": {
+    "en": "Reverted to using 5 price levels. Fixed price sometimes failing to update. Show price device indicator with 2 decimals."
   }
+
 }

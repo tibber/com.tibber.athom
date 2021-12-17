@@ -56,22 +56,21 @@ export interface PriceRatingResponse {
   viewer: {
     home: {
       currentSubscription: {
-        priceRating: {
-          hourly: {
-            entries: PriceRatingEntry[];
-          };
+        priceInfo: {
+          today: PriceInfoEntry[];
+          tomorrow: PriceInfoEntry[];
         } | null;
       } | null;
     };
   };
 }
 
-export interface PriceRatingEntry {
-  time: string;
+export interface PriceInfoEntry {
+  startsAt: string;
   total: number;
   energy: number;
   tax: number;
-  level: 'LOW' | 'NORMAL' | 'HIGH';
+  level: 'VERY_CHEAP' | 'CHEAP' | 'NORMAL' | 'EXPENSIVE' | 'VERY_EXPENSIVE';
 }
 
 export interface Homes {
@@ -109,7 +108,7 @@ export const getRandomDelay = (min: number, max: number) =>
 export class TibberApi {
   readonly #log: Logger;
   #homeySettings: ManagerSettings;
-  #priceInfoNextHours: PriceRatingEntry[] = [];
+  #priceInfoNextHours: PriceInfoEntry[] = [];
   #homeId?: string;
   #token?: string;
   #client?: GraphQLClient;
@@ -166,7 +165,7 @@ export class TibberApi {
       ms: number,
       ...args: unknown[]
     ) => NodeJS.Timeout,
-  ) {
+  ): Promise<PriceInfoEntry[]> {
     // Cache empty. Fetch immediately
     if (!this.#priceInfoNextHours.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
@@ -174,8 +173,8 @@ export class TibberApi {
       return this.#priceInfoNextHours;
     }
 
-    const last = _.last(this.#priceInfoNextHours) as PriceRatingEntry;
-    const lastPriceInfoDay = moment(last.time).startOf('day');
+    const last = _.last(this.#priceInfoNextHours) as PriceInfoEntry;
+    const lastPriceInfoDay = moment(last.startsAt).startOf('day');
     this.#log(`last price info entry is for day ${lastPriceInfoDay.format()}`);
 
     const now = moment();
@@ -191,7 +190,7 @@ export class TibberApi {
       return this.#priceInfoNextHours;
     }
 
-    // Last cache entry is ok but there might be new prices available. Fetch after delay to avoid hitting the api at the same time
+    // Last cache entry is OK but there might be new prices available
     const expectedPricePublishTime = today.add(13, 'hours');
     this.#log(
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
@@ -209,12 +208,11 @@ export class TibberApi {
       return this.#priceInfoNextHours;
     }
 
-    // Last cache entry ok and no new prices available yet
     this.#log(`Last price info entry is up-to-date`);
     return this.#priceInfoNextHours;
   }
 
-  async #getPriceInfo(): Promise<PriceRatingEntry[]> {
+  async #getPriceInfo(): Promise<PriceInfoEntry[]> {
     const client = this.#getClient();
 
     this.#log('Get prices');
@@ -227,8 +225,12 @@ export class TibberApi {
         }),
     );
 
-    this.#priceInfoNextHours =
-      data.viewer?.home?.currentSubscription?.priceRating?.hourly.entries ?? [];
+    const pricesToday =
+      data.viewer?.home?.currentSubscription?.priceInfo?.today ?? [];
+    const pricesTomorrow =
+      data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
+
+    this.#priceInfoNextHours = [...pricesToday, ...pricesTomorrow];
 
     return this.#priceInfoNextHours;
   }
