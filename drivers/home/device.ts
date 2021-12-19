@@ -56,7 +56,7 @@ class HomeDevice extends Device {
     // and `price_level` was deprecated in favor of `measure_price_level` (because it went from 5 enum values to 3)
     // we don't want to remove them completely and break users' flow cards using them
     this.#hasDeprecatedTotalPriceCapability = this.hasCapability('price_total');
-    this.#hasDeprecatedTotalPriceCapability = this.hasCapability('price_level');
+    this.#hasDeprecatedPriceLevelCapability = this.hasCapability('price_level');
 
     const data = this.getData();
     const { id: homeId, t: token } = data;
