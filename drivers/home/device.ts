@@ -14,7 +14,7 @@ import {
 const priceLevelMap = {
   LOW: 'CHEAP',
   NORMAL: 'NORMAL',
-  HIGH: 'HIGH',
+  HIGH: 'EXPENSIVE',
 };
 
 class HomeDevice extends Device {
