@@ -273,7 +273,7 @@ class HomeDevice extends Device {
       this.log(`Begin update`);
 
       const priceInfoNextHours = await this.#tibber.getPriceInfoCached(
-        this.homey.setTimeout,
+          (callback, ms, args) => this.homey.setTimeout(callback, ms, args),
       );
       this.onPriceData(priceInfoNextHours).catch(() => {});
 
