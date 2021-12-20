@@ -56,11 +56,12 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-#### 1.5.8
+#### 1.5.10
 
 - Reverted to using 5 price levels
 - Fixed price sometimes failing to update
 - Show price device indicator with 2 decimals.
+- Safer handling of current updates and triggers
 
 #### 1.5.5
 
