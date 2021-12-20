@@ -56,6 +56,13 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.5.10
+
+- Reverted to using 5 price levels
+- Fixed price sometimes failing to update
+- Show price device indicator with 2 decimals.
+- Safer handling of current updates and triggers
+
 #### 1.5.5
 
 - Breaking change: Outdoor temperature capability for Home has been removed. Please use a separate weather app if you need temperature actions for your flows (there are plenty). Any flows that were using this need to be set up anew.
