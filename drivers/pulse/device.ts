@@ -149,7 +149,7 @@ class PulseDevice extends Device {
     }
 
     const currentL1 = result.data?.liveMeasurement?.currentL1;
-    if (currentL1) {
+    if (currentL1 !== undefined && currentL1 !== null) {
       this.setCapabilityValue('measure_current.L1', currentL1).catch(
         console.error,
       );
@@ -164,7 +164,7 @@ class PulseDevice extends Device {
     }
 
     const currentL2 = result.data?.liveMeasurement?.currentL2;
-    if (currentL2) {
+    if (currentL2 !== undefined && currentL2 !== null) {
       this.setCapabilityValue('measure_current.L2', currentL2).catch(
         console.error,
       );
@@ -179,7 +179,7 @@ class PulseDevice extends Device {
     }
 
     const currentL3 = result.data?.liveMeasurement?.currentL3;
-    if (currentL3) {
+    if (currentL3 !== undefined && currentL3 !== null) {
       this.setCapabilityValue('measure_current.L3', currentL3).catch(
         console.error,
       );
@@ -218,7 +218,7 @@ class PulseDevice extends Device {
     }
 
     let cost = result.data?.liveMeasurement?.accumulatedCost;
-    if (!cost) {
+    if (cost === undefined || cost === null) {
       try {
         const now = moment();
         if (
