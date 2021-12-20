@@ -153,14 +153,14 @@ class WattyDevice extends Device {
       this.setCapabilityValue('measure_current.L1', currentL1).catch(
         console.error,
       );
-    }
 
-    if (currentL1 !== this.#prevCurrentL1) {
-      this.#prevCurrentL1 = currentL1!;
-      this.log(`Trigger current L1 changed`, currentL1);
-      this.#currentL1ChangedTrigger
-        .trigger(this, { currentL1 })
-        .catch(console.error);
+      if (currentL1 !== this.#prevCurrentL1) {
+        this.#prevCurrentL1 = currentL1!;
+        this.log(`Trigger current L1 changed`, currentL1);
+        this.#currentL1ChangedTrigger
+          .trigger(this, { currentL1 })
+          .catch(console.error);
+      }
     }
 
     const currentL2 = result.data?.liveMeasurement?.currentL2;
@@ -168,14 +168,14 @@ class WattyDevice extends Device {
       this.setCapabilityValue('measure_current.L2', currentL2).catch(
         console.error,
       );
-    }
 
-    if (currentL2 !== this.#prevCurrentL2) {
-      this.#prevCurrentL2 = currentL2!;
-      this.log(`Trigger current L2 changed`, currentL2);
-      this.#currentL2ChangedTrigger
-        .trigger(this, { currentL2 })
-        .catch(console.error);
+      if (currentL2 !== this.#prevCurrentL2) {
+        this.#prevCurrentL2 = currentL2!;
+        this.log(`Trigger current L2 changed`, currentL2);
+        this.#currentL2ChangedTrigger
+          .trigger(this, { currentL2 })
+          .catch(console.error);
+      }
     }
 
     const currentL3 = result.data?.liveMeasurement?.currentL3;
@@ -183,14 +183,14 @@ class WattyDevice extends Device {
       this.setCapabilityValue('measure_current.L3', currentL3).catch(
         console.error,
       );
-    }
 
-    if (currentL3 !== this.#prevCurrentL3) {
-      this.#prevCurrentL3 = currentL3!;
-      this.log(`Trigger current L3 changed`, currentL3);
-      this.#currentL3ChangedTrigger
-        .trigger(this, { currentL3 })
-        .catch(console.error);
+      if (currentL3 !== this.#prevCurrentL3) {
+        this.#prevCurrentL3 = currentL3!;
+        this.log(`Trigger current L3 changed`, currentL3);
+        this.#currentL3ChangedTrigger
+          .trigger(this, { currentL3 })
+          .catch(console.error);
+      }
     }
 
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
