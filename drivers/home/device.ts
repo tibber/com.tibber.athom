@@ -404,39 +404,44 @@ class HomeDevice extends Device {
       this.#priceInfoNextHours = priceInfoNextHours;
 
       if (priceInfoCurrent.total !== null) {
-        this.setCapabilityValue(
-          'measure_price_total',
-          Number(priceInfoCurrent.total.toFixed(2)),
-        ).catch(console.error);
+        const setCapabilityPromises : Promise<void>[] = [];
+
+        setCapabilityPromises.push(this.setCapabilityValue(
+            'measure_price_total',
+            Number(priceInfoCurrent.total.toFixed(2)),
+        ).catch(console.error));
 
         // if the user has flow cards using the deprecated `price_total` capability, update that too, so we don't break existing cards
         if (this.#hasDeprecatedTotalPriceCapability) {
-          this.setCapabilityValue(
-            'price_total',
-            Number(priceInfoCurrent.total.toFixed(2)),
-          ).catch(console.error);
+          setCapabilityPromises.push(this.setCapabilityValue(
+              'price_total',
+              Number(priceInfoCurrent.total.toFixed(2)),
+          ).catch(console.error));
         }
 
-        this.setCapabilityValue(
-          'measure_price_info_level',
-          priceInfoCurrent.level,
-        ).catch(console.error);
+        setCapabilityPromises.push(this.setCapabilityValue(
+            'measure_price_info_level',
+            priceInfoCurrent.level,
+        ).catch(console.error));
 
         // if the user has flow cards using the deprecated `price_level` capability, update that too, so we don't break existing cards
         if (this.#hasDeprecatedPriceLevelCapability) {
-          this.setCapabilityValue('price_level', priceInfoCurrent.level).catch(
-            console.error,
-          );
+          setCapabilityPromises.push(this.setCapabilityValue('price_level', priceInfoCurrent.level).catch(
+              console.error,
+          ));
         }
 
         // if the user has flow cards using the deprecated `measure_price_level` capability, update that too, so we don't break existing cards
         // this maps `VERY_EXPENSIVE` and `EXPENSIVE` to the old `HIGH`, and `VERY_CHEAP` and `CHEAP` to the old `LOW`
         if (this.#hasDeprecatedMeasurePriceLevelCapability) {
           const level = deprecatedPriceLevelMap[priceInfoCurrent.level];
-          this.setCapabilityValue('measure_price_level', level).catch(
-            console.error,
-          );
+          setCapabilityPromises.push(this.setCapabilityValue('measure_price_level', level).catch(
+              console.error,
+          ));
         }
+
+        // Make sure we have set all the capabilities before we trigger
+        await Promise.all(setCapabilityPromises)
 
         this.#priceChangedTrigger
           .trigger(this, priceInfoCurrent)
