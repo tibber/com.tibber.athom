@@ -487,7 +487,7 @@ class HomeDevice extends Device {
           .catch(console.error);
 
         this.#priceAmongHighestTrigger
-          .trigger(this, undefined, { lowest: true })
+          .trigger(this, undefined, { lowest: false })
           .catch(console.error);
 
         if (this.#priceMinMaxComparer({}, { lowest: true })) {
@@ -730,7 +730,7 @@ class HomeDevice extends Device {
     if (options.ranked_hours !== undefined) {
       const sortedHours = _.sortBy(pricesNextHours, ['total']);
       const currentHourRank = _.findIndex(
-        pricesNextHours,
+          sortedHours,
         (p) => p.startsAt === this.#lastPrice?.startsAt,
       );
       if (currentHourRank < 0) {
