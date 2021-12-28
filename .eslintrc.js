@@ -40,5 +40,9 @@ module.exports = {
       { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
     ],
     '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      { checksVoidReturn: false },
+    ],
   },
 };

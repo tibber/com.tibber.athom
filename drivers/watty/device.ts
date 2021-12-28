@@ -231,7 +231,7 @@ class WattyDevice extends Device {
           this.log(
             `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
           );
-          const priceResult: NordpoolPriceResult = await http.json(
+          const priceResult = await http.json<NordpoolPriceResult>(
             `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
               'DD-MM-YYYY',
             )}`,

@@ -8,7 +8,7 @@ export const initiateOauth = async (
   { app, cloud }: { app: App; cloud: ManagerCloud },
   session: EventEmitter,
   tibber: TibberApi,
-) => {
+): Promise<void> => {
   const state = Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
