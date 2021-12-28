@@ -12,7 +12,7 @@ class HomeDriver extends Driver {
     this.log('Tibber Home driver has been initialized');
   }
 
-  async onPair(session: PairSession) {
+  onPair(session: PairSession) {
     this.#tibber = new TibberApi(this.log, this.homey.settings);
 
     session.setHandler(
@@ -25,11 +25,11 @@ class HomeDriver extends Driver {
       ),
     );
 
-    await initiateOauth(
+    initiateOauth(
       this.homey,
       session as unknown as EventEmitter, // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
       this.#tibber,
-    );
+    ).catch(console.error);
   }
 }
 

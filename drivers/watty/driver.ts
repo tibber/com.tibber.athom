@@ -1,6 +1,5 @@
 import { Driver } from 'homey';
 import PairSession from 'homey/lib/PairSession';
-import _ from 'lodash';
 import { EventEmitter } from 'stream';
 import { createListDeviceHandler } from '../../lib/helpers';
 import { initiateOauth } from '../../lib/oauth';
@@ -13,7 +12,7 @@ class WattyDriver extends Driver {
     this.log('Tibber Watty driver has been initialized');
   }
 
-  async onPair(session: PairSession) {
+  onPair(session: PairSession) {
     this.#tibber = new TibberApi(this.log, this.homey.settings);
 
     session.setHandler(
@@ -26,11 +25,11 @@ class WattyDriver extends Driver {
       ),
     );
 
-    await initiateOauth(
+    initiateOauth(
       this.homey,
       session as unknown as EventEmitter, // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
       this.#tibber,
-    );
+    ).catch(console.error);
   }
 }
 
