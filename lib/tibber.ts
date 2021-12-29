@@ -37,6 +37,8 @@ export interface ConsumptionNode {
   to: string;
   consumption: number;
   totalCost: number;
+  unitCost: number;
+  unitPrice: number;
 }
 
 export interface ConsumptionData {
