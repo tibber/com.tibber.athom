@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tibbercom/com.tibber.athom.git"
+    "url": "git+https://github.com/tibber/com.tibber.athom.git"
   },
   "author": "Tibber AS",
   "license": "ISC",
