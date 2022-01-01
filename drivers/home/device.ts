@@ -10,6 +10,7 @@ import {
   ConsumptionData,
   ConsumptionNode,
 } from '../../lib/tibber';
+import { startTransaction } from '../../lib/newrelic-transaction';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -229,7 +230,7 @@ class HomeDevice extends Device {
     this.#sendPushNotificationAction = this.homey.flow.getActionCard(
       'sendPushNotification',
     );
-    this.#sendPushNotificationAction.registerRunListener((args) =>
+    this.#sendPushNotificationAction.registerRunListener(async (args) =>
       this.#tibber.sendPush(args.title, args.message),
     );
 
@@ -283,9 +284,15 @@ class HomeDevice extends Device {
     try {
       this.log(`Begin update`);
 
-      const priceInfoNextHours = await this.#tibber.getPriceInfoCached(
-        (callback, ms, args) => this.homey.setTimeout(callback, ms, args),
+      const priceInfoNextHours = await startTransaction(
+        'GetPriceInfo',
+        'API',
+        () =>
+          this.#tibber.getPriceInfoCached((callback, ms, args) =>
+            this.homey.setTimeout(callback, ms, args),
+          ),
       );
+
       this.onPriceData(priceInfoNextHours).catch(() => {});
 
       if (this.isConsumptionReportEnabled()) {
@@ -319,10 +326,12 @@ class HomeDevice extends Device {
         );
 
         if (!lastLoggedDailyConsumption || !lastLoggedHourlyConsumption) {
-          const consumptionData = await this.#tibber.getConsumptionData(
-            daysToFetch,
-            hoursToFetch,
+          const consumptionData = await startTransaction(
+            'GetConsumption',
+            'API',
+            () => this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
           );
+
           await this.onConsumptionData(consumptionData);
         } else if (!hoursToFetch && !daysToFetch) {
           this.log(`Consumption data up to date. Skip fetch.`);
@@ -332,10 +341,12 @@ class HomeDevice extends Device {
             `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
           );
           this.homey.setTimeout(async () => {
-            const consumptionData = await this.#tibber.getConsumptionData(
-              daysToFetch,
-              hoursToFetch,
+            const consumptionData = await startTransaction(
+              'ScheduledGetConsumption',
+              'API',
+              () => this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
             );
+
             await this.onConsumptionData(consumptionData);
           }, delay * 1000);
         }
@@ -366,8 +377,6 @@ class HomeDevice extends Device {
           );
           return;
         }
-      } else {
-        this.log('General error occurred', e);
       }
 
       // Try again after a delay

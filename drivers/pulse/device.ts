@@ -5,6 +5,7 @@ import http from 'http.min';
 import { Subscription } from 'apollo-client/util/Observable';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
 import { NordpoolPriceResult } from '../../lib/types';
+import { startTransaction } from '../../lib/newrelic-transaction';
 
 class PulseDevice extends Device {
   #tibber!: TibberApi;
@@ -231,10 +232,15 @@ class PulseDevice extends Device {
           this.log(
             `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
           );
-          const priceResult = await http.json<NordpoolPriceResult>(
-            `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
-              'DD-MM-YYYY',
-            )}`,
+          const priceResult = await startTransaction(
+            'GetNordpoolPrices.Pulse',
+            'External',
+            () =>
+              http.json<NordpoolPriceResult>(
+                `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
+                  'DD-MM-YYYY',
+                )}`,
+              ),
           );
           const filteredRows = (priceResult.data.Rows ?? [])
             .filter(

@@ -2,6 +2,7 @@
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "outDir": "build/",
     "sourceMap": true,
     "removeComments": true,

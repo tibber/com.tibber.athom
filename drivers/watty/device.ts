@@ -5,6 +5,7 @@ import http from 'http.min';
 import { Subscription } from 'apollo-client/util/Observable';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
 import { NordpoolPriceResult } from '../../lib/types';
+import { startTransaction } from '../../lib/newrelic-transaction';
 
 class WattyDevice extends Device {
   #tibber!: TibberApi;
@@ -232,18 +233,19 @@ class WattyDevice extends Device {
           this.log(
             `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
           );
-          const priceResult = await http.json<NordpoolPriceResult>(
-            `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
-              'DD-MM-YYYY',
-            )}`,
+          const priceResult = await startTransaction(
+            'GetNordpoolPrices.Watty',
+            'External',
+            () =>
+              http.json<NordpoolPriceResult>(
+                `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
+                  'DD-MM-YYYY',
+                )}`,
+              ),
           );
           const filteredRows = (priceResult?.data.Rows ?? [])
             .filter(
-              (row: {
-                IsExtraRow: boolean;
-                StartTime: string;
-                EndTime: string;
-              }) =>
+              (row) =>
                 !row.IsExtraRow &&
                 moment.tz(row.StartTime, 'Europe/Oslo').isBefore(now) &&
                 moment.tz(row.EndTime, 'Europe/Oslo').isAfter(now),

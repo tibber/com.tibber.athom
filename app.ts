@@ -1,12 +1,23 @@
 import sourceMapSupport from 'source-map-support';
-import 'newrelic';
 import { App } from 'homey';
+import { Mutable } from 'type-fest';
+import { attributes } from './lib/newrelic-transaction';
+import * as appJson from './app.json';
 
 sourceMapSupport.install();
 
 class TibberApp extends App {
   async onInit() {
     this.log('Tibber app is running...');
+
+    const { version: firmwareVersion } = this.homey;
+    const { version: appVersion } = appJson;
+
+    this.log(`firmwareVersion: `, firmwareVersion);
+    this.log(`appVersion: `, appVersion);
+
+    (attributes.firmwareVersion as Mutable<string>) = firmwareVersion;
+    (attributes.appVersion as Mutable<string>) = appVersion;
 
     const v = this.homey.settings.get('v');
     if (v !== 2) {

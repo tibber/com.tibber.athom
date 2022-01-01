@@ -1,6 +1,7 @@
 import PairSession from 'homey/lib/PairSession';
-import _ from 'lodash';
+import { ClientError } from 'graphql-request/dist/types';
 import { Home, Logger, TibberApi } from './tibber';
+import { noticeError, startTransaction } from './newrelic-transaction';
 
 export interface HomeFilterPredicate {
   (home: Home): boolean;
@@ -24,7 +25,7 @@ export const createListDeviceHandler =
     try {
       const {
         viewer: { homes },
-      } = await tibber.getHomes();
+      } = await startTransaction('GetHomes', 'API', () => tibber.getHomes());
 
       const devices: HomeDevice[] = homes
         .filter(filterPredicate)
@@ -42,8 +43,11 @@ export const createListDeviceHandler =
       devices.sort(sortByName);
       return devices;
     } catch (err) {
+      noticeError(err as Error);
       log('Error in list device handler called from `onPair`', err);
-      throw new Error('Failed to retrieve data.');
+      const errorCode = (err as ClientError).response?.errors?.[0]?.extensions
+        ?.code;
+      throw new Error(`Failed to retrieve data: ${errorCode}`);
     }
   };
 

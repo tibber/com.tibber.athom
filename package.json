@@ -32,6 +32,7 @@
     "newrelic": "^8.5.2",
     "source-map-support": "^0.5.20",
     "subscriptions-transport-ws": "^0.9.18",
+    "type-fest": "^2.8.0",
     "ws": "^6.2.2"
   },
   "devDependencies": {

@@ -6,8 +6,12 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { WebSocketLink } from 'apollo-link-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
-import newrelic from 'newrelic';
 import { queries } from './queries';
+import {
+  noticeError,
+  startSegment,
+  startTransaction,
+} from './newrelic-transaction';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -149,12 +153,14 @@ export class TibberApi {
 
   async getHomes(): Promise<Homes> {
     const client = this.#getClient();
+
     this.#log('Get homes');
-    return newrelic.startWebTransaction('Get homes', () =>
+    return startSegment('GetHomes.Fetch', true, () =>
       client
         .request<Homes>(queries.getHomesQuery())
         .then((data) => data)
         .catch((e) => {
+          noticeError(e);
           console.error(`${new Date()} Error while fetching home data`, e);
           throw e;
         }),
@@ -168,10 +174,15 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<PriceInfoEntry[]> {
-    // Cache empty. Fetch immediately
     if (!this.#priceInfoNextHours.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
-      this.#priceInfoNextHours = await this.#getPriceInfo();
+
+      this.#priceInfoNextHours = await startSegment(
+        'GetPriceInfo.CacheEmpty',
+        true,
+        () => this.#getPriceInfo(),
+      );
+
       return this.#priceInfoNextHours;
     }
 
@@ -183,12 +194,16 @@ export class TibberApi {
     const today = moment().startOf('day');
     const tomorrow = moment().add(1, 'day').startOf('day');
 
-    // Last cache entry too old. Fetch immediately
     if (lastPriceInfoDay < tomorrow) {
       this.#log(
         `Last price info entry is before tomorrow. Re-fetch prices immediately.`,
       );
-      this.#priceInfoNextHours = await this.#getPriceInfo();
+      this.#priceInfoNextHours = await startSegment(
+        'GetPriceInfo.CacheTooOld',
+        true,
+        () => this.#getPriceInfo(),
+      );
+
       return this.#priceInfoNextHours;
     }
 
@@ -203,9 +218,15 @@ export class TibberApi {
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00. Schedule re-fetch prices after ${delay} seconds.`,
       );
-      homeySetTimeout(async () => {
-        this.#priceInfoNextHours = await this.#getPriceInfo();
-      }, delay * 1000);
+      startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
+        homeySetTimeout(async () => {
+          this.#priceInfoNextHours = await startTransaction(
+            'ScheduledGetPriceInfo',
+            'API',
+            () => this.#getPriceInfo(),
+          );
+        }, delay * 1000);
+      });
 
       return this.#priceInfoNextHours;
     }
@@ -218,10 +239,12 @@ export class TibberApi {
     const client = this.#getClient();
 
     this.#log('Get prices');
-    const data: PriceRatingResponse = await newrelic.startWebTransaction(
-      'Get prices',
+    const data: PriceRatingResponse = await startSegment(
+      'GetPriceInfo.Fetch',
+      true,
       () =>
         client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
+          noticeError(e);
           console.error(`${new Date()} Error while fetching price data`, e);
           throw e;
         }),
@@ -242,13 +265,15 @@ export class TibberApi {
     hoursToFetch: number,
   ): Promise<ConsumptionData> {
     const client = this.#getClient();
+
     this.#log(`Get consumption for ${daysToFetch} days ${hoursToFetch} hours`);
-    return newrelic.startWebTransaction('Get consumption', () =>
+    return startSegment('GetConsumption.Fetch', true, () =>
       client
         .request(
           queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch),
         )
         .catch((e) => {
+          noticeError(e);
           console.error(
             `${new Date()} Error while fetching consumption data`,
             e,
@@ -259,16 +284,18 @@ export class TibberApi {
   }
 
   async sendPush(title: string, message: string) {
-    this.#log('Send push notification');
     const client = this.#getClient();
+
+    this.#log('Send push notification');
     const push = queries.getPushMessage(title, message);
-    return newrelic.startWebTransaction('Send push notification', () =>
+    return startTransaction('SendPushNotification', 'API', () =>
       client
         .request(push)
         .then((result) => {
           console.log(`${new Date()} Push notification sent`, result);
         })
         .catch((e) => {
+          noticeError(e);
           console.error(`${new Date()} Error sending push notification`, e);
           throw e;
         }),

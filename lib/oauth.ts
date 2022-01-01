@@ -3,6 +3,7 @@ import ManagerCloud from 'homey/manager/cloud';
 import http from 'http.min';
 import { EventEmitter } from 'stream';
 import { TibberApi } from './tibber';
+import { noticeError, startTransaction } from './newrelic-transaction';
 
 export const initiateOauth = async (
   { app, cloud }: { app: App; cloud: ManagerCloud },
@@ -24,23 +25,26 @@ export const initiateOauth = async (
     })
     .on('code', async (code) => {
       try {
-        const result = await http.post({
-          uri: `${apiBaseUrl}/connect/token`,
-          form: {
-            client_id: env.CLIENT_ID,
-            client_secret: env.CLIENT_SECRET,
-            grant_type: 'authorization_code',
-            redirect_uri: redirectUrl,
-            code,
-          },
-        });
+        const result = await startTransaction('ConnectOauth', 'Auth', () =>
+          http.post({
+            uri: `${apiBaseUrl}/connect/token`,
+            form: {
+              client_id: env.CLIENT_ID,
+              client_secret: env.CLIENT_SECRET,
+              grant_type: 'authorization_code',
+              redirect_uri: redirectUrl,
+              code,
+            },
+          }),
+        );
 
         if (result.response.statusCode !== 200) {
           console.error('request failed', result.response);
-          session.emit(
-            'error',
-            new Error(`Request failed with code ${result.response.statusCode}`),
+          const error = new Error(
+            `Request failed with code ${result.response.statusCode}`,
           );
+          session.emit('error', error);
+          noticeError(error);
 
           return app.error(
             'api -> failed to fetch tokens',
@@ -55,6 +59,7 @@ export const initiateOauth = async (
         console.error('request failed', err);
         session.emit('error', new Error(`Error fetching tokens`));
         app.error('api -> error fetching tokens:', err);
+        noticeError(err as Error);
       }
 
       return undefined;
