@@ -1,13 +1,23 @@
 import newrelic from 'newrelic';
 
 export interface TransactionAttributes {
-  readonly firmwareVersion?: string;
-  readonly appVersion?: string;
+  firmwareVersion?: string;
+  appVersion?: string;
 }
 
-export const attributes: TransactionAttributes = {
+const attributes: TransactionAttributes = {
   firmwareVersion: undefined,
   appVersion: undefined,
+};
+
+export const setGlobalAttributes = ({
+  firmwareVersion,
+  appVersion,
+}: TransactionAttributes): void => {
+  if (firmwareVersion !== undefined)
+    attributes.firmwareVersion = firmwareVersion;
+
+  if (appVersion !== undefined) attributes.appVersion = appVersion;
 };
 
 const addAttributesToTransaction = (): void => {
@@ -23,11 +33,12 @@ const addAttributesToTransaction = (): void => {
 export const startTransaction = <T>(
   name: string,
   group: string,
-  handle: (...args: unknown[]) => T,
-): T => {
-  addAttributesToTransaction();
-  return newrelic.startBackgroundTransaction(name, group, handle);
-};
+  handle: (...args: unknown[]) => Promise<T>,
+): Promise<T> =>
+  newrelic.startBackgroundTransaction(name, group, async () => {
+    addAttributesToTransaction();
+    return handle();
+  });
 
 export const startSegment = <T, C extends (...args: unknown[]) => unknown>(
   name: string,
