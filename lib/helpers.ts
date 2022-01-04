@@ -45,9 +45,8 @@ export const createListDeviceHandler =
     } catch (err) {
       noticeError(err as Error);
       log('Error in list device handler called from `onPair`', err);
-      const errorCode = (err as ClientError).response?.errors?.[0]?.extensions
-        ?.code;
-      throw new Error(`Failed to retrieve data: ${errorCode}`);
+      const statusCode = (err as ClientError).response?.status ?? 'unknown';
+      throw new Error(`Failed to retrieve data: ${statusCode}`);
     }
   };
 
