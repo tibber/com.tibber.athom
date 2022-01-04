@@ -138,16 +138,17 @@ class WattyDevice extends Device {
     const measurePower =
       power || -powerProduction! || -this.#prevPowerProduction!;
     this.log(`Set measure_power capability to`, measurePower);
-    this.setCapabilityValue('measure_power', measurePower).catch(console.error);
-    this.#prevUpdate = moment();
-
-    if (measurePower !== this.#prevPower) {
-      this.#prevPower = measurePower;
-      this.log(`Trigger power changed`, measurePower);
-      this.#powerChangedTrigger
-        .trigger(this, { power: measurePower })
-        .catch(console.error);
-    }
+    this.setCapabilityValue('measure_power', measurePower)
+      .catch(console.error)
+      .finally(() => {
+        if (measurePower !== this.#prevPower) {
+          this.#prevPower = measurePower;
+          this.log(`Trigger power changed`, measurePower);
+          this.#powerChangedTrigger
+            .trigger(this, { power: measurePower })
+            .catch(console.error);
+        }
+      });
 
     const currentL1 = result.data?.liveMeasurement?.currentL1;
     const currentL2 = result.data?.liveMeasurement?.currentL2;
@@ -303,6 +304,8 @@ class WattyDevice extends Device {
           });
       }
     }
+
+    this.#prevUpdate = moment();
   }
 
   onDeleted() {

@@ -137,17 +137,18 @@ class PulseDevice extends Device {
 
     const measurePower =
       power || -powerProduction! || -this.#prevPowerProduction!;
-    this.log(`Set measure_power capability to`, measurePower);
-    this.setCapabilityValue('measure_power', measurePower).catch(console.error);
-    this.#prevUpdate = moment();
-
-    if (measurePower !== this.#prevPower) {
-      this.#prevPower = measurePower;
-      this.log(`Trigger power changed`, measurePower.toFixed(9));
-      this.#powerChangedTrigger
-        .trigger(this, { power: measurePower })
-        .catch(console.error);
-    }
+    this.log(`Set 'measure_power' capability to`, measurePower);
+    this.setCapabilityValue('measure_power', measurePower)
+      .catch(console.error)
+      .finally(() => {
+        if (measurePower !== this.#prevPower) {
+          this.#prevPower = measurePower;
+          this.log(`Trigger power changed`, measurePower.toFixed(9));
+          this.#powerChangedTrigger
+            .trigger(this, { power: measurePower })
+            .catch(console.error);
+        }
+      });
 
     const currentL1 = result.data?.liveMeasurement?.currentL1;
     const currentL2 = result.data?.liveMeasurement?.currentL2;
@@ -161,7 +162,7 @@ class PulseDevice extends Device {
       this.setCapabilityValue('measure_current.L1', currentL1)
         .catch(console.error)
         .finally(() => {
-          this.log("Updated capability value 'measure_current.L1'", currentL1);
+          this.log("Set 'measure_current.L1' capability to", currentL1);
           if (currentL1 !== this.#prevCurrentL1) {
             this.#prevCurrentL1 = currentL1!;
             this.log(`Trigger current L1 changed`, currentL1);
@@ -176,7 +177,7 @@ class PulseDevice extends Device {
       this.setCapabilityValue('measure_current.L2', currentL2)
         .catch(console.error)
         .finally(() => {
-          this.log("Updated capability value 'measure_current.L2'", currentL2);
+          this.log("Set 'measure_current.L2' capability to", currentL2);
           if (currentL2 !== this.#prevCurrentL2) {
             this.#prevCurrentL2 = currentL2!;
             this.log(`Trigger current L2 changed`, currentL2);
@@ -191,7 +192,7 @@ class PulseDevice extends Device {
       this.setCapabilityValue('measure_current.L3', currentL3)
         .catch(console.error)
         .finally(() => {
-          this.log("Updated capability value 'measure_current.L3'", currentL3);
+          this.log("Set 'measure_current.L3' capability to", currentL3);
           if (currentL3 !== this.#prevCurrentL3) {
             this.#prevCurrentL3 = currentL3!;
             this.log(`Trigger current L3 changed`, currentL3);
@@ -301,6 +302,8 @@ class PulseDevice extends Device {
             .catch(console.error);
         });
     }
+
+    this.#prevUpdate = moment();
   }
 
   onDeleted() {
