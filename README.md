@@ -56,6 +56,12 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.5.12
+
+- Fixed device pairing not always working
+- Fixed highest/lowest price cards not always working as intended
+- Improved reliability of triggers/updates
+
 #### 1.5.10
 
 - Reverted to using 5 price levels

@@ -121,5 +121,8 @@
   },
   "1.5.10": {
     "en": "Reverted to using 5 price levels. Fixed price sometimes failing to update. Show price device indicator with 2 decimals. Safer handling of current updates/triggers"
+  },
+  "1.5.12": {
+    "en": "Fixed device pairing not always working. Fixed highest/lowest price cards not always working as intended. Improved reliability of triggers/updates."
   }
 }
