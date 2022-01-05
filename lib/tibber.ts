@@ -192,20 +192,7 @@ export class TibberApi {
 
     const now = moment();
     const today = moment().startOf('day');
-    const tomorrow = moment().add(1, 'day').startOf('day');
-
-    if (lastPriceInfoDay < tomorrow) {
-      this.#log(
-        `Last price info entry is before tomorrow. Re-fetch prices immediately.`,
-      );
-      this.#priceInfoNextHours = await startSegment(
-        'GetPriceInfo.CacheTooOld',
-        true,
-        () => this.#getPriceInfo(),
-      );
-
-      return this.#priceInfoNextHours;
-    }
+    const tomorrow = today.add(1, 'day');
 
     // Last cache entry is OK but there might be new prices available
     const expectedPricePublishTime = moment
@@ -216,7 +203,7 @@ export class TibberApi {
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
     );
 
-    if (now > expectedPricePublishTime) {
+    if (lastPriceInfoDay < tomorrow && now > expectedPricePublishTime) {
       const delay = getRandomDelay(0, 50 * 60);
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00. Schedule re-fetch prices after ${delay} seconds.`,
