@@ -135,6 +135,8 @@ class WattyDevice extends Device {
     )
       return;
 
+    this.#prevUpdate = moment();
+
     const measurePower =
       power || -powerProduction! || -this.#prevPowerProduction!;
     this.log(`Set measure_power capability to`, measurePower);
@@ -304,8 +306,6 @@ class WattyDevice extends Device {
           });
       }
     }
-
-    this.#prevUpdate = moment();
   }
 
   onDeleted() {

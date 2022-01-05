@@ -135,6 +135,8 @@ class PulseDevice extends Device {
     )
       return;
 
+    this.#prevUpdate = moment();
+
     const measurePower =
       power || -powerProduction! || -this.#prevPowerProduction!;
     this.log(`Set 'measure_power' capability to`, measurePower);
@@ -302,8 +304,6 @@ class PulseDevice extends Device {
             .catch(console.error);
         });
     }
-
-    this.#prevUpdate = moment();
   }
 
   onDeleted() {
