@@ -145,7 +145,7 @@ class PulseDevice extends Device {
       .finally(() => {
         if (measurePower !== this.#prevPower) {
           this.#prevPower = measurePower;
-          this.log(`Trigger power changed`, measurePower.toFixed(9));
+          this.log(`Trigger power changed`, measurePower);
           this.#powerChangedTrigger
             .trigger(this, { power: measurePower })
             .catch(console.error);
@@ -235,7 +235,7 @@ class PulseDevice extends Device {
       try {
         const now = moment();
         if (
-          !this.#cachedNordpoolPrice ||
+          this.#cachedNordpoolPrice === null ||
           this.#cachedNordpoolPrice.hour !== now.hour()
         ) {
           const area = this.#area || 'Oslo';

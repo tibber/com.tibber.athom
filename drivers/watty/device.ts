@@ -236,7 +236,7 @@ class WattyDevice extends Device {
       try {
         const now = moment();
         if (
-          !this.#cachedNordpoolPrice ||
+          this.#cachedNordpoolPrice === null ||
           this.#cachedNordpoolPrice.hour !== now.hour()
         ) {
           const area = this.#area || 'Oslo';
