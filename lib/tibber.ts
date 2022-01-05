@@ -208,7 +208,10 @@ export class TibberApi {
     }
 
     // Last cache entry is OK but there might be new prices available
-    const expectedPricePublishTime = today.add(13, 'hours');
+    const expectedPricePublishTime = moment
+      .tz('Europe/Oslo')
+      .startOf('day')
+      .add(13, 'hours');
     this.#log(
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
     );
