@@ -249,9 +249,9 @@ class WattyDevice extends Device {
             'External',
             () =>
               http.json<NordpoolPriceResult>(
-                `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment().format(
-                  'DD-MM-YYYY',
-                )}`,
+                `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment()
+                  .tz('Europe/Oslo')
+                  .format('DD-MM-YYYY')}`,
               ),
           );
           const filteredRows = (priceResult?.data.Rows ?? [])
