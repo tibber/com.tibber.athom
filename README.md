@@ -56,6 +56,10 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.5.14
+
+- Fixed timezone issue fetching fallback Nord Pool price on Homey Bridge
+
 #### 1.5.13
 
 - Fixed device pairing not always working
@@ -245,7 +249,7 @@ for L2 and L3.
 #### 1.0.6
 
 - Added condition cards for lowest/highest price among the next [x] hours
-- Added cost calculation to Pulse for users without a (paying) subscription, based on nordpool
+- Added cost calculation to Pulse for users without a (paying) subscription, based on Nord Pool
   prices. Note: Net spot prices/without any taxes, fees, etc.
 - Minor fixes
 

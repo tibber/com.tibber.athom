@@ -1,4 +1,4 @@
-export interface NordpoolPriceResult {
+export interface NordPoolPriceResult {
   Rows?: {
     IsExtraRow: boolean;
     StartTime: string;

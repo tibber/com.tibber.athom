@@ -4,7 +4,7 @@ import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'apollo-client/util/Observable';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
-import { NordpoolPriceResult } from '../../lib/types';
+import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction } from '../../lib/newrelic-transaction';
 
 class PulseDevice extends Device {
@@ -12,7 +12,7 @@ class PulseDevice extends Device {
   #deviceId!: string;
   #throttle!: number;
   #currency?: string;
-  #cachedNordpoolPrice: { hour: number; price: number } | null = null;
+  #cachedNordPoolPrice: { hour: number; price: number } | null = null;
   #area?: string;
   #prevPowerProduction?: number;
   #prevUpdate?: moment.Moment;
@@ -93,12 +93,12 @@ class PulseDevice extends Device {
     if (changedKeys.includes('pulse_currency')) {
       this.log('Updated currency value: ', newSettings.pulse_currency);
       this.#currency = newSettings.pulse_currency;
-      this.#cachedNordpoolPrice = null;
+      this.#cachedNordPoolPrice = null;
     }
     if (changedKeys.includes('pulse_area')) {
       this.log('Updated area value: ', newSettings.pulse_area);
       this.#area = newSettings.pulse_area;
-      this.#cachedNordpoolPrice = null;
+      this.#cachedNordPoolPrice = null;
     }
   }
 
@@ -235,19 +235,19 @@ class PulseDevice extends Device {
       try {
         const now = moment();
         if (
-          this.#cachedNordpoolPrice === null ||
-          this.#cachedNordpoolPrice.hour !== now.hour()
+          this.#cachedNordPoolPrice === null ||
+          this.#cachedNordPoolPrice.hour !== now.hour()
         ) {
           const area = this.#area || 'Oslo';
           const currency = this.#currency || 'NOK';
           this.log(
-            `Using nordpool prices. Currency: ${currency} - Area: ${area}`,
+            `Using Nord Pool prices. Currency: ${currency} - Area: ${area}`,
           );
           const priceResult = await startTransaction(
-            'GetNordpoolPrices.Pulse',
+            'GetNordPoolPrices.Pulse',
             'External',
             () =>
-              http.json<NordpoolPriceResult>(
+              http.json<NordPoolPriceResult>(
                 `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment()
                   .tz('Europe/Oslo')
                   .format('DD-MM-YYYY')}`,
@@ -274,7 +274,7 @@ class PulseDevice extends Device {
                   .trim(),
               ) / 1000;
 
-            this.#cachedNordpoolPrice = {
+            this.#cachedNordPoolPrice = {
               hour: now.hour(),
               price: currentPrice,
             };
@@ -284,10 +284,10 @@ class PulseDevice extends Device {
           }
         }
 
-        if (_.isNumber(this.#cachedNordpoolPrice?.price))
-          cost = this.#cachedNordpoolPrice!.price * consumption!;
+        if (_.isNumber(this.#cachedNordPoolPrice?.price))
+          cost = this.#cachedNordPoolPrice!.price * consumption!;
       } catch (e) {
-        console.error('Error fetching prices from nordpool', e);
+        console.error('Error fetching prices from Nord Pool', e);
       }
     }
 

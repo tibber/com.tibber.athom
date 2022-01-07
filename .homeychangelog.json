@@ -127,5 +127,8 @@
   },
   "1.5.13": {
     "en": "Fixed device pairing not always working. Fixed highest/lowest price cards not always working as intended. Improved reliability of triggers/updates. Improved reliability of fetching prices."
+  },
+  "1.5.14": {
+    "en": "Fixed timezone issue fetching fallback Nord Pool price on Homey Bridge"
   }
 }

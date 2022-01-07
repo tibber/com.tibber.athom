@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.5.13",
+  "version": "1.5.14",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local",
@@ -1266,7 +1266,7 @@
         {
           "type": "group",
           "label": {
-            "en": "Nordpool elspot fallback"
+            "en": "Nord Pool elspot fallback"
           },
           "children": [
             {
@@ -1277,7 +1277,7 @@
                 "en": "Currency"
               },
               "hint": {
-                "en": "Currency when using nordpool prices\nDefault: NOK\n\nOnly applicable if you don't have a valid Tibber subscription"
+                "en": "Currency when using Nord Pool prices\nDefault: NOK\n\nOnly applicable if you don't have a valid Tibber subscription"
               },
               "values": [
                 {
@@ -1308,7 +1308,7 @@
                 "en": "Price area"
               },
               "hint": {
-                "en": "Price area when using nordpool prices\nDefault: Oslo\n\nOnly applicable if you don't have a valid Tibber subscription"
+                "en": "Price area when using Nord Pool prices\nDefault: Oslo\n\nOnly applicable if you don't have a valid Tibber subscription"
               },
               "values": [
                 {
@@ -1502,7 +1502,7 @@
         {
           "type": "group",
           "label": {
-            "en": "Nordpool elspot fallback"
+            "en": "Nord Pool elspot fallback"
           },
           "children": [
             {
@@ -1513,7 +1513,7 @@
                 "en": "Currency"
               },
               "hint": {
-                "en": "Currency when using nordpool prices\nDefault: NOK\n\nOnly applicable if you don't have a valid Tibber subscription"
+                "en": "Currency when using Nord Pool prices\nDefault: NOK\n\nOnly applicable if you don't have a valid Tibber subscription"
               },
               "values": [
                 {
@@ -1544,7 +1544,7 @@
                 "en": "Price area"
               },
               "hint": {
-                "en": "Price area when using nordpool prices\nDefault: Oslo\n\nOnly applicable if you don't have a valid Tibber subscription"
+                "en": "Price area when using Nord Pool prices\nDefault: Oslo\n\nOnly applicable if you don't have a valid Tibber subscription"
               },
               "values": [
                 {
