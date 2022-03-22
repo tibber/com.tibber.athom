@@ -68,10 +68,10 @@ class PulseDevice extends Device {
       })`,
     );
 
-    // Resubscribe if no data for 10 minutes
+    // Resubscribe if no data for 1 minute
     this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
-      10 * 60 * 1000,
+      1 * 60 * 1000,
     );
     this.#subscribeToLive();
   }
