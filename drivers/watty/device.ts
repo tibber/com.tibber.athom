@@ -2,7 +2,7 @@ import { Device, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import http from 'http.min';
-import { Subscription } from 'apollo-client/util/Observable';
+import { Subscription } from 'zen-observable-ts';
 import { LiveMeasurement, TibberApi } from '../../lib/tibber';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction } from '../../lib/newrelic-transaction';
@@ -116,8 +116,11 @@ class WattyDevice extends Device {
     }
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
-    this.#wsSubscription = this.#tibber.subscribeToLive(
-      this.subscribeCallback.bind(this),
+
+    this.#wsSubscription = this.#tibber.subscribeToLive().subscribe(
+      (result) => this.subscribeCallback(result),
+      (error) => this.log('Subscription error occurred', error),
+      () => this.log('Subscription ended with no error'),
     );
   }
 
