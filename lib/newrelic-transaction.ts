@@ -20,6 +20,8 @@ export const setGlobalAttributes = ({
   if (appVersion !== undefined) attributes.appVersion = appVersion;
 };
 
+export const getGlobalAttributes = (): TransactionAttributes => attributes;
+
 const addAttributesToTransaction = (): void => {
   const { firmwareVersion, appVersion } = attributes;
 
