@@ -130,5 +130,8 @@
   },
   "1.5.14": {
     "en": "Fixed timezone issue fetching fallback Nord Pool price on Homey Bridge"
+  },
+  "1.6.0": {
+    "en": "Support for web socket sub protocol graphql-transport-ws"
   }
 }
