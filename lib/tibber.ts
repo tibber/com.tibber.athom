@@ -132,8 +132,8 @@ export class TibberApi {
     this.#homeySettings = homeySettings;
     this.#token = token;
     this.#homeId = homeId;
-    const attributes = getGlobalAttributes();
-    this.#userAgent = `Homey/${attributes.firmwareVersion} com.tibber/${attributes.appVersion}`;
+    const { firmwareVersion, appVersion } = getGlobalAttributes();
+    this.#userAgent = `Homey/${firmwareVersion} com.tibber/${appVersion}`;
     this.#log(
       `Initialize Tibber client for home ${homeId} using token ${token}`,
     );
