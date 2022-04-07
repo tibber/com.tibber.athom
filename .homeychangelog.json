@@ -133,5 +133,8 @@
   },
   "1.6.0": {
     "en": "Support for web socket sub protocol graphql-transport-ws"
+  },
+  "1.6.1": {
+    "en": "Instrumentation cleanup"
   }
 }
