@@ -23,6 +23,16 @@ export const queries = {
       }
     }`,
 
+  getHomeFeaturesByIdQuery: (homeId: string) => `{
+      viewer {
+        home(id:"${homeId}") {
+          features {
+            realTimeConsumptionEnabled
+          }
+        }
+      }
+    }`,
+
   getPriceQuery: (homeId: string) => `{
       viewer {
         home(id:"${homeId}") {

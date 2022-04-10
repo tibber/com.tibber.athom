@@ -14,6 +14,7 @@ import {
   startTransaction,
   getGlobalAttributes
 } from './newrelic-transaction';
+import { ClientError } from 'graphql-request/dist/types';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -167,6 +168,32 @@ export class TibberApi {
         .catch((e) => {
           noticeError(e);
           console.error(`${new Date()} Error while fetching home data`, e);
+          throw e;
+        }),
+    );
+  }
+
+  async getHomeFeatures(homeId: string): Promise<Home> {
+    const client = this.#getClient();
+
+    this.#log(`Get features for home ${homeId}`);
+    return startSegment('GetHomeFeatures.Fetch', true, () =>
+      client
+        .request<Home>(queries.getHomeFeaturesByIdQuery(this.#homeId!))
+        .then((data) => data)
+        .catch((e) => {
+          noticeError(e);
+          console.error(`${new Date()} Error while fetching home features`, e);
+
+          const errorCode = (e as ClientError).response?.errors?.[0]?.extensions?.code;
+          if (errorCode !== undefined) {
+            this.#log('Received error code', errorCode);
+            if (errorCode === 'HOME_NOT_FOUND') {
+              this.#log(`Home with id ${homeId} not found`);
+              return null;
+            }
+          }
+
           throw e;
         }),
     );

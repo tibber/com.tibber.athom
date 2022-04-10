@@ -102,7 +102,7 @@ class PulseDevice extends Device {
     }
   }
 
-  #subscribeToLive() {
+  async #subscribeToLive() {
     this.#resubscribeDebounce();
     if (
       this.#wsSubscription &&
@@ -110,7 +110,21 @@ class PulseDevice extends Device {
     ) {
       try {
         this.log('Unsubscribing from previous connection');
+
         this.#wsSubscription.unsubscribe();
+
+        // TODO: pass homeId
+        const homeId = '';
+
+        // TODO duplicate this change to watty, too (until we refactor for a base class)
+        const home = await this.#tibber.getHomeFeatures(homeId);
+        if (!home?.features?.realTimeConsumptionEnabled) {
+          this.log(`Home with id ${homeId} does not have real time consumption enabled. Set device unavailable`);
+          await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
+
+          return;
+        }
+
       } catch (e) {
         this.log('Error unsubscribing from previous connection', e);
       }
