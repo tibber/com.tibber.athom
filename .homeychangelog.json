@@ -136,5 +136,8 @@
   },
   "1.6.1": {
     "en": "Instrumentation cleanup"
+  },
+  "1.6.2": {
+    "en": "Automatically disable pulse/watty when paired home not present anymore"
   }
 }
