@@ -2,6 +2,7 @@ import _ from 'lodash';
 import ws from 'ws';
 import { ApolloClient } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
+import { ClientError } from 'graphql-request/dist/types';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
@@ -14,7 +15,6 @@ import {
   startTransaction,
   getGlobalAttributes
 } from './newrelic-transaction';
-import { ClientError } from 'graphql-request/dist/types';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -85,6 +85,12 @@ export interface PriceInfoEntry {
 export interface Homes {
   viewer: {
     homes: Home[];
+  };
+}
+
+export interface HomeResponse {
+  viewer: {
+    home: Home | null;
   };
 }
 
@@ -173,13 +179,13 @@ export class TibberApi {
     );
   }
 
-  async getHomeFeatures(homeId: string): Promise<Home> {
+  async getHomeFeatures(): Promise<HomeResponse> {
     const client = this.#getClient();
 
-    this.#log(`Get features for home ${homeId}`);
+    this.#log(`Get features for home ${this.#homeId!}`);
     return startSegment('GetHomeFeatures.Fetch', true, () =>
       client
-        .request<Home>(queries.getHomeFeaturesByIdQuery(this.#homeId!))
+        .request<HomeResponse>(queries.getHomeFeaturesByIdQuery(this.#homeId!))
         .then((data) => data)
         .catch((e) => {
           noticeError(e);
@@ -189,8 +195,8 @@ export class TibberApi {
           if (errorCode !== undefined) {
             this.#log('Received error code', errorCode);
             if (errorCode === 'HOME_NOT_FOUND') {
-              this.#log(`Home with id ${homeId} not found`);
-              return null;
+              this.#log(`Home with id ${this.#homeId!} not found`);
+              return { viewer: { home: null } } as HomeResponse;
             }
           }
 

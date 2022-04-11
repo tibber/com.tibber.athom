@@ -74,7 +74,7 @@ class WattyDevice extends Device {
       this.#subscribeToLive.bind(this),
       10 * 60 * 1000,
     );
-    this.#subscribeToLive();
+    await this.#subscribeToLive();
   }
 
   async onSettings({
@@ -101,7 +101,7 @@ class WattyDevice extends Device {
     }
   }
 
-  #subscribeToLive() {
+  async #subscribeToLive() {
     this.#resubscribeDebounce();
     if (
       this.#wsSubscription &&
@@ -110,6 +110,18 @@ class WattyDevice extends Device {
       try {
         this.log('Unsubscribing from previous connection');
         this.#wsSubscription.unsubscribe();
+
+        const {
+          viewer: { home },
+        } = await this.#tibber.getHomeFeatures();
+        this.log('Home features', home);
+
+        if (!home?.features?.realTimeConsumptionEnabled) {
+          this.log(`Home with id ${this.#deviceId} does not have real time consumption enabled. Set device unavailable`);
+          this.#resubscribeDebounce.cancel();
+          await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
+          return;
+        }
       } catch (e) {
         this.log('Error unsubscribing from previous connection', e);
       }

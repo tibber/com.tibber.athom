@@ -73,7 +73,7 @@ class PulseDevice extends Device {
       this.#subscribeToLive.bind(this),
       10 * 60 * 1000,
     );
-    this.#subscribeToLive();
+    await this.#subscribeToLive();
   }
 
   async onSettings({
@@ -110,21 +110,20 @@ class PulseDevice extends Device {
     ) {
       try {
         this.log('Unsubscribing from previous connection');
-
         this.#wsSubscription.unsubscribe();
 
-        // TODO: pass homeId
-        const homeId = '';
+        const {
+          viewer: { home },
+        } = await this.#tibber.getHomeFeatures();
 
-        // TODO duplicate this change to watty, too (until we refactor for a base class)
-        const home = await this.#tibber.getHomeFeatures(homeId);
+        this.log('Home features', home);
+
         if (!home?.features?.realTimeConsumptionEnabled) {
-          this.log(`Home with id ${homeId} does not have real time consumption enabled. Set device unavailable`);
+          this.log(`Home with id ${this.#deviceId} does not have real time consumption enabled. Set device unavailable`);
+          this.#resubscribeDebounce.cancel();
           await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
-
           return;
         }
-
       } catch (e) {
         this.log('Error unsubscribing from previous connection', e);
       }
