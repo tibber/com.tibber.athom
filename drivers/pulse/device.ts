@@ -119,9 +119,15 @@ class PulseDevice extends Device {
         this.log('Home features', home);
 
         if (!home?.features?.realTimeConsumptionEnabled) {
-          this.log(`Home with id ${this.#deviceId} does not have real time consumption enabled. Set device unavailable`);
+          this.log(
+            `Home with id ${
+              this.#deviceId
+            } does not have real time consumption enabled. Set device unavailable`,
+          );
           this.#resubscribeDebounce.cancel();
-          await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
+          await this.setUnavailable(
+            'Tibber home with specified id not found. Please re-add device.',
+          );
           return;
         }
       } catch (e) {

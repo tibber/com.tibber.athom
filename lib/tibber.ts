@@ -13,7 +13,7 @@ import {
   noticeError,
   startSegment,
   startTransaction,
-  getGlobalAttributes
+  getGlobalAttributes,
 } from './newrelic-transaction';
 
 export interface Logger {
@@ -191,7 +191,8 @@ export class TibberApi {
           noticeError(e);
           console.error(`${new Date()} Error while fetching home features`, e);
 
-          const errorCode = (e as ClientError).response?.errors?.[0]?.extensions?.code;
+          const errorCode = (e as ClientError).response?.errors?.[0]?.extensions
+            ?.code;
           if (errorCode !== undefined) {
             this.#log('Received error code', errorCode);
             if (errorCode === 'HOME_NOT_FOUND') {
@@ -348,6 +349,7 @@ export class TibberApi {
 
     const apolloClient = new ApolloClient({
       link: wsLink,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cache: new InMemoryCache() as any,
     });
 
