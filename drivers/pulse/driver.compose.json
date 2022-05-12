@@ -2,39 +2,8 @@
   "name": {
     "en": "Pulse"
   },
-  "platforms": [
-    "local",
-    "cloud"
-  ],
-  "connectivity": [
-    "cloud"
-  ],
-  "mobile": {
-    "components": [
-      {
-        "id": "icon",
-        "capabilities": []
-      },
-      {
-        "id": "sensor",
-        "capabilities": [
-          "measure_power",
-          "meter_power"
-        ]
-      },
-      {
-        "id": "sensor",
-        "options": {
-          "icons": {
-            "accumulatedCost": "/drivers/pulse/assets/dollar.svg"
-          }
-        },
-        "capabilities": [
-          "accumulatedCost"
-        ]
-      }
-    ]
-  },
+  "platforms": ["local", "cloud"],
+  "connectivity": ["cloud"],
   "capabilities": [
     "measure_power",
     "meter_power",
