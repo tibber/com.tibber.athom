@@ -27,6 +27,7 @@ class HomeDevice extends Device {
   #priceInfoNextHours!: PriceInfoEntry[];
   #lastPrice?: PriceInfoEntry;
   #location!: { lat: number; lon: number };
+  #priceAtLowestToday?: PriceInfoEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -257,6 +258,9 @@ class HomeDevice extends Device {
         .catch(console.error);
     }
 
+    if (!this.hasCapability('measure_price_lowest'))
+      await this.addCapability('measure_price_lowest');
+
     this.log(`Tibber home device ${this.getName()} has been initialized`);
     return this.updateData();
   }
@@ -394,7 +398,33 @@ class HomeDevice extends Device {
     return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
   }
 
+  #updateLowestPrice(priceInfoNextHours: PriceInfoEntry[], now: moment.Moment) {
+    if (
+      this.#priceAtLowestToday !== undefined &&
+      moment(this.#priceAtLowestToday.startsAt)
+        .tz('CET')
+        .isSame(now, 'day')
+    ) {
+      this.log('Lowest price today is up to date.');
+      return;
+    }
+
+    const pricesToday = priceInfoNextHours.filter((p) =>
+      moment(p.startsAt).tz('CET').isSame(now, 'day'),
+    );
+
+    this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
+
+    this.setCapabilityValue(
+      'measure_price_lowest',
+      this.#priceAtLowestToday?.total ?? null,
+    ).catch(console.error);
+  }
+
   async onPriceData(priceInfoNextHours: PriceInfoEntry[]) {
+    const now = moment();
+    this.#updateLowestPrice(priceInfoNextHours, now);
+
     const currentHour = moment().startOf('hour');
 
     const priceInfoCurrent = priceInfoNextHours.find((p) =>

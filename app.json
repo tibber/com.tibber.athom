@@ -1088,29 +1088,10 @@
       "connectivity": [
         "cloud"
       ],
-      "mobile": {
-        "components": [
-          {
-            "id": "icon",
-            "capabilities": []
-          },
-          {
-            "id": "sensor",
-            "options": {
-              "icons": {
-                "measure_price_total": "/drivers/home/assets/dollar.svg"
-              }
-            },
-            "capabilities": [
-              "measure_price_total",
-              "measure_price_info_level"
-            ]
-          }
-        ]
-      },
       "capabilities": [
         "measure_price_total",
-        "measure_price_info_level"
+        "measure_price_info_level",
+        "measure_price_lowest"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
@@ -1165,32 +1146,6 @@
       "connectivity": [
         "cloud"
       ],
-      "mobile": {
-        "components": [
-          {
-            "id": "icon",
-            "capabilities": []
-          },
-          {
-            "id": "sensor",
-            "capabilities": [
-              "measure_power",
-              "meter_power"
-            ]
-          },
-          {
-            "id": "sensor",
-            "options": {
-              "icons": {
-                "accumulatedCost": "/drivers/pulse/assets/dollar.svg"
-              }
-            },
-            "capabilities": [
-              "accumulatedCost"
-            ]
-          }
-        ]
-      },
       "capabilities": [
         "measure_power",
         "meter_power",
@@ -1401,32 +1356,6 @@
       "connectivity": [
         "cloud"
       ],
-      "mobile": {
-        "components": [
-          {
-            "id": "icon",
-            "capabilities": []
-          },
-          {
-            "id": "sensor",
-            "capabilities": [
-              "measure_power",
-              "meter_power"
-            ]
-          },
-          {
-            "id": "sensor",
-            "options": {
-              "icons": {
-                "accumulatedCost": "/drivers/pulse/assets/dollar.svg"
-              }
-            },
-            "capabilities": [
-              "accumulatedCost"
-            ]
-          }
-        ]
-      },
       "capabilities": [
         "measure_power",
         "meter_power",
@@ -1636,7 +1565,11 @@
       "getable": true,
       "setable": false,
       "units": {
-        "en": "kr"
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
       },
       "icon": "/drivers/pulse/assets/dollar.svg"
     },
@@ -1711,6 +1644,23 @@
       "icon": "/drivers/home/assets/dollar.svg",
       "uiComponent": null
     },
+    "measure_price_lowest": {
+      "type": "number",
+      "title": {
+        "en": "Lowest price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/pulse/assets/dollar.svg"
+    },
     "measure_price_total": {
       "type": "number",
       "title": {
@@ -1719,7 +1669,11 @@
       "getable": true,
       "setable": false,
       "units": {
-        "en": "kr"
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
       },
       "icon": "/drivers/home/assets/dollar.svg"
     },
@@ -1773,7 +1727,11 @@
       "getable": true,
       "setable": false,
       "units": {
-        "en": "kr"
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
       },
       "icon": "/drivers/home/assets/dollar.svg",
       "uiComponent": null
