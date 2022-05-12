@@ -6,7 +6,11 @@
   "getable": true,
   "setable": false,
   "units": {
-    "en": "kr"
+    "en": "¤",
+    "nl": "€",
+    "de": "€",
+    "sv": "kr",
+    "no": "kr"
   },
   "icon": "/drivers/pulse/assets/dollar.svg"
 }
