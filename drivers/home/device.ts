@@ -676,7 +676,9 @@ class HomeDevice extends Device {
         .meanBy((x) => x.total);
     } else {
       avgPriceNextHours = _(this.#priceInfoNextHours)
-        .filter((p) => moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'))
+        .filter((p) =>
+          moment(p.startsAt).tz('CET').add(30, 'minutes').isSame(now, 'day'),
+        )
         .meanBy((x) => x.total);
     }
 
@@ -724,7 +726,10 @@ class HomeDevice extends Device {
             .value()
         : _(this.#priceInfoNextHours)
             .filter((p) =>
-              moment(p.startsAt).add(30, 'minutes').isSame(now, 'day'),
+              moment(p.startsAt)
+                .tz('CET')
+                .add(30, 'minutes')
+                .isSame(now, 'day'),
             )
             .value();
 
