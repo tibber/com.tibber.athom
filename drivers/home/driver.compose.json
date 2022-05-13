@@ -7,7 +7,8 @@
   "capabilities": [
     "measure_price_total",
     "measure_price_info_level",
-    "measure_price_lowest"
+    "measure_price_lowest",
+    "measure_price_highest"
   ],
   "capabilitiesOptions": {
     "measure_price_total": {

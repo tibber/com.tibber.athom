@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Highest price today"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": null,
+  "units": {
+    "en": "¤",
+    "nl": "€",
+    "de": "€",
+    "sv": "kr",
+    "no": "kr"
+  },
+  "icon": "/drivers/pulse/assets/dollar.svg"
+}

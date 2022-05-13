@@ -227,7 +227,9 @@ export class TibberApi {
 
     const last = _.last(this.#priceInfoNextHours) as PriceInfoEntry;
     const lastPriceInfoDay = moment(last.startsAt).startOf('day');
-    this.#log(`last price info entry is for day ${lastPriceInfoDay.format()}`);
+    this.#log(
+      `Last price info entry is for day at system time ${lastPriceInfoDay.format()}`,
+    );
 
     const now = moment();
     const today = moment().startOf('day');
@@ -245,7 +247,7 @@ export class TibberApi {
     if (lastPriceInfoDay < tomorrow && now > expectedPricePublishTime) {
       const delay = getRandomDelay(0, 50 * 60);
       this.#log(
-        `Last price info entry is before tomorrow and current time is after 13:00. Schedule re-fetch prices after ${delay} seconds.`,
+        `Last price info entry is before tomorrow and current time is after 13:00 CET. Schedule re-fetch prices after ${delay} seconds.`,
       );
       startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
         homeySetTimeout(async () => {

@@ -301,7 +301,7 @@ class PulseDevice extends Device {
               price: currentPrice,
             };
             this.log(
-              `Found price for ${now.format()} for area ${area} ${currentPrice}`,
+              `Found price for system time ${now.format()} for area ${area} ${currentPrice}`,
             );
           }
         }

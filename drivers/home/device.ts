@@ -11,6 +11,7 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
+import { isSameDay } from '../../lib/helpers';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -28,6 +29,7 @@ class HomeDevice extends Device {
   #lastPrice?: PriceInfoEntry;
   #location!: { lat: number; lon: number };
   #priceAtLowestToday?: PriceInfoEntry;
+  #priceAtHighestToday?: PriceInfoEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -261,6 +263,9 @@ class HomeDevice extends Device {
     if (!this.hasCapability('measure_price_lowest'))
       await this.addCapability('measure_price_lowest');
 
+    if (!this.hasCapability('measure_price_highest'))
+      await this.addCapability('measure_price_highest');
+
     this.log(`Tibber home device ${this.getName()} has been initialized`);
     return this.updateData();
   }
@@ -357,7 +362,9 @@ class HomeDevice extends Device {
       }
 
       const nextHour = moment().add(1, 'hour').startOf('hour');
-      this.log(`Next time to run update is at ${nextHour.format()}`);
+      this.log(
+        `Next time to run update is at system time ${nextHour.format()}`,
+      );
       const delay = moment.duration(nextHour.diff(moment()));
       this.scheduleUpdate(delay.asSeconds());
 
@@ -398,32 +405,50 @@ class HomeDevice extends Device {
     return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
   }
 
-  #updateLowestPrice(priceInfoNextHours: PriceInfoEntry[], now: moment.Moment) {
-    if (
-      this.#priceAtLowestToday !== undefined &&
-      moment(this.#priceAtLowestToday.startsAt)
-        .tz('CET')
-        .isSame(now, 'day')
-    ) {
-      this.log('Lowest price today is up to date.');
+  #updateLowestAndHighestPrice(priceInfoNextHours: PriceInfoEntry[]) {
+    const now = moment();
+
+    this.log(
+      `The current lowest price is ${this.#priceAtLowestToday?.total} at ${
+        this.#priceAtLowestToday?.startsAt
+      }`,
+    );
+
+    this.log(
+      `The current highest price is ${this.#priceAtHighestToday?.total} at ${
+        this.#priceAtHighestToday?.startsAt
+      }`,
+    );
+
+    if (isSameDay(this.#priceAtLowestToday?.startsAt, now)) {
+      this.log("Today's lowest and highest prices are up to date");
       return;
     }
 
     const pricesToday = priceInfoNextHours.filter((p) =>
-      moment(p.startsAt).tz('CET').isSame(now, 'day'),
+      isSameDay(p.startsAt, now),
     );
 
     this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
+    this.#priceAtHighestToday = _.maxBy(pricesToday, 'total');
 
-    this.setCapabilityValue(
-      'measure_price_lowest',
-      this.#priceAtLowestToday?.total ?? null,
-    ).catch(console.error);
+    const lowestPrice = this.#priceAtLowestToday?.total ?? null;
+    this.setCapabilityValue('measure_price_lowest', lowestPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_lowest' capability to", lowestPrice);
+      });
+
+    const highestPrice = this.#priceAtHighestToday?.total ?? null;
+    this.setCapabilityValue('measure_price_highest', highestPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_highest' capability to", highestPrice);
+      });
   }
 
   async onPriceData(priceInfoNextHours: PriceInfoEntry[]) {
-    const now = moment();
-    this.#updateLowestPrice(priceInfoNextHours, now);
+    this.#updateLowestAndHighestPrice(priceInfoNextHours);
 
     const currentHour = moment().startOf('hour');
 
@@ -432,7 +457,7 @@ class HomeDevice extends Device {
     );
     if (priceInfoCurrent === undefined) {
       this.log(
-        `Error finding current price info for ${currentHour.format()}. Abort.`,
+        `Error finding current price info for system time ${currentHour.format()}. Abort.`,
         priceInfoNextHours,
       );
       return;
@@ -706,9 +731,7 @@ class HomeDevice extends Device {
         .meanBy((x) => x.total);
     } else {
       avgPriceNextHours = _(this.#priceInfoNextHours)
-        .filter((p) =>
-          moment(p.startsAt).tz('CET').add(30, 'minutes').isSame(now, 'day'),
-        )
+        .filter((p) => isSameDay(p.startsAt, now))
         .meanBy((x) => x.total);
     }
 
@@ -755,12 +778,7 @@ class HomeDevice extends Device {
             .take(Math.abs(options.hours))
             .value()
         : _(this.#priceInfoNextHours)
-            .filter((p) =>
-              moment(p.startsAt)
-                .tz('CET')
-                .add(30, 'minutes')
-                .isSame(now, 'day'),
-            )
+            .filter((p) => isSameDay(p.startsAt, now))
             .value();
 
     if (!pricesNextHours.length) {
