@@ -420,13 +420,13 @@ class HomeDevice extends Device {
       }`,
     );
 
-    if (isSameDay(this.#priceAtLowestToday?.startsAt, now)) {
+    if (isSameDay(this.#priceAtLowestToday?.startsAt, now, 'Europe/Oslo')) {
       this.log("Today's lowest and highest prices are up to date");
       return;
     }
 
     const pricesToday = priceInfoNextHours.filter((p) =>
-      isSameDay(p.startsAt, now),
+      isSameDay(p.startsAt, now, 'Europe/Oslo'),
     );
 
     this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
@@ -731,7 +731,7 @@ class HomeDevice extends Device {
         .meanBy((x) => x.total);
     } else {
       avgPriceNextHours = _(this.#priceInfoNextHours)
-        .filter((p) => isSameDay(p.startsAt, now))
+        .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
         .meanBy((x) => x.total);
     }
 
@@ -778,7 +778,7 @@ class HomeDevice extends Device {
             .take(Math.abs(options.hours))
             .value()
         : _(this.#priceInfoNextHours)
-            .filter((p) => isSameDay(p.startsAt, now))
+            .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
             .value();
 
     if (!pricesNextHours.length) {

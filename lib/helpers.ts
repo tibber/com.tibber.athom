@@ -60,10 +60,11 @@ const sortByName = (a: { name: string }, b: { name: string }): number => {
 export const isSameDay = (
   first: string | undefined | null,
   second: moment.Moment,
+  tz: string,
 ) => {
   if (first === undefined) return false;
   if (first === null) return false;
   if (first.length === 0) return false;
 
-  return moment(first).tz('CET').isSame(second, 'day');
+  return moment(first).tz(tz).isSame(second, 'day');
 };
