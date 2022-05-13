@@ -123,7 +123,7 @@ export const getRandomDelay = (min: number, max: number) =>
 export class TibberApi {
   readonly #log: Logger;
   #homeySettings: ManagerSettings;
-  #priceInfoNextHours: PriceInfoEntry[] = [];
+  #hourlyPrices: PriceInfoEntry[] = [];
   #homeId?: string;
   #token?: string;
   #client?: GraphQLClient;
@@ -213,22 +213,22 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<PriceInfoEntry[]> {
-    if (!this.#priceInfoNextHours.length) {
+    if (!this.#hourlyPrices.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
-      this.#priceInfoNextHours = await startSegment(
+      this.#hourlyPrices = await startSegment(
         'GetPriceInfo.CacheEmpty',
         true,
         () => this.#getPriceInfo(),
       );
 
-      return this.#priceInfoNextHours;
+      return this.#hourlyPrices;
     }
 
-    const last = _.last(this.#priceInfoNextHours) as PriceInfoEntry;
-    const lastPriceInfoDay = moment(last.startsAt).startOf('day');
+    const last = _.last(this.#hourlyPrices) as PriceInfoEntry;
+    const lastPriceForDay = moment(last.startsAt).startOf('day');
     this.#log(
-      `Last price info entry is for day at system time ${lastPriceInfoDay.format()}`,
+      `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
     );
 
     const now = moment();
@@ -244,14 +244,14 @@ export class TibberApi {
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
     );
 
-    if (lastPriceInfoDay < tomorrow && now > expectedPricePublishTime) {
+    if (lastPriceForDay < tomorrow && now > expectedPricePublishTime) {
       const delay = getRandomDelay(0, 50 * 60);
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00 CET. Schedule re-fetch prices after ${delay} seconds.`,
       );
       startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
         homeySetTimeout(async () => {
-          this.#priceInfoNextHours = await startTransaction(
+          this.#hourlyPrices = await startTransaction(
             'ScheduledGetPriceInfo',
             'API',
             () => this.#getPriceInfo(),
@@ -259,11 +259,11 @@ export class TibberApi {
         }, delay * 1000);
       });
 
-      return this.#priceInfoNextHours;
+      return this.#hourlyPrices;
     }
 
     this.#log(`Last price info entry is up-to-date`);
-    return this.#priceInfoNextHours;
+    return this.#hourlyPrices;
   }
 
   async #getPriceInfo(): Promise<PriceInfoEntry[]> {
@@ -286,9 +286,9 @@ export class TibberApi {
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
-    this.#priceInfoNextHours = [...pricesToday, ...pricesTomorrow];
+    this.#hourlyPrices = [...pricesToday, ...pricesTomorrow];
 
-    return this.#priceInfoNextHours;
+    return this.#hourlyPrices;
   }
 
   async getConsumptionData(

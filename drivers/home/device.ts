@@ -25,8 +25,8 @@ class HomeDevice extends Device {
   #tibber!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #priceInfoNextHours!: PriceInfoEntry[];
-  #lastPrice?: PriceInfoEntry;
+  #hourlyPrices!: PriceInfoEntry[];
+  #latestPrice?: PriceInfoEntry;
   #location!: { lat: number; lon: number };
   #priceAtLowestToday?: PriceInfoEntry;
   #priceAtHighestToday?: PriceInfoEntry;
@@ -85,7 +85,7 @@ class HomeDevice extends Device {
     this.#insightId = this.#deviceLabel
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
-    this.#lastPrice = undefined;
+    this.#latestPrice = undefined;
     const { latitude: lat, longitude: lon } = data.address;
     this.#location = { lat, lon };
 
@@ -159,8 +159,8 @@ class HomeDevice extends Device {
       'current_price_below',
     );
     this.#currentPriceBelowCondition.registerRunListener((args, _state) => {
-      if (this.#lastPrice === undefined) return false;
-      return args.price > Number(this.#lastPrice.total);
+      if (this.#latestPrice === undefined) return false;
+      return args.price > Number(this.#latestPrice.total);
     });
 
     this.#currentPriceBelowAvgCondition = this.homey.flow.getConditionCard(
@@ -293,16 +293,13 @@ class HomeDevice extends Device {
     try {
       this.log(`Begin update`);
 
-      const priceInfoNextHours = await startTransaction(
-        'GetPriceInfo',
-        'API',
-        () =>
-          this.#tibber.getPriceInfoCached((callback, ms, args) =>
-            this.homey.setTimeout(callback, ms, args),
-          ),
+      const hourlyPrices = await startTransaction('GetPriceInfo', 'API', () =>
+        this.#tibber.getPriceInfoCached((callback, ms, args) =>
+          this.homey.setTimeout(callback, ms, args),
+        ),
       );
 
-      this.onPriceData(priceInfoNextHours).catch(() => {});
+      this.onPriceData(hourlyPrices).catch(() => {});
 
       if (this.isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
@@ -405,7 +402,7 @@ class HomeDevice extends Device {
     return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
   }
 
-  #updateLowestAndHighestPrice(priceInfoNextHours: PriceInfoEntry[]) {
+  #updateLowestAndHighestPrice(hourlyPrices: PriceInfoEntry[]) {
     const now = moment();
 
     this.log(
@@ -425,7 +422,7 @@ class HomeDevice extends Device {
       return;
     }
 
-    const pricesToday = priceInfoNextHours.filter((p) =>
+    const pricesToday = hourlyPrices.filter((p) =>
       isSameDay(p.startsAt, now, 'Europe/Oslo'),
     );
 
@@ -447,35 +444,35 @@ class HomeDevice extends Device {
       });
   }
 
-  async onPriceData(priceInfoNextHours: PriceInfoEntry[]) {
-    this.#updateLowestAndHighestPrice(priceInfoNextHours);
+  async onPriceData(hourlyPrices: PriceInfoEntry[]) {
+    this.#updateLowestAndHighestPrice(hourlyPrices);
 
     const currentHour = moment().startOf('hour');
 
-    const priceInfoCurrent = priceInfoNextHours.find((p) =>
+    const currentPrice = hourlyPrices.find((p) =>
       currentHour.isSame(moment(p.startsAt)),
     );
-    if (priceInfoCurrent === undefined) {
+    if (currentPrice === undefined) {
       this.log(
         `Error finding current price info for system time ${currentHour.format()}. Abort.`,
-        priceInfoNextHours,
+        hourlyPrices,
       );
       return;
     }
 
-    if (priceInfoCurrent.startsAt !== this.#lastPrice?.startsAt) {
-      this.#lastPrice = priceInfoCurrent;
-      this.#priceInfoNextHours = priceInfoNextHours;
+    if (currentPrice.startsAt !== this.#latestPrice?.startsAt) {
+      this.#latestPrice = currentPrice;
+      this.#hourlyPrices = hourlyPrices;
 
-      if (priceInfoCurrent.total !== null) {
+      if (currentPrice.total !== null) {
         const capabilityPromises = [
           this.setCapabilityValue(
             'measure_price_total',
-            Number(priceInfoCurrent.total.toFixed(2)),
+            Number(currentPrice.total.toFixed(2)),
           ).catch(console.error),
           this.setCapabilityValue(
             'measure_price_info_level',
-            priceInfoCurrent.level,
+            currentPrice.level,
           ).catch(console.error),
         ];
 
@@ -484,7 +481,7 @@ class HomeDevice extends Device {
           capabilityPromises.push(
             this.setCapabilityValue(
               'price_total',
-              Number(priceInfoCurrent.total.toFixed(2)),
+              Number(currentPrice.total.toFixed(2)),
             ).catch(console.error),
           );
         }
@@ -492,17 +489,16 @@ class HomeDevice extends Device {
         // if the user has flow cards using the deprecated `price_level` capability, update that too, so we don't break existing cards
         if (this.#hasDeprecatedPriceLevelCapability) {
           capabilityPromises.push(
-            this.setCapabilityValue(
-              'price_level',
-              priceInfoCurrent.level,
-            ).catch(console.error),
+            this.setCapabilityValue('price_level', currentPrice.level).catch(
+              console.error,
+            ),
           );
         }
 
         // if the user has flow cards using the deprecated `measure_price_level` capability, update that too, so we don't break existing cards
         // this maps `VERY_EXPENSIVE` and `EXPENSIVE` to the old `HIGH`, and `VERY_CHEAP` and `CHEAP` to the old `LOW`
         if (this.#hasDeprecatedMeasurePriceLevelCapability) {
-          const level = deprecatedPriceLevelMap[priceInfoCurrent.level];
+          const level = deprecatedPriceLevelMap[currentPrice.level];
           capabilityPromises.push(
             this.setCapabilityValue('measure_price_level', level).catch(
               console.error,
@@ -513,9 +509,9 @@ class HomeDevice extends Device {
         await Promise.all(capabilityPromises);
 
         this.#priceChangedTrigger
-          .trigger(this, priceInfoCurrent)
+          .trigger(this, currentPrice)
           .catch(console.error);
-        this.log('Triggering price_changed', priceInfoCurrent);
+        this.log('Triggering price_changed', currentPrice);
 
         const priceLogger = await this.#createGetLog(
           `${this.#insightId}_price`,
@@ -525,7 +521,7 @@ class HomeDevice extends Device {
             decimals: 1,
           },
         );
-        priceLogger.createEntry(priceInfoCurrent.total).catch(console.error);
+        priceLogger.createEntry(currentPrice.total).catch(console.error);
 
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
@@ -721,7 +717,7 @@ class HomeDevice extends Device {
     const now = moment();
     let avgPriceNextHours: number;
     if (hours) {
-      avgPriceNextHours = _(this.#priceInfoNextHours)
+      avgPriceNextHours = _(this.#hourlyPrices)
         .filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
@@ -730,7 +726,7 @@ class HomeDevice extends Device {
         .take(Math.abs(hours))
         .meanBy((x) => x.total);
     } else {
-      avgPriceNextHours = _(this.#priceInfoNextHours)
+      avgPriceNextHours = _(this.#hourlyPrices)
         .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
         .meanBy((x) => x.total);
     }
@@ -742,14 +738,14 @@ class HomeDevice extends Device {
       return false;
     }
 
-    if (!this.#lastPrice) return false;
+    if (!this.#latestPrice) return false;
 
     let diffAvgCurrent =
-      ((this.#lastPrice.total - avgPriceNextHours) / avgPriceNextHours) * 100;
+      ((this.#latestPrice.total - avgPriceNextHours) / avgPriceNextHours) * 100;
     if (below) diffAvgCurrent *= -1;
 
     this.log(
-      `${this.#lastPrice.total.toFixed(2)} is ${diffAvgCurrent.toFixed(2)}% ${
+      `${this.#latestPrice.total.toFixed(2)} is ${diffAvgCurrent.toFixed(2)}% ${
         below ? 'below' : 'above'
       } avg (${avgPriceNextHours.toFixed(2)}) ${
         hours ? `next ${hours} hours` : 'today'
@@ -769,7 +765,7 @@ class HomeDevice extends Device {
     const now = moment();
     const pricesNextHours =
       options.hours !== undefined
-        ? _(this.#priceInfoNextHours)
+        ? _(this.#hourlyPrices)
             .filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
@@ -777,7 +773,7 @@ class HomeDevice extends Device {
             )
             .take(Math.abs(options.hours))
             .value()
-        : _(this.#priceInfoNextHours)
+        : _(this.#hourlyPrices)
             .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
             .value();
 
@@ -788,7 +784,7 @@ class HomeDevice extends Device {
       return false;
     }
 
-    if (this.#lastPrice === undefined) {
+    if (this.#latestPrice === undefined) {
       this.log(`Cannot determine condition. The last price is undefined`);
       return false;
     }
@@ -797,7 +793,7 @@ class HomeDevice extends Device {
     if (options.ranked_hours !== undefined) {
       const sortedHours = _.sortBy(pricesNextHours, ['total']);
       const currentHourRank = sortedHours.findIndex(
-        (p) => p.startsAt === this.#lastPrice?.startsAt,
+        (p) => p.startsAt === this.#latestPrice?.startsAt,
       );
       if (currentHourRank < 0) {
         this.log(`Could not find the current hour rank among today's hours`);
@@ -809,7 +805,7 @@ class HomeDevice extends Device {
         : currentHourRank >= sortedHours.length - options.ranked_hours;
 
       this.log(
-        `${this.#lastPrice.total.toFixed(2)} is among the ${
+        `${this.#latestPrice.total.toFixed(2)} is among the ${
           lowest ? 'lowest' : 'highest'
         } ${options.ranked_hours} hours today = ${conditionMet}`,
       );
@@ -819,11 +815,11 @@ class HomeDevice extends Device {
         : _.maxBy(pricesNextHours, 'total')!.total;
 
       conditionMet = lowest
-        ? this.#lastPrice.total <= toCompare
-        : this.#lastPrice.total >= toCompare;
+        ? this.#latestPrice.total <= toCompare
+        : this.#latestPrice.total >= toCompare;
 
       this.log(
-        `${this.#lastPrice.total.toFixed(2)} is ${
+        `${this.#latestPrice.total.toFixed(2)} is ${
           lowest ? 'lower than the lowest' : 'higher than the highest'
         } (${toCompare}) ${
           options.hours ? `among the next ${options.hours} hours` : 'today'
