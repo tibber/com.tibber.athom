@@ -139,5 +139,8 @@
   },
   "1.6.2": {
     "en": "Automatically disable pulse/watty when paired home not present anymore"
+  },
+  "1.7.1": {
+    "en": "Added global tokens for lowest and highest price today. Fixed timezone issue with price on Homey Bridge. Updated dependencies"
   }
 }
