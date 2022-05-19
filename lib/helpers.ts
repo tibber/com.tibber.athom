@@ -1,5 +1,6 @@
 import PairSession from 'homey/lib/PairSession';
 import { ClientError } from 'graphql-request/dist/types';
+import moment from 'moment-timezone';
 import { Home, Logger, TibberApi } from './tibber';
 import { noticeError, startTransaction } from './newrelic-transaction';
 
@@ -54,4 +55,16 @@ const sortByName = (a: { name: string }, b: { name: string }): number => {
   if (a.name < b.name) return -1;
   if (a.name > b.name) return 1;
   return 0;
+};
+
+export const isSameDay = (
+  first: string | undefined | null,
+  second: moment.Moment,
+  tz: string,
+) => {
+  if (first === undefined) return false;
+  if (first === null) return false;
+  if (first.length === 0) return false;
+
+  return moment(first).tz(tz).isSame(second, 'day');
 };

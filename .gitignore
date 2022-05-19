@@ -7,3 +7,4 @@ build/
 
 # Added by Homey CLI
 /.homeybuild/
+.DS_Store

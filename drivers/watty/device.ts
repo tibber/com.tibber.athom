@@ -117,9 +117,15 @@ class WattyDevice extends Device {
         this.log('Home features', home);
 
         if (!home?.features?.realTimeConsumptionEnabled) {
-          this.log(`Home with id ${this.#deviceId} does not have real time consumption enabled. Set device unavailable`);
+          this.log(
+            `Home with id ${
+              this.#deviceId
+            } does not have real time consumption enabled. Set device unavailable`,
+          );
           this.#resubscribeDebounce.cancel();
-          await this.setUnavailable('Tibber home with specified id not found. Please re-add device.');
+          await this.setUnavailable(
+            'Tibber home with specified id not found. Please re-add device.',
+          );
           return;
         }
       } catch (e) {
@@ -295,7 +301,7 @@ class WattyDevice extends Device {
               price: currentPrice,
             };
             this.log(
-              `Found price for ${now.format()} for area ${area} ${currentPrice}`,
+              `Found price for system time ${now.format()} for area ${area} ${currentPrice}`,
             );
           }
         }

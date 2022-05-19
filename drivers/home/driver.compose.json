@@ -2,36 +2,13 @@
   "name": {
     "en": "Home"
   },
-  "platforms": [
-    "local",
-    "cloud"
-  ],
-  "connectivity": [
-    "cloud"
-  ],
-  "mobile": {
-    "components": [
-      {
-        "id": "icon",
-        "capabilities": []
-      },
-      {
-        "id": "sensor",
-        "options": {
-          "icons": {
-            "measure_price_total": "/drivers/home/assets/dollar.svg"
-          }
-        },
-        "capabilities": [
-          "measure_price_total",
-          "measure_price_info_level"
-        ]
-      }
-    ]
-  },
+  "platforms": ["local", "cloud"],
+  "connectivity": ["cloud"],
   "capabilities": [
     "measure_price_total",
-    "measure_price_info_level"
+    "measure_price_info_level",
+    "measure_price_lowest",
+    "measure_price_highest"
   ],
   "capabilitiesOptions": {
     "measure_price_total": {

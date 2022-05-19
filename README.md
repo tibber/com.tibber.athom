@@ -4,7 +4,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ## Flow cards
 
-### Device: *__Home__*
+### Device: _**Home**_
 
 #### Triggers
 
@@ -43,7 +43,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 &nbsp;
 
-### Device: *__Pulse__* / *__Watty__*
+### Device: _**Pulse**_ / _**Watty**_
 
 #### Triggers
 
@@ -55,6 +55,24 @@ Integration with Tibber, with Pulse and Watty support.
 &nbsp;
 
 ### Release Notes
+
+#### 1.7.1
+
+- Added global tokens for lowest and highest price today
+- Fixed timezone issue with price on Homey Bridge
+- Updated dependencies
+
+#### 1.6.2
+
+- Automatically disable pulse/watty when paired home not present anymore
+
+#### 1.6.1
+
+- Instrumentation cleanup
+
+#### 1.6.0
+
+- Support for web socket sub protocol graphql-transport-ws
 
 #### 1.5.14
 
@@ -101,7 +119,7 @@ Integration with Tibber, with Pulse and Watty support.
 #### 1.4.9
 
 - Deactivate device if home can't be found anymore. Add price level indicator. Fix current triggers
-for L2 and L3.
+  for L2 and L3.
 
 #### 1.4.8
 
@@ -276,6 +294,6 @@ for L2 and L3.
 
 - Initial public version
 
-
 ### Known Issues
+
 - Currently, the user's Tibber subscription needs to be confirmed or started to use the Tibber app.
