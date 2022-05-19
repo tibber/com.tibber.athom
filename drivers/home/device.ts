@@ -347,11 +347,21 @@ class HomeDevice extends Device {
             `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
           );
           this.homey.setTimeout(async () => {
-            const consumptionData = await startTransaction(
-              'ScheduledGetConsumption',
-              'API',
-              () => this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
-            );
+            let consumptionData;
+            try {
+              consumptionData = await startTransaction(
+                'ScheduledGetConsumption',
+                'API',
+                () =>
+                  this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
+              );
+            } catch (e) {
+              console.error(
+                `${new Date()} The following error occurred during scheduled consumption fetch`,
+                e,
+              );
+              return;
+            }
 
             await this.onConsumptionData(consumptionData);
           }, delay * 1000);

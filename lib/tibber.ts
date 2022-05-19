@@ -122,12 +122,12 @@ export const getRandomDelay = (min: number, max: number) =>
 
 export class TibberApi {
   readonly #log: Logger;
+  readonly #homeId?: string;
+  readonly #userAgent: string;
   #homeySettings: ManagerSettings;
   #hourlyPrices: PriceInfoEntry[] = [];
-  #homeId?: string;
   #token?: string;
   #client?: GraphQLClient;
-  #userAgent: string;
 
   constructor(
     log: Logger,
@@ -251,11 +251,20 @@ export class TibberApi {
       );
       startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
         homeySetTimeout(async () => {
-          this.#hourlyPrices = await startTransaction(
-            'ScheduledGetPriceInfo',
-            'API',
-            () => this.#getPriceInfo(),
-          );
+          let data: PriceInfoEntry[];
+          try {
+            data = await startTransaction('ScheduledGetPriceInfo', 'API', () =>
+              this.#getPriceInfo(),
+            );
+          } catch (e) {
+            console.error(
+              `${new Date()} The following error happened when trying to re-fetch stale prices`,
+              e,
+            );
+            return;
+          }
+
+          this.#hourlyPrices = data;
         }, delay * 1000);
       });
 
@@ -270,11 +279,10 @@ export class TibberApi {
     const client = this.#getClient();
 
     this.#log('Get prices');
-    const data: PriceRatingResponse = await startSegment(
-      'GetPriceInfo.Fetch',
-      true,
-      () =>
-        client.request(queries.getPriceQuery(this.#homeId!)).catch((e) => {
+    const data = await startSegment('GetPriceInfo.Fetch', true, () =>
+      client
+        .request<PriceRatingResponse>(queries.getPriceQuery(this.#homeId!))
+        .catch((e) => {
           noticeError(e);
           console.error(`${new Date()} Error while fetching price data`, e);
           throw e;
@@ -300,7 +308,7 @@ export class TibberApi {
     this.#log(`Get consumption for ${daysToFetch} days ${hoursToFetch} hours`);
     return startSegment('GetConsumption.Fetch', true, () =>
       client
-        .request(
+        .request<ConsumptionData>(
           queries.getConsumptionQuery(this.#homeId!, daysToFetch, hoursToFetch),
         )
         .catch((e) => {
@@ -314,7 +322,7 @@ export class TibberApi {
     );
   }
 
-  async sendPush(title: string, message: string) {
+  async sendPush(title: string, message: string): Promise<void> {
     const client = this.#getClient();
 
     this.#log('Send push notification');
@@ -361,11 +369,11 @@ export class TibberApi {
     });
   }
 
-  setDefaultToken(token: string) {
+  setDefaultToken(token: string): void {
     this.#homeySettings.set('token', token);
   }
 
-  getDefaultToken() {
+  getDefaultToken(): string {
     return this.#homeySettings.get('token');
   }
 }

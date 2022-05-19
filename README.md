@@ -56,6 +56,10 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.7.2
+
+- Improved error handling
+
 #### 1.7.1
 
 - Added global tokens for lowest and highest price today

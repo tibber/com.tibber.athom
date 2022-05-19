@@ -142,5 +142,8 @@
   },
   "1.7.1": {
     "en": "Added global tokens for lowest and highest price today. Fixed timezone issue with price on Homey Bridge. Updated dependencies"
+  },
+  "1.7.2": {
+    "en": "Improved error handling"
   }
 }
