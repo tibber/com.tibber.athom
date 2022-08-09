@@ -201,6 +201,24 @@
               "label": {
                 "en": "SE4"
               }
+            },
+            {
+              "id": "DE",
+              "label": {
+                "en": "DE"
+              }
+            },
+            {
+              "id": "NL",
+              "label": {
+                "en": "NL"
+              }
+            },
+            {
+              "id": "FI",
+              "label": {
+                "en": "FI"
+              }
             }
           ]
         }
