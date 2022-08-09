@@ -110,6 +110,12 @@
               "label": {
                 "en": "SEK"
               }
+            },
+            {
+              "id": "EUR",
+              "label": {
+                "en": "EUR"
+              }
             }
           ]
         },

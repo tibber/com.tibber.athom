@@ -1253,6 +1253,12 @@
                   "label": {
                     "en": "SEK"
                   }
+                },
+                {
+                  "id": "EUR",
+                  "label": {
+                    "en": "EUR"
+                  }
                 }
               ]
             },
@@ -1462,6 +1468,12 @@
                   "id": "SEK",
                   "label": {
                     "en": "SEK"
+                  }
+                },
+                {
+                  "id": "EUR",
+                  "label": {
+                    "en": "EUR"
                   }
                 }
               ]
