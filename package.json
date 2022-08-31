@@ -27,7 +27,7 @@
     "graphql-ws": "^5.8.2",
     "http.min": "^2.1.0",
     "lodash": "^4.17.21",
-    "moment-timezone": "^0.5.34",
+    "moment-timezone": "^0.5.35",
     "newrelic": "^8.11.0",
     "source-map-support": "^0.5.21",
     "type-fest": "^2.12.2",
