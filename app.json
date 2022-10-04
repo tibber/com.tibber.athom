@@ -1352,6 +1352,18 @@
                   }
                 },
                 {
+                  "id": "BE",
+                  "label": {
+                    "en": "BE"
+                  }
+                },
+                {
+                  "id": "DE-LU",
+                  "label": {
+                    "en": "DE-LU"
+                  }
+                },
+                {
                   "id": "FI",
                   "label": {
                     "en": "FI"
@@ -1577,6 +1589,18 @@
                   "id": "NL",
                   "label": {
                     "en": "NL"
+                  }
+                },
+                {
+                  "id": "BE",
+                  "label": {
+                    "en": "BE"
+                  }
+                },
+                {
+                  "id": "DE-LU",
+                  "label": {
+                    "en": "DE-LU"
                   }
                 },
                 {
