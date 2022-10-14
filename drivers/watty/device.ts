@@ -3,7 +3,7 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { LiveMeasurement, TibberApi } from '../../lib/tibber';
+import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction } from '../../lib/newrelic-transaction';
 
@@ -24,6 +24,7 @@ class WattyDevice extends Device {
   #prevCost?: number;
   #wsSubscription!: Subscription;
   #resubscribeDebounce!: _.DebouncedFunc<() => void>;
+  #resubscribeMaxWait!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
   #costChangedTrigger!: FlowCardTriggerDevice;
@@ -69,10 +70,15 @@ class WattyDevice extends Device {
       })`,
     );
 
-    // Resubscribe if no data for 10 minutes
+    // Jitter to avoid all clients resubscribing at same time after API reboot
+    const jitter = getRandomDelay(0, 10);
+    const delay = 10 * 60 * 1000; // Ten minutes
+    this.#resubscribeMaxWait = (jitter + delay) * 1000;
+
+    // Resubscribe if no data for 10 minutes + jitter
     this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
-      10 * 60 * 1000,
+      this.#resubscribeMaxWait,
     );
     await this.#subscribeToLive();
   }
@@ -108,7 +114,11 @@ class WattyDevice extends Device {
       _.isFunction(this.#wsSubscription.unsubscribe)
     ) {
       try {
-        this.log('Unsubscribing from previous connection');
+        this.log(
+          `No data received in ${
+            this.#resubscribeMaxWait / 1000
+          } seconds; Unsubscribing from previous connection`,
+        );
         this.#wsSubscription.unsubscribe();
 
         const {
