@@ -85,12 +85,14 @@ export interface PriceInfoEntry {
 export interface Homes {
   viewer: {
     homes: Home[];
+    websocketSubscriptionUrl: string;
   };
 }
 
 export interface HomeResponse {
   viewer: {
     home: Home | null;
+    websocketSubscriptionUrl: string;
   };
 }
 
@@ -115,7 +117,6 @@ export type Home = {
 
 const apiHost = 'https://api.tibber.com';
 const apiPath = '/v1-beta/gql';
-const liveSubscriptionUrl = 'wss://api.tibber.com/v1-beta/gql/subscriptions';
 
 export const getRandomDelay = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min) + min);
@@ -183,7 +184,10 @@ export class TibberApi {
     return startSegment('GetHomeFeatures.Fetch', true, () =>
       client
         .request<HomeResponse>(queries.getHomeFeaturesByIdQuery(this.#homeId!))
-        .then((data) => data)
+        .then((home) => {
+          this.#log('Home features', home);
+          return home;
+        })
         .catch((e) => {
           noticeError(e);
           console.error(`${new Date()} Error while fetching home features`, e);
@@ -338,13 +342,13 @@ export class TibberApi {
     );
   }
 
-  subscribeToLive() {
+  subscribeToLive(websocketSubscriptionUrl: string) {
     this.#log('Subscribe to live; create web socket client');
     if (this.#token === undefined) this.#token = this.getDefaultToken();
     if (this.#token === undefined) throw new Error('Access token not set');
 
     const webSocketClient = createClient({
-      url: liveSubscriptionUrl,
+      url: websocketSubscriptionUrl,
 
       connectionParams: {
         token: this.#token,

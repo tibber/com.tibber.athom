@@ -20,6 +20,7 @@ export const queries = {
             status
           }
         }
+        websocketSubscriptionUrl
       }
     }`,
 
@@ -30,6 +31,7 @@ export const queries = {
             realTimeConsumptionEnabled
           }
         }
+        websocketSubscriptionUrl
       }
     }`,
 

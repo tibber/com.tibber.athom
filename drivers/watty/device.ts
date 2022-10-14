@@ -109,6 +109,11 @@ class WattyDevice extends Device {
 
   async #subscribeToLive() {
     this.#resubscribeDebounce();
+
+    let {
+      viewer: { websocketSubscriptionUrl },
+    } = await this.#tibber.getHomeFeatures();
+
     if (
       this.#wsSubscription &&
       _.isFunction(this.#wsSubscription.unsubscribe)
@@ -121,12 +126,10 @@ class WattyDevice extends Device {
         );
         this.#wsSubscription.unsubscribe();
 
-        const {
-          viewer: { home },
-        } = await this.#tibber.getHomeFeatures();
-        this.log('Home features', home);
+        const { viewer } = await this.#tibber.getHomeFeatures();
+        websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
-        if (!home?.features?.realTimeConsumptionEnabled) {
+        if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
           this.log(
             `Home with id ${
               this.#deviceId
@@ -145,11 +148,13 @@ class WattyDevice extends Device {
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
 
-    this.#wsSubscription = this.#tibber.subscribeToLive().subscribe(
-      (result) => this.subscribeCallback(result),
-      (error) => this.log('Subscription error occurred', error),
-      () => this.log('Subscription ended with no error'),
-    );
+    this.#wsSubscription = this.#tibber
+      .subscribeToLive(websocketSubscriptionUrl)
+      .subscribe(
+        (result) => this.subscribeCallback(result),
+        (error) => this.log('Subscription error occurred', error),
+        () => this.log('Subscription ended with no error'),
+      );
   }
 
   async subscribeCallback(result: LiveMeasurement) {
