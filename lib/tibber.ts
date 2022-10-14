@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import ws from 'ws';
 import { ApolloClient } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
 import { ClientError } from 'graphql-request/dist/types';
@@ -8,12 +7,13 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
+import { UserAgentWebSocket } from './UserAgentWebSocket';
 import { queries } from './queries';
 import {
   noticeError,
   startSegment,
   startTransaction,
-  getGlobalAttributes,
+  getUserAgent,
 } from './newrelic-transaction';
 
 export interface Logger {
@@ -123,7 +123,6 @@ export const getRandomDelay = (min: number, max: number) =>
 export class TibberApi {
   readonly #log: Logger;
   readonly #homeId?: string;
-  readonly #userAgent: string;
   #homeySettings: ManagerSettings;
   #hourlyPrices: PriceInfoEntry[] = [];
   #token?: string;
@@ -139,8 +138,6 @@ export class TibberApi {
     this.#homeySettings = homeySettings;
     this.#token = token;
     this.#homeId = homeId;
-    const { firmwareVersion, appVersion } = getGlobalAttributes();
-    this.#userAgent = `Homey/${firmwareVersion} com.tibber/${appVersion}`;
     this.#log(
       `Initialize Tibber client for home ${homeId} using token ${token}`,
     );
@@ -155,7 +152,7 @@ export class TibberApi {
         timeout: 5 * 60 * 1000,
         headers: {
           Authorization: `Bearer ${this.#token}`,
-          'User-Agent': this.#userAgent,
+          'User-Agent': getUserAgent(),
         },
       });
     }
@@ -342,27 +339,36 @@ export class TibberApi {
   }
 
   subscribeToLive() {
-    this.#log('Subscribe to live');
+    this.#log('Subscribe to live; create web socket client');
     if (this.#token === undefined) this.#token = this.getDefaultToken();
     if (this.#token === undefined) throw new Error('Access token not set');
 
     const webSocketClient = createClient({
       url: liveSubscriptionUrl,
+
       connectionParams: {
         token: this.#token,
-        userAgent: this.#userAgent,
       },
-      webSocketImpl: ws,
+      webSocketImpl: UserAgentWebSocket,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // shouldRetry: (errOrCloseEvent: any) => {
+      //   this.#log(
+      //     `Error while subscribing to live; code ${errOrCloseEvent.code}; reason ${errOrCloseEvent.reason}`,
+      //   );
+      //   return errOrCloseEvent !== CloseCode.Forbidden;
+      // },
     });
 
     const wsLink = new GraphQLWsLink(webSocketClient);
 
+    this.#log('Subscribe to live; create apollo client');
     const apolloClient = new ApolloClient({
       link: wsLink,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cache: new InMemoryCache() as any,
     });
 
+    this.#log('Subscribe to live; call apollo subscribe');
     return apolloClient.subscribe({
       query: queries.getSubscriptionQuery(this.#homeId!),
       variables: {},
