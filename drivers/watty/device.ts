@@ -72,8 +72,9 @@ class WattyDevice extends Device {
 
     // Jitter to avoid all clients resubscribing at same time after API reboot
     const jitter = getRandomDelay(0, 10);
-    const delay = 10 * 60 * 1000; // Ten minutes
-    this.#resubscribeMaxWait = (jitter + delay) * 1000;
+    const delay = 10 * 60; // Ten minutes in seconds
+    // const delay = 10; // TODO
+    this.#resubscribeMaxWait = (jitter + delay) * 1000; // Milliseconds
 
     // Resubscribe if no data for 10 minutes + jitter
     this.#resubscribeDebounce = _.debounce(
