@@ -148,5 +148,8 @@
   },
   "1.8.0": {
     "en": "Improved websocket subscription handling"
+  },
+  "1.8.1": {
+    "en": "Fix Tibber API url"
   }
 }
