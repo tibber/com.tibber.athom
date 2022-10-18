@@ -24,7 +24,7 @@ class WattyDevice extends Device {
   #prevCost?: number;
   #wsSubscription!: Subscription;
   #resubscribeDebounce!: _.DebouncedFunc<() => void>;
-  #resubscribeMaxWait!: number;
+  #resubscribeMaxWaitMilliseconds!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
   #costChangedTrigger!: FlowCardTriggerDevice;
@@ -70,15 +70,15 @@ class WattyDevice extends Device {
       })`,
     );
 
-    // Jitter to avoid all clients resubscribing at same time after API reboot
-    const jitter = getRandomDelay(0, 10);
-    const delay = 10 * 60; // Ten minutes in seconds
-    this.#resubscribeMaxWait = (jitter + delay) * 1000; // Milliseconds
+    const jitterSeconds = getRandomDelay(0, 10);
+    const delaySeconds = 10 * 60;
+    this.#resubscribeMaxWaitMilliseconds =
+      (jitterSeconds + delaySeconds) * 1000;
 
     // Resubscribe if no data for delay + jitter
     this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
-      this.#resubscribeMaxWait,
+      this.#resubscribeMaxWaitMilliseconds,
     );
     await this.#subscribeToLive();
   }
@@ -121,7 +121,7 @@ class WattyDevice extends Device {
       try {
         this.log(
           `No data received in ${
-            this.#resubscribeMaxWait / 1000
+            this.#resubscribeMaxWaitMilliseconds / 1000
           } seconds; Unsubscribing from previous connection`,
         );
         this.#wsSubscription.unsubscribe();
