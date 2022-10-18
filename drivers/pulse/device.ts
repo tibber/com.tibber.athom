@@ -153,7 +153,14 @@ class PulseDevice extends Device {
       .subscribeToLive(websocketSubscriptionUrl)
       .subscribe(
         (result) => this.subscribeCallback(result),
-        (error) => this.log('Subscription error occurred', error),
+        (error) => {
+          this.log('Subscription error occurred', error);
+          // When server shuts down we end up here with message text "Unexpected server response: 503"
+          const delay = getRandomDelay(5, 120);
+          this.log(`Resubscribe after ${delay} seconds`);
+          this.#resubscribeDebounce.cancel();
+          this.homey.setTimeout(() => this.#subscribeToLive(), delay * 1000);
+        },
         () => this.log('Subscription ended with no error'),
       );
   }
