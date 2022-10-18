@@ -3,7 +3,7 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { LiveMeasurement, TibberApi } from '../../lib/tibber';
+import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction } from '../../lib/newrelic-transaction';
 
@@ -24,6 +24,7 @@ class WattyDevice extends Device {
   #prevCost?: number;
   #wsSubscription!: Subscription;
   #resubscribeDebounce!: _.DebouncedFunc<() => void>;
+  #resubscribeMaxWaitMilliseconds!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
   #costChangedTrigger!: FlowCardTriggerDevice;
@@ -69,10 +70,15 @@ class WattyDevice extends Device {
       })`,
     );
 
-    // Resubscribe if no data for 10 minutes
+    const jitterSeconds = getRandomDelay(0, 10);
+    const delaySeconds = 10 * 60;
+    this.#resubscribeMaxWaitMilliseconds =
+      (jitterSeconds + delaySeconds) * 1000;
+
+    // Resubscribe if no data for delay + jitter
     this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
-      10 * 60 * 1000,
+      this.#resubscribeMaxWaitMilliseconds,
     );
     await this.#subscribeToLive();
   }
@@ -103,20 +109,27 @@ class WattyDevice extends Device {
 
   async #subscribeToLive() {
     this.#resubscribeDebounce();
+
+    let {
+      viewer: { websocketSubscriptionUrl },
+    } = await this.#tibber.getHomeFeatures();
+
     if (
       this.#wsSubscription &&
       _.isFunction(this.#wsSubscription.unsubscribe)
     ) {
       try {
-        this.log('Unsubscribing from previous connection');
+        this.log(
+          `No data received in ${
+            this.#resubscribeMaxWaitMilliseconds / 1000
+          } seconds; Unsubscribing from previous connection`,
+        );
         this.#wsSubscription.unsubscribe();
 
-        const {
-          viewer: { home },
-        } = await this.#tibber.getHomeFeatures();
-        this.log('Home features', home);
+        const { viewer } = await this.#tibber.getHomeFeatures();
+        websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
-        if (!home?.features?.realTimeConsumptionEnabled) {
+        if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
           this.log(
             `Home with id ${
               this.#deviceId
@@ -135,11 +148,20 @@ class WattyDevice extends Device {
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
 
-    this.#wsSubscription = this.#tibber.subscribeToLive().subscribe(
-      (result) => this.subscribeCallback(result),
-      (error) => this.log('Subscription error occurred', error),
-      () => this.log('Subscription ended with no error'),
-    );
+    this.#wsSubscription = this.#tibber
+      .subscribeToLive(websocketSubscriptionUrl)
+      .subscribe(
+        (result) => this.subscribeCallback(result),
+        (error) => {
+          this.log('Subscription error occurred', error);
+          // When server shuts down we end up here with message text "Unexpected server response: 503"
+          const delay = getRandomDelay(5, 120);
+          this.log(`Resubscribe after ${delay} seconds`);
+          this.#resubscribeDebounce.cancel();
+          this.homey.setTimeout(() => this.#subscribeToLive(), delay * 1000);
+        },
+        () => this.log('Subscription ended with no error'),
+      );
   }
 
   async subscribeCallback(result: LiveMeasurement) {

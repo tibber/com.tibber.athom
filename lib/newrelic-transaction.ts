@@ -53,3 +53,8 @@ export const noticeError = (
   error: Error,
   customAttributes?: { [key: string]: string | number | boolean },
 ): void => newrelic.noticeError(error, customAttributes);
+
+export const getUserAgent = () => {
+  const { firmwareVersion, appVersion } = getGlobalAttributes();
+  return `Homey/${firmwareVersion} com.tibber/${appVersion}`;
+};
