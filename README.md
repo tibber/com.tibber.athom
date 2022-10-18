@@ -56,6 +56,11 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.8.0
+
+- Improved websocket subscription handling
+- Retrieve websocket subscription URL dynamically
+
 #### 1.7.2
 
 - Improved error handling
