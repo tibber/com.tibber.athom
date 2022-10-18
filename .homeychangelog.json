@@ -145,5 +145,8 @@
   },
   "1.7.2": {
     "en": "Improved error handling"
+  },
+  "1.8.0": {
+    "en": "Improved websocket subscription handling"
   }
 }
