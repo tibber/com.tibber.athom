@@ -113,7 +113,7 @@ class PulseDevice extends Device {
 
     let {
       viewer: { websocketSubscriptionUrl },
-    } = await this.#tibber.getHomeFeatures();
+    } = await this.#tibber.getHomeFeatures(this);
 
     if (
       this.#wsSubscription &&
@@ -127,7 +127,7 @@ class PulseDevice extends Device {
         );
         this.#wsSubscription.unsubscribe();
 
-        const { viewer } = await this.#tibber.getHomeFeatures();
+        const { viewer } = await this.#tibber.getHomeFeatures(this);
         websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
         if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
