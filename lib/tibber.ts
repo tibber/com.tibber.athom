@@ -15,6 +15,11 @@ import {
   startTransaction,
   getUserAgent,
 } from './newrelic-transaction';
+import {
+  ERROR_CODE_HOME_NOT_FOUND,
+  ERROR_CODE_UNAUTHENTICATED
+} from './constants'
+import { Device } from 'homey';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -177,7 +182,7 @@ export class TibberApi {
     );
   }
 
-  async getHomeFeatures(): Promise<HomeResponse> {
+  async getHomeFeatures(device: Device): Promise<HomeResponse> {
     const client = this.#getClient();
 
     this.#log(`Get features for home ${this.#homeId!}`);
@@ -188,7 +193,7 @@ export class TibberApi {
           this.#log('Home features', home);
           return home;
         })
-        .catch((e) => {
+        .catch(async (e) => {
           noticeError(e);
           console.error(`${new Date()} Error while fetching home features`, e);
 
@@ -196,9 +201,19 @@ export class TibberApi {
             ?.code;
           if (errorCode !== undefined) {
             this.#log('Received error code', errorCode);
-            if (errorCode === 'HOME_NOT_FOUND') {
-              this.#log(`Home with id ${this.#homeId!} not found`);
-              return { viewer: { home: null } } as HomeResponse;
+            if (errorCode === ERROR_CODE_HOME_NOT_FOUND) {
+              this.#log(
+                `Home with id ${this
+                  .#homeId!} not found; set device unavailable.`,
+              );
+              await device.setUnavailable(
+                'Tibber home with specified id not found. Please re-add device.',
+              );
+            } else if (errorCode === ERROR_CODE_UNAUTHENTICATED) {
+              this.#log('Invalid access token; set device unavailable.');
+              await device.setUnavailable(
+                'Invalid access token. Please re-add device.',
+              );
             }
           }
 
@@ -354,13 +369,6 @@ export class TibberApi {
         token: this.#token,
       },
       webSocketImpl: UserAgentWebSocket,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // shouldRetry: (errOrCloseEvent: any) => {
-      //   this.#log(
-      //     `Error while subscribing to live; code ${errOrCloseEvent.code}; reason ${errOrCloseEvent.reason}`,
-      //   );
-      //   return errOrCloseEvent !== CloseCode.Forbidden;
-      // },
     });
 
     const wsLink = new GraphQLWsLink(webSocketClient);

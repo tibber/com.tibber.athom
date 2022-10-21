@@ -12,6 +12,7 @@ import {
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import { isSameDay } from '../../lib/helpers';
+import { ERROR_CODE_HOME_NOT_FOUND, ERROR_CODE_UNAUTHENTICATED } from '../../lib/constants';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -384,7 +385,7 @@ class HomeDevice extends Device {
 
       if (errorCode !== undefined) {
         this.log('Received error code', errorCode);
-        if (errorCode === 'HOME_NOT_FOUND') {
+        if (errorCode === ERROR_CODE_HOME_NOT_FOUND) {
           this.log(
             `Home with id ${
               this.getData().id
@@ -392,6 +393,13 @@ class HomeDevice extends Device {
           );
           await this.setUnavailable(
             'Tibber home with specified id not found. Please re-add device.',
+          );
+          return;
+        }
+        if (errorCode === ERROR_CODE_UNAUTHENTICATED) {
+          this.log('Invalid access token; set device unavailable.');
+          await this.setUnavailable(
+            'Invalid access token. Please re-add device.',
           );
           return;
         }
