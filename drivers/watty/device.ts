@@ -5,7 +5,7 @@ import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
 import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
 import { NordPoolPriceResult } from '../../lib/types';
-import { startTransaction } from '../../lib/newrelic-transaction';
+import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
 
 class WattyDevice extends Device {
   #tibber!: TibberApi;
@@ -153,6 +153,7 @@ class WattyDevice extends Device {
       .subscribe(
         (result) => this.subscribeCallback(result),
         (error) => {
+          noticeError(error);
           this.log('Subscription error occurred', error);
           // When server shuts down we end up here with message text "Unexpected server response: 503"
           const delay = getRandomDelay(5, 120);
