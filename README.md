@@ -56,6 +56,12 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.8.2
+- Improved real time device handling during startup and when device is removed from user's account
+
+#### 1.8.1
+- Fixed an error during test version package build
+
 #### 1.8.0
 
 - Improved websocket subscription handling
