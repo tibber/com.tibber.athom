@@ -111,10 +111,6 @@ class PulseDevice extends Device {
   async #subscribeToLive() {
     this.#resubscribeDebounce();
 
-    let {
-      viewer: { websocketSubscriptionUrl },
-    } = await this.#tibber.getHomeFeatures(this);
-
     if (
       this.#wsSubscription &&
       _.isFunction(this.#wsSubscription.unsubscribe)
@@ -126,25 +122,31 @@ class PulseDevice extends Device {
           } seconds; Unsubscribing from previous connection`,
         );
         this.#wsSubscription.unsubscribe();
-
-        const { viewer } = await this.#tibber.getHomeFeatures(this);
-        websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
-
-        if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
-          this.log(
-            `Home with id ${
-              this.#deviceId
-            } does not have real time consumption enabled. Set device unavailable`,
-          );
-          this.#resubscribeDebounce.cancel();
-          await this.setUnavailable(
-            'Tibber home with specified id not found. Please re-add device.',
-          );
-          return;
-        }
       } catch (e) {
         this.log('Error unsubscribing from previous connection', e);
       }
+    }
+
+    let websocketSubscriptionUrl;
+    try {
+      const { viewer } = await this.#tibber.getHomeFeatures(this);
+      websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
+
+      if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
+        this.log(
+          `Home with id ${
+            this.#deviceId
+          } does not have real time consumption enabled. Set device unavailable`,
+        );
+        this.#resubscribeDebounce.cancel();
+        await this.setUnavailable(
+          'Tibber home with specified id not found. Please re-add device.',
+        );
+        return;
+      }
+    } catch (e) {
+      this.log('Error fetching home features', e);
+      return;
     }
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
