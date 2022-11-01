@@ -38,6 +38,10 @@ class TibberApp extends App {
         }),
     );
   }
+
+  async onUninit() {
+    this.log('Tibber app is stopping');
+  }
 }
 
 // workaround for `The class exported in '<filepath>' must extend Homey.<classname>` error
