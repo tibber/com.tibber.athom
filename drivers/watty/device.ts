@@ -355,6 +355,14 @@ class WattyDevice extends Device {
   }
 
   onDeleted() {
+    this.destroy();
+  }
+
+  onUninit() {
+    this.destroy();
+  }
+
+  destroy() {
     if (
       this.#wsSubscription &&
       _.isFunction(this.#wsSubscription.unsubscribe)
