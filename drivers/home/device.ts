@@ -12,7 +12,10 @@ import {
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import { isSameDay } from '../../lib/helpers';
-import { ERROR_CODE_HOME_NOT_FOUND, ERROR_CODE_UNAUTHENTICATED } from '../../lib/constants';
+import {
+  ERROR_CODE_HOME_NOT_FOUND,
+  ERROR_CODE_UNAUTHENTICATED,
+} from '../../lib/constants';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',

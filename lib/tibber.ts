@@ -7,6 +7,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
+import { Device } from 'homey';
 import { UserAgentWebSocket } from './UserAgentWebSocket';
 import { queries } from './queries';
 import {
@@ -17,9 +18,8 @@ import {
 } from './newrelic-transaction';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
-  ERROR_CODE_UNAUTHENTICATED
-} from './constants'
-import { Device } from 'homey';
+  ERROR_CODE_UNAUTHENTICATED,
+} from './constants';
 
 export interface Logger {
   (message: string, data?: unknown): void;
