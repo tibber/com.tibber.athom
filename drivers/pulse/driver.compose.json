@@ -97,27 +97,27 @@
           },
           "values": [
             {
-              "id": "NOK",
-              "label": {
-                "en": "NOK"
-              }
-            },
-            {
               "id": "DKK",
               "label": {
                 "en": "DKK"
               }
             },
             {
-              "id": "SEK",
-              "label": {
-                "en": "SEK"
-              }
-            },
-            {
               "id": "EUR",
               "label": {
                 "en": "EUR"
+              }
+            },
+            {
+              "id": "NOK",
+              "label": {
+                "en": "NOK"
+              }
+            },
+            {
+              "id": "SEK",
+              "label": {
+                "en": "SEK"
               }
             }
           ]
@@ -170,6 +170,18 @@
               }
             },
             {
+              "id": "BE",
+              "label": {
+                "en": "BE"
+              }
+            },
+            {
+              "id": "DE-LU",
+              "label": {
+                "en": "DE-LU"
+              }
+            },
+            {
               "id": "DK1",
               "label": {
                 "en": "DK1"
@@ -179,6 +191,18 @@
               "id": "DK2",
               "label": {
                 "en": "DK2"
+              }
+            },
+            {
+              "id": "FI",
+              "label": {
+                "en": "FI"
+              }
+            },
+            {
+              "id": "NL",
+              "label": {
+                "en": "NL"
               }
             },
             {
@@ -203,30 +227,6 @@
               "id": "SE4",
               "label": {
                 "en": "SE4"
-              }
-            },
-            {
-              "id": "NL",
-              "label": {
-                "en": "NL"
-              }
-            },
-            {
-              "id": "BE",
-              "label": {
-                "en": "BE"
-              }
-            },
-            {
-              "id": "DE-LU",
-              "label": {
-                "en": "DE-LU"
-              }
-            },
-            {
-              "id": "FI",
-              "label": {
-                "en": "FI"
               }
             }
           ]
