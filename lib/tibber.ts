@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
 import { ClientError } from 'graphql-request/dist/types';
-import { InMemoryCache } from 'apollo-cache-inmemory';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
@@ -376,8 +375,7 @@ export class TibberApi {
     this.#log('Subscribe to live; create apollo client');
     const apolloClient = new ApolloClient({
       link: wsLink,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cache: new InMemoryCache() as any,
+      cache: new InMemoryCache(),
     });
 
     this.#log('Subscribe to live; call apollo subscribe');

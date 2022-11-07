@@ -17,11 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/client": "^3.6.2",
-    "apollo-cache-inmemory": "^1.6.6",
-    "apollo-link": "^1.2.14",
     "bluebird": "^3.7.2",
     "google-auth-library": "^8.0.2",
-    "graphql": "^15.8.0",
+    "graphql": "^16.6.0",
     "graphql-request": "^5.0.0",
     "graphql-tag": "^2.11.0",
     "graphql-ws": "^5.8.2",
