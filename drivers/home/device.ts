@@ -539,7 +539,7 @@ class HomeDevice extends Device {
           {
             title: `${this.getLoggerPrefix()}Current price`,
             type: 'number',
-            decimals: 1,
+            decimals: 2,
           },
         );
         priceLogger.createEntry(currentPrice.total).catch(console.error);
@@ -766,9 +766,9 @@ class HomeDevice extends Device {
     if (below) diffAvgCurrent *= -1;
 
     this.log(
-      `${this.#latestPrice.total.toFixed(2)} is ${diffAvgCurrent.toFixed(2)}% ${
+      `${this.#latestPrice.total} is ${diffAvgCurrent}% ${
         below ? 'below' : 'above'
-      } avg (${avgPriceNextHours.toFixed(2)}) ${
+      } avg (${avgPriceNextHours}) ${
         hours ? `next ${hours} hours` : 'today'
       }. Condition of min ${percentage} percentage met = ${
         diffAvgCurrent > percentage
@@ -826,7 +826,7 @@ class HomeDevice extends Device {
         : currentHourRank >= sortedHours.length - options.ranked_hours;
 
       this.log(
-        `${this.#latestPrice.total.toFixed(2)} is among the ${
+        `${this.#latestPrice.total} is among the ${
           lowest ? 'lowest' : 'highest'
         } ${options.ranked_hours} hours today = ${conditionMet}`,
       );
@@ -840,7 +840,7 @@ class HomeDevice extends Device {
         : this.#latestPrice.total >= toCompare;
 
       this.log(
-        `${this.#latestPrice.total.toFixed(2)} is ${
+        `${this.#latestPrice.total} is ${
           lowest ? 'lower than the lowest' : 'higher than the highest'
         } (${toCompare}) ${
           options.hours ? `among the next ${options.hours} hours` : 'today'
