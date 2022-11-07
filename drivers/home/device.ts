@@ -489,7 +489,7 @@ class HomeDevice extends Device {
         const capabilityPromises = [
           this.setCapabilityValue(
             'measure_price_total',
-            Number(currentPrice.total.toFixed(2)),
+            Number(currentPrice.total),
           ).catch(console.error),
           this.setCapabilityValue(
             'measure_price_info_level',
@@ -502,7 +502,7 @@ class HomeDevice extends Device {
           capabilityPromises.push(
             this.setCapabilityValue(
               'price_total',
-              Number(currentPrice.total.toFixed(2)),
+              Number(currentPrice.total),
             ).catch(console.error),
           );
         }

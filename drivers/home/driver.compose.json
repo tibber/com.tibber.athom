@@ -12,6 +12,7 @@
   ],
   "capabilitiesOptions": {
     "measure_price_total": {
+      "decimals": 2,
       "preventInsights": true
     }
   },

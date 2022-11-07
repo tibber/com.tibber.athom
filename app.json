@@ -1096,6 +1096,7 @@
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
+          "decimals": 2,
           "preventInsights": true
         }
       },
@@ -1159,6 +1160,9 @@
         "cumulative": true
       },
       "capabilitiesOptions": {
+        "accumulatedCost": {
+          "decimals": 2
+        },
         "meter_power": {
           "title": {
             "en": "Consumption since midnight"
@@ -1399,6 +1403,9 @@
         "cumulative": true
       },
       "capabilitiesOptions": {
+        "accumulatedCost": {
+          "decimals": 2
+        },
         "meter_power": {
           "title": {
             "en": "Consumption since midnight"
