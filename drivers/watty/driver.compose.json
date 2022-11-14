@@ -16,6 +16,9 @@
     "cumulative": true
   },
   "capabilitiesOptions": {
+    "accumulatedCost": {
+      "decimals": 2
+    },
     "meter_power": {
       "title": {
         "en": "Consumption since midnight"
@@ -94,15 +97,21 @@
           },
           "values": [
             {
-              "id": "NOK",
-              "label": {
-                "en": "NOK"
-              }
-            },
-            {
               "id": "DKK",
               "label": {
                 "en": "DKK"
+              }
+            },
+            {
+              "id": "EUR",
+              "label": {
+                "en": "EUR"
+              }
+            },
+            {
+              "id": "NOK",
+              "label": {
+                "en": "NOK"
               }
             },
             {
@@ -161,6 +170,18 @@
               }
             },
             {
+              "id": "BE",
+              "label": {
+                "en": "BE"
+              }
+            },
+            {
+              "id": "DE-LU",
+              "label": {
+                "en": "DE-LU"
+              }
+            },
+            {
               "id": "DK1",
               "label": {
                 "en": "DK1"
@@ -170,6 +191,18 @@
               "id": "DK2",
               "label": {
                 "en": "DK2"
+              }
+            },
+            {
+              "id": "FI",
+              "label": {
+                "en": "FI"
+              }
+            },
+            {
+              "id": "NL",
+              "label": {
+                "en": "NL"
               }
             },
             {

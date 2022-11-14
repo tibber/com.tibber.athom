@@ -13,7 +13,7 @@ export const initiateOauth = async (
   const state = Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
-    .substr(0, 10);
+    .substring(0, 10);
   const redirectUrl = 'https://callback.athom.com/oauth2/callback/';
   const apiBaseUrl = 'https://thewall.tibber.com';
   const apiAuthUrl = `${apiBaseUrl}/connect/authorize?state=${state}&scope=tibber_graph&response_type=code&client_id=${env.CLIENT_ID}&redirect_uri=${redirectUrl}`;

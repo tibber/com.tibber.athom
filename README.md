@@ -56,9 +56,15 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.8.4
+
+- Added fallback price currency EUR and areas BE, DE-LU, FI and NL
+- Prices no longer have internally truncated decimals when updated, but are still shown with two decimals
+- Updated dependencies
+
 #### 1.8.3
 
-- Properly clean up websockets in Homey cloud
+- Properly clean up websockets on Homey Bridge
 
 #### 1.8.2
 

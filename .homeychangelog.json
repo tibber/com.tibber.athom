@@ -156,6 +156,9 @@
     "en": "Improved real time device handling during startup and when device is removed from the account"
   },
   "1.8.3": {
-    "en": "Properly clean up websockets in Homey cloud"
+    "en": "Properly clean up websockets on Homey Bridge"
+  },
+  "1.8.4": {
+    "en": "Added fallback price currency EUR and areas BE, DE-LU, FI and NL. Prices no longer have internally truncated decimals when updated, but are still shown with two decimals. Updated dependencies"
   }
 }

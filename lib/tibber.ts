@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
 import { ClientError } from 'graphql-request/dist/types';
-import { InMemoryCache } from 'apollo-cache-inmemory';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
+import { Device } from 'homey';
 import { UserAgentWebSocket } from './UserAgentWebSocket';
 import { queries } from './queries';
 import {
@@ -17,9 +17,8 @@ import {
 } from './newrelic-transaction';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
-  ERROR_CODE_UNAUTHENTICATED
-} from './constants'
-import { Device } from 'homey';
+  ERROR_CODE_UNAUTHENTICATED,
+} from './constants';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -376,8 +375,7 @@ export class TibberApi {
     this.#log('Subscribe to live; create apollo client');
     const apolloClient = new ApolloClient({
       link: wsLink,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cache: new InMemoryCache() as any,
+      cache: new InMemoryCache(),
     });
 
     this.#log('Subscribe to live; call apollo subscribe');
