@@ -1,6 +1,6 @@
 {
   "name": "com.tibber",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "Integration with Tibber",
   "main": "app.ts",
   "scripts": {
@@ -26,7 +26,7 @@
     "http.min": "^2.1.0",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.35",
-    "newrelic": "^9.1.0",
+    "newrelic": "^9.5.0",
     "source-map-support": "^0.5.21",
     "ws": "^8.9.0",
     "zen-observable-ts": "^1.1.0"

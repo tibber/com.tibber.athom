@@ -56,7 +56,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-#### 1.8.5
+#### 1.8.6
 
 - Updated dependencies
 - Updated required Homey version
