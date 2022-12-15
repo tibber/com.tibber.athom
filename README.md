@@ -56,6 +56,11 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.8.6
+
+- Updated dependencies
+- Updated required Homey version
+
 #### 1.8.4
 
 - Added fallback price currency EUR and areas BE, DE-LU, FI and NL

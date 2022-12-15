@@ -160,5 +160,11 @@
   },
   "1.8.4": {
     "en": "Added fallback price currency EUR and areas BE, DE-LU, FI and NL. Prices no longer have internally truncated decimals when updated, but are still shown with two decimals. Updated dependencies"
+  },
+  "1.8.5": {
+    "en": "Not a public release"
+  },
+  "1.8.6": {
+    "en": "Updated dependencies. Updated required Homey version"
   }
 }
