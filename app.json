@@ -30,6 +30,7 @@
   "bugs": {
     "url": "https://github.com/tibber/com.tibber.athom/issues"
   },
+  "source": "https://github.com/tibber/com.tibber.athom",
   "support": "mailto:hello@tibber.com",
   "flow": {
     "triggers": [
