@@ -716,6 +716,56 @@
     ],
     "conditions": [
       {
+        "id": "price_among_lowest_time",
+        "title": {
+          "en": "Current price is one of the [x] lowest prices between [y] and [z]"
+        },
+        "titleFormatted": {
+          "en": "Current price is one of the [[ranked_hours]] lowest prices between [[start_time]] and [[end_time]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "title": {
+              "en": "Hours"
+            },
+            "placeholder": {
+              "en": "1"
+            }
+          },
+          {
+            "name": "start_time",
+            "type": "time",
+            "title": {
+              "en": "Start time"
+            },
+            "placeholder": {
+              "en": "00:30"
+            }
+          },
+          {
+            "name": "end_time",
+            "type": "time",
+            "title": {
+              "en": "End time"
+            },
+            "placeholder": {
+              "en": "05:45"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
         "id": "current_price_below",
         "title": {
           "en": "Current price !{{below|above}}"

@@ -38,10 +38,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_below_avg",
@@ -74,10 +71,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_above_avg",
@@ -110,10 +104,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_below_avg_today",
@@ -135,10 +126,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_above_avg_today",
@@ -160,10 +148,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_at_lowest",
@@ -185,10 +170,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_at_highest",
@@ -210,30 +192,21 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_at_lowest_today",
       "title": {
         "en": "Current price is at today's lowest"
       },
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_at_highest_today",
       "title": {
         "en": "Current price is at today's highest"
       },
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_among_lowest_today",
@@ -255,10 +228,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "price_among_highest_today",
@@ -280,10 +250,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "consumption_report",
@@ -306,13 +273,52 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     }
   ],
   "conditions": [
+    {
+      "id": "price_among_lowest_time",
+      "title": {
+        "en": "Current price is one of the [x] lowest prices between [y] and [z]"
+      },
+      "titleFormatted": {
+        "en": "Current price is one of the [[hours]] lowest prices between [[start_time]] and [[end_time]]"
+      },
+      "args": [
+        {
+          "name": "hours",
+          "type": "number",
+          "title": {
+            "en": "Hours"
+          },
+          "placeholder": {
+            "en": "1"
+          }
+        },
+        {
+          "name": "start_time",
+          "type": "time",
+          "title": {
+            "en": "Start time"
+          },
+          "placeholder": {
+            "en": "00:30"
+          }
+        },
+        {
+          "name": "end_time",
+          "type": "time",
+          "title": {
+            "en": "End time"
+          },
+          "placeholder": {
+            "en": "05:45"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
     {
       "id": "current_price_below",
       "title": {
@@ -333,10 +339,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_below_avg",
@@ -368,10 +371,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_above_avg",
@@ -403,10 +403,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_below_avg_today",
@@ -428,10 +425,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_above_avg_today",
@@ -453,10 +447,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_at_lowest",
@@ -478,10 +469,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_at_highest",
@@ -503,30 +491,21 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_at_lowest_today",
       "title": {
         "en": "Current price !{{is|isn't}} at today's lowest"
       },
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_at_highest_today",
       "title": {
         "en": "Current price !{{is|isn't}} at today's highest"
       },
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_among_lowest_today",
@@ -548,10 +527,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     },
     {
       "id": "cond_price_among_highest_today",
@@ -573,10 +549,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     }
   ],
   "actions": [
@@ -604,10 +577,7 @@
           }
         }
       ],
-      "platforms": [
-        "local",
-        "cloud"
-      ]
+      "platforms": ["local", "cloud"]
     }
   ]
 }

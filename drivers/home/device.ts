@@ -3,6 +3,7 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import { mapSeries } from 'bluebird';
 import { ClientError } from 'graphql-request/dist/types';
+import { Time } from 'homey/manager/speech-input';
 import {
   TibberApi,
   getRandomDelay,
@@ -57,6 +58,7 @@ class HomeDevice extends Device {
   #currentPriceAtHighestTodayCondition!: FlowCard;
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
+  #priceAmongLowestTimeCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
   #hasDeprecatedTotalPriceCapability = false;
   #hasDeprecatedPriceLevelCapability = false;
@@ -90,7 +92,7 @@ class HomeDevice extends Device {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
     this.#latestPrice = undefined;
-    const { latitude: lat, longitude: lon } = data.address;
+    const { latitude: lat, longitude: lon } = data.address; // REMOVE?
     this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
@@ -157,6 +159,13 @@ class HomeDevice extends Device {
     );
     this.#priceAmongHighestTrigger.registerRunListener(
       this.#priceMinMaxComparer.bind(this),
+    );
+
+    this.#priceAmongLowestTimeCondition = this.homey.flow.getConditionCard(
+      'price_among_lowest_time',
+    );
+    this.#priceAmongLowestTimeCondition.registerRunListener((args) =>
+      this.#priceMinMaxComparer(args, { lowest: true }),
     );
 
     this.#currentPriceBelowCondition = this.homey.flow.getConditionCard(
@@ -228,7 +237,7 @@ class HomeDevice extends Device {
       this.#priceMinMaxComparer(args, { lowest: true }),
     );
 
-    this.#currentPriceAmongHighestTodayCondition =
+    this.#currentPriceAmongHighestTodayCondition = // Tämä toimii!
       this.homey.flow.getConditionCard('cond_price_among_highest_today');
     this.#currentPriceAmongHighestTodayCondition.registerRunListener((args) =>
       this.#priceMinMaxComparer(args, { lowest: false }),
@@ -778,12 +787,17 @@ class HomeDevice extends Device {
   }
 
   #priceMinMaxComparer(
-    options: { hours?: number; ranked_hours?: number },
+    options: {
+      hours?: number;
+      ranked_hours?: number;
+      start_time?: Time;
+      end_time?: Time;
+    },
     { lowest }: { lowest: boolean },
-  ) {
+  ): boolean {
     if (options.hours === 0 || options.ranked_hours === 0) return false;
 
-    const now = moment();
+    let now = moment();
     const pricesNextHours =
       options.hours !== undefined
         ? _(this.#hourlyPrices)
@@ -830,6 +844,37 @@ class HomeDevice extends Device {
           lowest ? 'lowest' : 'highest'
         } ${options.ranked_hours} hours today = ${conditionMet}`,
       );
+    } else if (
+      options.start_time !== undefined &&
+      options.end_time !== undefined
+    ) {
+      const startTime = moment.tz(
+        JSON.stringify(options.start_time),
+        [moment.ISO_8601, 'HH:mm'],
+        'Europe/Oslo',
+      );
+      const endTime = moment.tz(
+        JSON.stringify(options.end_time),
+        [moment.ISO_8601, 'HH:mm'],
+        'Europe/Oslo',
+      );
+      now = moment.tz(now, 'Europe/Oslo');
+
+      const timeConditionMet =
+        startTime < endTime
+          ? now.isAfter(startTime) && now.isBefore(endTime)
+          : now.isAfter(startTime) &&
+            now.isBefore(endTime.add(1, 'day').startOf('hour'));
+
+      console.log(now);
+      console.log(startTime);
+      console.log(endTime);
+      console.log(timeConditionMet);
+
+      const toCompare = _.minBy(pricesNextHours, 'total')!.total;
+      console.log(toCompare);
+
+      conditionMet = this.#latestPrice.total <= toCompare && timeConditionMet;
     } else {
       const toCompare = lowest
         ? _.minBy(pricesNextHours, 'total')!.total
