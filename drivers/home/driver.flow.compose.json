@@ -283,11 +283,11 @@
         "en": "Current price is one of the [x] lowest prices between [y] and [z]"
       },
       "titleFormatted": {
-        "en": "Current price is one of the [[hours]] lowest prices between [[start_time]] and [[end_time]]"
+        "en": "Current price is one of the [[ranked_hours]] lowest prices between [[start_time]] and [[end_time]]"
       },
       "args": [
         {
-          "name": "hours",
+          "name": "ranked_hours",
           "type": "number",
           "title": {
             "en": "Hours"
