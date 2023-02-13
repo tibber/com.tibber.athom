@@ -234,7 +234,7 @@ class HomeDevice extends Device {
     );
 
     this.#currentPriceAmongLowestWithinTimeFrameCondition =
-      this.homey.flow.getConditionCard('price_among_lowest_time');
+      this.homey.flow.getConditionCard('price_among_lowest_time_frame');
     this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
       (args) => this.#lowestPricesWithinTimeFrame(args),
     );

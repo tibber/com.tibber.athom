@@ -278,7 +278,7 @@
   ],
   "conditions": [
     {
-      "id": "price_among_lowest_time",
+      "id": "price_among_lowest_time_frame",
       "title": {
         "en": "Current price is one of the [x] lowest prices between [y] and [z]"
       },
