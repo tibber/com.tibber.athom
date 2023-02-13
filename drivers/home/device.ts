@@ -12,11 +12,11 @@ import {
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import { formatTime, isSameDay } from '../../lib/helpers';
+import { TimeString } from '../../lib/types';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
-import { TimeString } from '../../lib/types';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -158,12 +158,6 @@ class HomeDevice extends Device {
       this.#priceMinMaxComparer.bind(this),
     );
 
-    this.#currentPriceAmongLowestWithinTimeFrameCondition =
-      this.homey.flow.getConditionCard('price_among_lowest_time');
-    this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
-      (args) => this.#lowestPricesWithinTimeFrame(args),
-    );
-
     this.#currentPriceBelowCondition = this.homey.flow.getConditionCard(
       'current_price_below',
     );
@@ -237,6 +231,12 @@ class HomeDevice extends Device {
       this.homey.flow.getConditionCard('cond_price_among_highest_today');
     this.#currentPriceAmongHighestTodayCondition.registerRunListener((args) =>
       this.#priceMinMaxComparer(args, { lowest: false }),
+    );
+
+    this.#currentPriceAmongLowestWithinTimeFrameCondition =
+      this.homey.flow.getConditionCard('price_among_lowest_time');
+    this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
+      (args) => this.#lowestPricesWithinTimeFrame(args),
     );
 
     this.#sendPushNotificationAction = this.homey.flow.getActionCard(
@@ -873,7 +873,7 @@ class HomeDevice extends Device {
     const now = moment().tz('Europe/Oslo');
 
     const nonAdjustedStart = formatTime(start_time);
-    const start = nonAdjustedStart.startOf('hour');
+    const start = nonAdjustedStart.clone().startOf('hour');
 
     const nonAdjustedEnd = formatTime(end_time);
     const end = nonAdjustedEnd
