@@ -3,7 +3,6 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import { mapSeries } from 'bluebird';
 import { ClientError } from 'graphql-request/dist/types';
-import { Time } from 'homey/manager/speech-input';
 import {
   TibberApi,
   getRandomDelay,
@@ -12,11 +11,12 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
-import { isSameDay } from '../../lib/helpers';
+import { formatTime, isSameDay } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
+import { TimeString } from '../../lib/types';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -164,7 +164,7 @@ class HomeDevice extends Device {
     this.#currentPriceAmongLowestWithinTimeFrameCondition =
       this.homey.flow.getConditionCard('price_among_lowest_time');
     this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
-      (args) => this.#priceMinMaxComparer(args, { lowest: true }),
+      (args) => this.#lowestPricesWithinTimeFrame(args),
     );
 
     this.#currentPriceBelowCondition = this.homey.flow.getConditionCard(
@@ -789,24 +789,10 @@ class HomeDevice extends Device {
     options: {
       hours?: number;
       ranked_hours?: number;
-      start_time?: Time;
-      end_time?: Time;
     },
     { lowest }: { lowest: boolean },
   ): boolean {
     if (options.hours === 0 || options.ranked_hours === 0) return false;
-
-    if (
-      options.start_time !== undefined &&
-      options.end_time !== undefined &&
-      options.ranked_hours !== undefined
-    ) {
-      return this.#lowestPricesWithinTimeFrame(
-        options.ranked_hours,
-        options.start_time,
-        options.end_time,
-      );
-    }
 
     const now = moment();
     const pricesNextHours =
@@ -876,40 +862,53 @@ class HomeDevice extends Device {
     return conditionMet;
   }
 
-  #lowestPricesWithinTimeFrame(
-    ranked_hours: number,
-    start_time: Time,
-    end_time: Time,
-  ): boolean {
-    let now = moment();
-    const startTime = moment.tz(
-      JSON.stringify(start_time),
-      [moment.ISO_8601, 'HH:mm'],
-      'Europe/Oslo',
-    );
-    const endTime = moment.tz(
-      JSON.stringify(end_time),
-      [moment.ISO_8601, 'HH:mm'],
-      'Europe/Oslo',
-    );
-    now = moment.tz(now, 'Europe/Oslo');
+  #lowestPricesWithinTimeFrame({
+    ranked_hours,
+    start_time,
+    end_time,
+  }: {
+    ranked_hours: number;
+    start_time: TimeString;
+    end_time: TimeString;
+  }): boolean {
+    if (ranked_hours === 0) return false;
 
-    const timeConditionMet =
-      startTime < endTime
-        ? now.isSameOrAfter(startTime) && now.isBefore(endTime)
-        : now.isSameOrAfter(startTime) &&
-          now.isBefore(endTime.add(1, 'day').startOf('minute'));
+    const now = moment().tz('Europe/Oslo');
 
-    if (!timeConditionMet) {
+    const nonAdjustedStart = formatTime(start_time);
+    const start = nonAdjustedStart.startOf('hour');
+
+    const nonAdjustedEnd = formatTime(end_time);
+    const end = nonAdjustedEnd
+      .clone()
+      .add(nonAdjustedStart > nonAdjustedEnd ? 1 : 0, 'day');
+
+    console.log(start);
+    console.log(end);
+    if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
       this.log(`Time conditions not met`);
       return false;
     }
 
     const pricesNextHours = this.#hourlyPrices.filter(
       (p) =>
-        moment(p.startsAt).isSameOrAfter(startTime.startOf('hour')) &&
-        moment(p.startsAt).isBefore(endTime),
+        moment(p.startsAt).isSameOrAfter(start) &&
+        moment(p.startsAt).isBefore(end),
     );
+
+    console.log(pricesNextHours);
+
+    if (!pricesNextHours.length) {
+      this.log(
+        `Cannot determine condition. No prices for next hours available.`,
+      );
+      return false;
+    }
+
+    if (this.#latestPrice === undefined) {
+      this.log(`Cannot determine condition. The last price is undefined`);
+      return false;
+    }
 
     const sortedHours = _.sortBy(pricesNextHours, ['total']);
     const currentHourRank = sortedHours.findIndex(
@@ -923,9 +922,8 @@ class HomeDevice extends Device {
     const conditionMet = currentHourRank < ranked_hours;
 
     this.log(
-      // the '?' for now
-      `${this.#latestPrice?.total} is among the lowest ${ranked_hours} 
-      prices between ${start_time} and ${end_time} = ${conditionMet}`,
+      `${this.#latestPrice.total} is among the lowest ${ranked_hours} 
+      prices between ${nonAdjustedStart} and ${end} = ${conditionMet}`,
     );
 
     return conditionMet;

@@ -54,7 +54,7 @@ export const initiateOauth = async (
 
         const params = JSON.parse(result.data);
         tibber.setDefaultToken(params.access_token);
-        await session.emit('authorized', '').catch(console.error);
+        await session.emit('authorized', undefined).catch(console.error);
       } catch (err) {
         console.error('request failed', err);
         await session
