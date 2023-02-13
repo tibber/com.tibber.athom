@@ -880,8 +880,6 @@ class HomeDevice extends Device {
       .clone()
       .add(nonAdjustedStart > nonAdjustedEnd ? 1 : 0, 'day');
 
-    console.log(start);
-    console.log(end);
     if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
       this.log(`Time conditions not met`);
       return false;
@@ -892,8 +890,6 @@ class HomeDevice extends Device {
         moment(p.startsAt).isSameOrAfter(start) &&
         moment(p.startsAt).isBefore(end),
     );
-
-    console.log(pricesNextHours);
 
     if (!pricesNextHours.length) {
       this.log(
