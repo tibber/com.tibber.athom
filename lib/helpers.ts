@@ -3,6 +3,7 @@ import { ClientError } from 'graphql-request/dist/types';
 import moment from 'moment-timezone';
 import { Home, Logger, TibberApi } from './tibber';
 import { noticeError, startTransaction } from './newrelic-transaction';
+import { TimeString } from './types';
 
 export interface HomeFilterPredicate {
   (home: Home): boolean;
@@ -67,4 +68,13 @@ export const isSameDay = (
   if (first.length === 0) return false;
 
   return moment(first).tz(tz).isSame(second, 'day');
+};
+
+export const formatTime = (time: TimeString) => {
+  const [h, m] = time.split(':');
+  return moment
+    .tz('Europe/Oslo')
+    .hour(Number(h))
+    .minute(Number(m))
+    .startOf('minute');
 };
