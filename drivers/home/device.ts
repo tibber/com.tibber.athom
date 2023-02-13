@@ -32,7 +32,6 @@ class HomeDevice extends Device {
   #insightId!: string;
   #hourlyPrices!: PriceInfoEntry[];
   #latestPrice?: PriceInfoEntry;
-  #location!: { lat: number; lon: number };
   #priceAtLowestToday?: PriceInfoEntry;
   #priceAtHighestToday?: PriceInfoEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
@@ -92,8 +91,6 @@ class HomeDevice extends Device {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
     this.#latestPrice = undefined;
-    const { latitude: lat, longitude: lon } = data.address; // REMOVE?
-    this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');

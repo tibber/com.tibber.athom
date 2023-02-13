@@ -108,8 +108,6 @@ export type Home = {
     address1: string;
     postalCode: string;
     city: string;
-    latitude: string;
-    longitude: string;
   };
   features: Partial<{
     realTimeConsumptionEnabled: boolean;
