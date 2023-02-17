@@ -598,7 +598,7 @@ class HomeDevice extends Device {
               this.#insightId
             }_price. Error: ${err}`,
           );
-          console.error(error);
+          console.error(error.message);
           noticeError(error);
         }
       }
