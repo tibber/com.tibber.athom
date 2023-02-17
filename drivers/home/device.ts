@@ -3,6 +3,7 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import { mapSeries } from 'bluebird';
 import { ClientError } from 'graphql-request/dist/types';
+import { noticeError } from 'newrelic';
 import {
   TibberApi,
   getRandomDelay,
@@ -11,8 +12,7 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
-import { formatTime, isSameDay } from '../../lib/helpers';
-import { TimeString } from '../../lib/types';
+import { parseTimeString, isSameDay, TimeString } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
@@ -234,7 +234,7 @@ class HomeDevice extends Device {
     );
 
     this.#currentPriceAmongLowestWithinTimeFrameCondition =
-      this.homey.flow.getConditionCard('price_among_lowest_time_frame');
+      this.homey.flow.getConditionCard('price_among_lowest_during_time');
     this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
       (args) => this.#lowestPricesWithinTimeFrame(args),
     );
@@ -539,16 +539,6 @@ class HomeDevice extends Device {
           .catch(console.error);
         this.log('Triggering price_changed', currentPrice);
 
-        const priceLogger = await this.#createGetLog(
-          `${this.#insightId}_price`,
-          {
-            title: `${this.getLoggerPrefix()}Current price`,
-            type: 'number',
-            decimals: 2,
-          },
-        );
-        priceLogger.createEntry(currentPrice.total).catch(console.error);
-
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
           .catch(console.error);
@@ -591,6 +581,25 @@ class HomeDevice extends Device {
           this.#priceAtHighestTodayTrigger
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
+        }
+        try {
+          const priceLogger = await this.#createGetLog(
+            `${this.#insightId}_price`,
+            {
+              title: `${this.getLoggerPrefix()}Current price`,
+              type: 'number',
+              decimals: 2,
+            },
+          );
+          priceLogger.createEntry(currentPrice.total).catch(console.error);
+        } catch (err) {
+          const error = new Error(
+            `Failing priceLogger. Insight id: ${
+              this.#insightId
+            }_price. Error: ${err}`,
+          );
+          console.error(error);
+          noticeError(error);
         }
       }
     }
@@ -872,13 +881,12 @@ class HomeDevice extends Device {
 
     const now = moment().tz('Europe/Oslo');
 
-    const nonAdjustedStart = formatTime(start_time);
-    const start = nonAdjustedStart.clone().startOf('hour');
+    const start = parseTimeString(start_time);
 
-    const nonAdjustedEnd = formatTime(end_time);
+    const nonAdjustedEnd = parseTimeString(end_time);
     const end = nonAdjustedEnd
       .clone()
-      .add(nonAdjustedStart > nonAdjustedEnd ? 1 : 0, 'day');
+      .add(start > nonAdjustedEnd ? 1 : 0, 'day');
 
     if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
       this.log(`Time conditions not met`);
@@ -887,7 +895,7 @@ class HomeDevice extends Device {
 
     const pricesNextHours = this.#hourlyPrices.filter(
       (p) =>
-        moment(p.startsAt).isSameOrAfter(start) &&
+        moment(p.startsAt).isSameOrAfter(start, 'hour') &&
         moment(p.startsAt).isBefore(end),
     );
 
@@ -916,7 +924,7 @@ class HomeDevice extends Device {
 
     this.log(
       `${this.#latestPrice.total} is among the lowest ${ranked_hours} 
-      prices between ${nonAdjustedStart} and ${end} = ${conditionMet}`,
+      prices between ${start} and ${end} = ${conditionMet}`,
     );
 
     return conditionMet;
