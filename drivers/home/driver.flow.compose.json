@@ -303,7 +303,7 @@
           "name": "start_time",
           "type": "time",
           "title": {
-            "en": "Start time (on the hour)"
+            "en": "Start time"
           },
           "placeholder": {
             "en": "08:00"
@@ -313,7 +313,7 @@
           "name": "end_time",
           "type": "time",
           "title": {
-            "en": "End time (on the hour)"
+            "en": "End time"
           },
           "placeholder": {
             "en": "14:00"
