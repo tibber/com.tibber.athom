@@ -881,12 +881,18 @@ class HomeDevice extends Device {
 
     const now = moment().tz('Europe/Oslo');
 
-    const start = parseTimeString(start_time);
+    const nonAdjustedStart = parseTimeString(start_time);
+    let start = nonAdjustedStart;
 
     const nonAdjustedEnd = parseTimeString(end_time);
-    const end = nonAdjustedEnd
-      .clone()
-      .add(start > nonAdjustedEnd ? 1 : 0, 'day');
+    let end = nonAdjustedEnd;
+
+    if (nonAdjustedStart > nonAdjustedEnd) {
+      start = nonAdjustedStart
+        .clone()
+        .add(now < nonAdjustedEnd ? -1 : 0, 'day');
+      end = nonAdjustedEnd.clone().add(now > nonAdjustedEnd ? 1 : 0, 'day');
+    }
 
     if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
       this.log(`Time conditions not met`);
