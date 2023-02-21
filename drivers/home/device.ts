@@ -30,7 +30,6 @@ class HomeDevice extends Device {
   #tibber!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #hourlyPrices!: PriceInfoEntry[];
   #latestPrice?: PriceInfoEntry;
   #priceAtLowestToday?: PriceInfoEntry;
   #priceAtHighestToday?: PriceInfoEntry;
@@ -302,17 +301,21 @@ class HomeDevice extends Device {
     try {
       this.log(`Begin update`);
 
-      const hourlyPrices = await startTransaction('GetPriceInfo', 'API', () =>
+      await startTransaction('GetPriceInfo', 'API', () =>
         this.#tibber.getPriceInfoCached((callback, ms, args) =>
           this.homey.setTimeout(callback, ms, args),
         ),
+      );
+
+      const now = moment();
+      const hourlyPrices = this.#tibber.hourlyPrices.filter((p) =>
+        moment.tz(p.startsAt, 'Europe/Oslo').isSameOrAfter(now, 'day'),
       );
 
       this.onPriceData(hourlyPrices).catch(() => {});
 
       if (this.isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
-        const now = moment();
         const lastLoggedDailyConsumption = this.getLastLoggedDailyConsumption();
         let daysToFetch = 14;
 
@@ -488,7 +491,6 @@ class HomeDevice extends Device {
 
     if (currentPrice.startsAt !== this.#latestPrice?.startsAt) {
       this.#latestPrice = currentPrice;
-      this.#hourlyPrices = hourlyPrices;
 
       if (currentPrice.total !== null) {
         const capabilityPromises = [
@@ -752,7 +754,7 @@ class HomeDevice extends Device {
     const now = moment();
     let avgPriceNextHours: number;
     if (hours) {
-      avgPriceNextHours = _(this.#hourlyPrices)
+      avgPriceNextHours = _(this.#tibber.hourlyPrices)
         .filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
@@ -761,7 +763,7 @@ class HomeDevice extends Device {
         .take(Math.abs(hours))
         .meanBy((x) => x.total);
     } else {
-      avgPriceNextHours = _(this.#hourlyPrices)
+      avgPriceNextHours = _(this.#tibber.hourlyPrices)
         .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
         .meanBy((x) => x.total);
     }
@@ -803,7 +805,7 @@ class HomeDevice extends Device {
     const now = moment();
     const pricesNextHours =
       options.hours !== undefined
-        ? _(this.#hourlyPrices)
+        ? _(this.#tibber.hourlyPrices)
             .filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
@@ -811,7 +813,7 @@ class HomeDevice extends Device {
             )
             .take(Math.abs(options.hours))
             .value()
-        : _(this.#hourlyPrices)
+        : _(this.#tibber.hourlyPrices)
             .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
             .value();
 
@@ -890,7 +892,7 @@ class HomeDevice extends Device {
     if (nonAdjustedStart > nonAdjustedEnd) {
       start = nonAdjustedStart
         .clone()
-        .add(now < nonAdjustedEnd ? -1 : 0, 'day');
+        .subtract(now < nonAdjustedEnd ? 1 : 0, 'day');
       end = nonAdjustedEnd.clone().add(now > nonAdjustedEnd ? 1 : 0, 'day');
     }
 
@@ -899,13 +901,13 @@ class HomeDevice extends Device {
       return false;
     }
 
-    const pricesNextHours = this.#hourlyPrices.filter(
+    const pricesWithinTimeFrame = this.#tibber.hourlyPrices.filter(
       (p) =>
         moment(p.startsAt).isSameOrAfter(start, 'hour') &&
         moment(p.startsAt).isBefore(end),
     );
 
-    if (!pricesNextHours.length) {
+    if (!pricesWithinTimeFrame.length) {
       this.log(
         `Cannot determine condition. No prices for next hours available.`,
       );
@@ -917,7 +919,7 @@ class HomeDevice extends Device {
       return false;
     }
 
-    const sortedHours = _.sortBy(pricesNextHours, ['total']);
+    const sortedHours = _.sortBy(pricesWithinTimeFrame, ['total']);
     const currentHourRank = sortedHours.findIndex(
       (p) => p.startsAt === this.#latestPrice?.startsAt,
     );

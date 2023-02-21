@@ -19,6 +19,7 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
+import { isSameDay } from './helpers';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -127,9 +128,9 @@ export class TibberApi {
   readonly #log: Logger;
   readonly #homeId?: string;
   #homeySettings: ManagerSettings;
-  #hourlyPrices: PriceInfoEntry[] = [];
   #token?: string;
   #client?: GraphQLClient;
+  hourlyPrices: PriceInfoEntry[] = [];
 
   constructor(
     log: Logger,
@@ -226,19 +227,19 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<PriceInfoEntry[]> {
-    if (!this.#hourlyPrices.length) {
+    if (!this.hourlyPrices.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
-      this.#hourlyPrices = await startSegment(
+      this.hourlyPrices = await startSegment(
         'GetPriceInfo.CacheEmpty',
         true,
         () => this.#getPriceInfo(),
       );
 
-      return this.#hourlyPrices;
+      return this.hourlyPrices;
     }
 
-    const last = _.last(this.#hourlyPrices) as PriceInfoEntry;
+    const last = _.last(this.hourlyPrices) as PriceInfoEntry;
     const lastPriceForDay = moment(last.startsAt).startOf('day');
     this.#log(
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
@@ -277,15 +278,15 @@ export class TibberApi {
             return;
           }
 
-          this.#hourlyPrices = data;
+          this.hourlyPrices = data;
         }, delay * 1000);
       });
 
-      return this.#hourlyPrices;
+      return this.hourlyPrices;
     }
 
     this.#log(`Last price info entry is up-to-date`);
-    return this.#hourlyPrices;
+    return this.hourlyPrices;
   }
 
   async #getPriceInfo(): Promise<PriceInfoEntry[]> {
@@ -302,14 +303,19 @@ export class TibberApi {
         }),
     );
 
+    const yesterday = moment().startOf('day').subtract(1, 'day');
+    const pricesYesterday = this.hourlyPrices?.filter((p) =>
+      isSameDay(p.startsAt, yesterday, 'Europe/Oslo'),
+    );
+
     const pricesToday =
       data.viewer?.home?.currentSubscription?.priceInfo?.today ?? [];
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
-    this.#hourlyPrices = [...pricesToday, ...pricesTomorrow];
+    this.hourlyPrices = [...pricesYesterday, ...pricesToday, ...pricesTomorrow];
 
-    return this.#hourlyPrices;
+    return this.hourlyPrices;
   }
 
   async getConsumptionData(
