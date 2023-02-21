@@ -752,23 +752,25 @@ class HomeDevice extends Device {
     if (hours === 0) return false;
 
     const now = moment();
-    let avgPriceNextHours: number;
+    let priceNextHours;
     if (hours) {
-      avgPriceNextHours = _(this.#tibber.hourlyPrices)
-        .filter((p) =>
+      priceNextHours = takeFromStartOrEnd(
+        this.#tibber.hourlyPrices.filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
             : moment(p.startsAt).isBefore(now),
-        )
-        .take(Math.abs(hours))
-        .meanBy((x) => x.total);
+        ),
+        hours,
+      );
     } else {
-      avgPriceNextHours = _(this.#tibber.hourlyPrices)
-        .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
-        .meanBy((x) => x.total);
+      priceNextHours = this.#tibber.hourlyPrices.filter((p) =>
+        isSameDay(p.startsAt, now, 'Europe/Oslo'),
+      );
     }
 
-    if (avgPriceNextHours === undefined) {
+    const avgPriceNextHours = _.meanBy(priceNextHours, 'total');
+
+    if (Number.isNaN(avgPriceNextHours)) {
       this.log(
         `Cannot determine condition. No prices for next hours available.`,
       );
@@ -803,19 +805,19 @@ class HomeDevice extends Device {
     if (options.hours === 0 || options.ranked_hours === 0) return false;
 
     const now = moment();
+
     const pricesNextHours =
       options.hours !== undefined
-        ? _(this.#tibber.hourlyPrices)
-            .filter((p) =>
+        ? takeFromStartOrEnd(
+            this.#tibber.hourlyPrices.filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
                 : moment(p.startsAt).isBefore(now),
-            )
-            .take(Math.abs(options.hours))
-            .value()
-        : _(this.#tibber.hourlyPrices)
-            .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
-            .value();
+            ),
+          )
+        : this.#tibber.hourlyPrices.filter((p) =>
+            isSameDay(p.startsAt, now, 'Europe/Oslo'),
+          );
 
     if (!pricesNextHours.length) {
       this.log(

@@ -78,6 +78,21 @@ export const parseTimeString = (time: TimeString) => {
     .startOf('minute');
 };
 
+// takes from end of array if `quantity` is negative
+export const takeFromStartOrEnd = <T>(arr: T[], quantity?: number): T[] => {
+  if (quantity === undefined) return [];
+
+  let startIndex;
+  let endIndex;
+  if (Math.sign(quantity) === -1) {
+    startIndex = quantity;
+    endIndex = -quantity;
+  } else {
+    startIndex = 0;
+    endIndex = quantity;
+  }
+  return arr.splice(startIndex, endIndex);
+};
 type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export type TimeString = `${Digit}${Digit}:${Digit}${Digit}`;
