@@ -171,6 +171,9 @@
     "en": "Updated dependencies"
   },
   "1.8.8": {
-    "en": "Updated dependencies. Added a new condition card, source link to manifest and new icons."
+    "en": "Not a public release"
+  },
+  "1.9.0": {
+    "en": "Updated dependencies. Added caching of yesterdays prices, a new condition card, source link to manifest and new icons."
   }
 }
