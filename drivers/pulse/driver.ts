@@ -1,6 +1,6 @@
 import { Driver } from 'homey';
 import PairSession from 'homey/lib/PairSession';
-import { createListDeviceHandler } from '../../lib/helpers';
+import { createListDeviceHandler } from '../../lib/device-helpers';
 import { initiateOauth } from '../../lib/oauth';
 import { TibberApi } from '../../lib/tibber';
 

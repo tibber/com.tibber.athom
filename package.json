@@ -17,7 +17,6 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/client": "^3.7.9",
-    "bluebird": "^3.7.2",
     "google-auth-library": "^8.0.2",
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0",

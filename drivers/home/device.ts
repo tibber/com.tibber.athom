@@ -1,7 +1,6 @@
 import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
-import { mapSeries } from 'bluebird';
 import { ClientError } from 'graphql-request/dist/types';
 import { noticeError } from 'newrelic';
 import {
@@ -12,7 +11,14 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
-import { parseTimeString, isSameDay, TimeString } from '../../lib/helpers';
+import {
+  meanBy,
+  parseTimeString,
+  isSameDay,
+  TimeString,
+  takeFromStartOrEnd,
+  sumBy,
+} from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
@@ -639,8 +645,11 @@ class HomeDevice extends Device {
       const consumptionsSinceLastReport: ConsumptionNode[] = [];
       const dailyConsumptions: ConsumptionNode[] =
         data.viewer.home?.daily?.nodes ?? [];
-      await mapSeries(dailyConsumptions, async (dailyConsumption) => {
-        if (dailyConsumption.consumption !== null) {
+
+      await Promise.all(
+        dailyConsumptions.map(async (dailyConsumption) => {
+          if (dailyConsumption.consumption === null) return;
+
           if (
             lastLoggedDailyConsumption &&
             moment(dailyConsumption.to) <= moment(lastLoggedDailyConsumption)
@@ -675,23 +684,27 @@ class HomeDevice extends Device {
           costLogger
             .createEntry(dailyConsumption.totalCost)
             .catch(console.error);
-        }
-      });
+        }),
+      );
 
       if (consumptionsSinceLastReport.length > 0) {
         this.#consumptionReportTrigger
           .trigger(this, {
             consumption: Number(
-              _.sumBy(consumptionsSinceLastReport, 'consumption').toFixed(2),
+              sumBy(consumptionsSinceLastReport, (c) => c.consumption).toFixed(
+                2,
+              ),
             ),
             totalCost: Number(
-              _.sumBy(consumptionsSinceLastReport, 'totalCost').toFixed(2),
+              sumBy(consumptionsSinceLastReport, (c) => c.totalCost).toFixed(2),
             ),
             unitCost: Number(
-              _.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(2),
+              sumBy(consumptionsSinceLastReport, (c) => c.unitCost).toFixed(2),
             ),
             unitPrice: Number(
-              _.meanBy(consumptionsSinceLastReport, 'unitPrice').toFixed(2),
+              meanBy(consumptionsSinceLastReport, (c) => c.unitPrice).toFixed(
+                2,
+              ),
             ),
           })
           .catch(console.error);
@@ -702,9 +715,12 @@ class HomeDevice extends Device {
 
     try {
       const lastLoggedHourlyConsumption = this.getLastLoggedHourlyConsumption();
-      const hourlyConsumptions = data.viewer.home?.hourly?.nodes || [];
-      await mapSeries(hourlyConsumptions, async (hourlyConsumption) => {
-        if (hourlyConsumption.consumption !== null) {
+      const hourlyConsumptions = data.viewer.home?.hourly?.nodes ?? [];
+
+      await Promise.all(
+        hourlyConsumptions.map(async (hourlyConsumption) => {
+          if (hourlyConsumption.consumption === null) return;
+
           if (
             lastLoggedHourlyConsumption &&
             moment(hourlyConsumption.to) <= moment(lastLoggedHourlyConsumption)
@@ -738,8 +754,8 @@ class HomeDevice extends Device {
           costLogger
             .createEntry(hourlyConsumption.totalCost)
             .catch(console.error);
-        }
-      });
+        }),
+      );
     } catch (e) {
       console.error('Error logging hourly consumption', e);
     }
@@ -933,7 +949,7 @@ class HomeDevice extends Device {
     const conditionMet = currentHourRank < ranked_hours;
 
     this.log(
-      `${this.#latestPrice.total} is among the lowest ${ranked_hours} 
+      `${this.#latestPrice.total} is among the lowest ${ranked_hours}
       prices between ${start} and ${end} = ${conditionMet}`,
     );
 
