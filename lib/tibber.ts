@@ -220,13 +220,13 @@ export class TibberApi {
     );
   }
 
-  async getPriceInfoCached(
+  async populateCachedPriceInfos(
     homeySetTimeout: (
       callback: (...args: unknown[]) => void,
       ms: number,
       ...args: unknown[]
     ) => NodeJS.Timeout,
-  ): Promise<PriceInfoEntry[]> {
+  ): Promise<void> {
     if (!this.hourlyPrices.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
@@ -235,8 +235,6 @@ export class TibberApi {
         true,
         () => this.#getPriceInfo(),
       );
-
-      return this.hourlyPrices;
     }
 
     const last = _.last(this.hourlyPrices) as PriceInfoEntry;
@@ -281,12 +279,9 @@ export class TibberApi {
           this.hourlyPrices = data;
         }, delay * 1000);
       });
-
-      return this.hourlyPrices;
     }
 
     this.#log(`Last price info entry is up-to-date`);
-    return this.hourlyPrices;
   }
 
   async #getPriceInfo(): Promise<PriceInfoEntry[]> {
