@@ -763,7 +763,7 @@ class HomeDevice extends Device {
         this.#tibber.hourlyPrices.filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
-            : moment(p.startsAt).isBefore(now),
+            : moment(p.startsAt).isBefore(now, 'hour'),
         ),
         hours,
       );
@@ -817,8 +817,9 @@ class HomeDevice extends Device {
             this.#tibber.hourlyPrices.filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
-                : moment(p.startsAt).isBefore(now),
+                : moment(p.startsAt).isBefore(now, 'hour'),
             ),
+            options.hours,
           )
         : this.#tibber.hourlyPrices.filter((p) =>
             isSameDay(p.startsAt, now, 'Europe/Oslo'),
