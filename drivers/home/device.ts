@@ -23,6 +23,7 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
+import { InsightLoggerError } from '../../lib/errors';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -547,7 +548,7 @@ class HomeDevice extends Device {
           );
           priceLogger.createEntry(currentPrice.total).catch(console.error);
         } catch (err) {
-          const error = new Error(
+          const error = new InsightLoggerError(
             `Failing priceLogger. Insight id: ${
               this.#insightId
             }_price. Error: ${err}`,
