@@ -897,11 +897,15 @@ class HomeDevice extends Device {
     const nonAdjustedEnd = parseTimeString(end_time);
     let end = nonAdjustedEnd;
 
-    if (nonAdjustedStart > nonAdjustedEnd) {
+    const periodStretchesOverMidnight = nonAdjustedStart > nonAdjustedEnd;
+    const adjustStartToYesterday = now < nonAdjustedEnd;
+    const adjustEndToTomorrow = now > nonAdjustedEnd;
+
+    if (periodStretchesOverMidnight) {
       start = nonAdjustedStart
         .clone()
-        .subtract(now < nonAdjustedEnd ? 1 : 0, 'day');
-      end = nonAdjustedEnd.clone().add(now > nonAdjustedEnd ? 1 : 0, 'day');
+        .subtract(adjustStartToYesterday ? 1 : 0, 'day');
+      end = nonAdjustedEnd.clone().add(adjustEndToTomorrow ? 1 : 0, 'day');
     }
 
     if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
