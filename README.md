@@ -64,6 +64,7 @@ Integration with Tibber, with Pulse and Watty support.
 - Added a new condition card: current price is one of the [x] lowest prices between [y] and [z]
 - Added new icons
 - Added source link to manifest
+- Small API refactoring
 
 #### 1.8.7
 
