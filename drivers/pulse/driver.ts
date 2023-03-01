@@ -1,7 +1,6 @@
 import { Driver } from 'homey';
 import PairSession from 'homey/lib/PairSession';
-import { EventEmitter } from 'stream';
-import { createListDeviceHandler } from '../../lib/helpers';
+import { createListDeviceHandler } from '../../lib/device-helpers';
 import { initiateOauth } from '../../lib/oauth';
 import { TibberApi } from '../../lib/tibber';
 
@@ -25,11 +24,7 @@ class PulseDriver extends Driver {
       ),
     );
 
-    initiateOauth(
-      this.homey,
-      session as unknown as EventEmitter, // this cast of `session` is due to `PairSession` missing `.emit()`, even though JS code examples call it
-      this.#tibber,
-    ).catch(console.error);
+    initiateOauth(this.homey, session, this.#tibber).catch(console.error);
   }
 }
 
