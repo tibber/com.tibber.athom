@@ -12,12 +12,12 @@ import {
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
-  meanBy,
+  mean,
   parseTimeString,
   isSameDay,
   TimeString,
   takeFromStartOrEnd,
-  sumBy,
+  sum,
 } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
@@ -654,20 +654,16 @@ class HomeDevice extends Device {
         this.#consumptionReportTrigger
           .trigger(this, {
             consumption: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.consumption).toFixed(
-                2,
-              ),
+              sum(consumptionsSinceLastReport, (c) => c.consumption).toFixed(2),
             ),
             totalCost: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.totalCost).toFixed(2),
+              sum(consumptionsSinceLastReport, (c) => c.totalCost).toFixed(2),
             ),
             unitCost: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.unitCost).toFixed(2),
+              sum(consumptionsSinceLastReport, (c) => c.unitCost).toFixed(2),
             ),
             unitPrice: Number(
-              meanBy(consumptionsSinceLastReport, (c) => c.unitPrice).toFixed(
-                2,
-              ),
+              mean(consumptionsSinceLastReport, (c) => c.unitPrice).toFixed(2),
             ),
           })
           .catch(console.error);
@@ -774,7 +770,7 @@ class HomeDevice extends Device {
       );
     }
 
-    const avgPriceNextHours = _.meanBy(priceNextHours, 'total');
+    const avgPriceNextHours = mean(priceNextHours, (item) => item.total);
 
     if (Number.isNaN(avgPriceNextHours)) {
       this.log(
