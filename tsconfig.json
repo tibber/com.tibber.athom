@@ -11,6 +11,7 @@
   "include": [
     "./globals.d.ts",
     "./**/*.ts",
+    "./**/*.test.ts",
     "./**/*.js",
     "/**/*.json",
     "./.eslintrc.js",
