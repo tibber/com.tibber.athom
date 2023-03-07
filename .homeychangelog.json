@@ -178,5 +178,8 @@
   },
   "1.9.4": {
     "en": "Performance improvements"
+  },
+  "1.9.5": {
+    "en": "Revert caching"
   }
 }
