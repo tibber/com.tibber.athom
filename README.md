@@ -57,7 +57,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-#### 1.9.5
+#### 1.9.6
 
 - Revert caching
 

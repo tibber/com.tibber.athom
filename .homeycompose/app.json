@@ -1,6 +1,6 @@
 {
   "id": "com.tibber",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "compatibility": ">=8.1.0",
   "platforms": ["local", "cloud"],
   "sdk": 3,
