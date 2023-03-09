@@ -56,6 +56,27 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.9.7
+
+- Rollback non functional changes
+
+#### 1.9.6
+
+- Revert caching
+
+#### 1.9.4
+
+- Performance improvements
+
+#### 1.9.0
+
+- Updated dependencies
+- Added caching of yesterday's prices
+- Added a new condition card: current price is one of the [x] lowest prices between [y] and [z]
+- Added new icons
+- Added source link to manifest
+- Small API refactoring
+
 #### 1.8.7
 
 - Updated dependencies

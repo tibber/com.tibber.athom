@@ -169,5 +169,17 @@
   },
   "1.8.7": {
     "en": "Updated dependencies"
+  },
+  "1.9.0": {
+    "en": "Updated dependencies. Added caching of yesterday's prices, a new condition card, source link to manifest and new icons. Small API refactoring"
+  },
+  "1.9.4": {
+    "en": "Performance improvements"
+  },
+  "1.9.6": {
+    "en": "Revert caching"
+  },
+  "1.9.7": {
+    "en": "Rollback non functional changes"
   }
 }

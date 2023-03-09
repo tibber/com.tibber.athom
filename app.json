@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.8.7",
+  "version": "1.9.7",
   "compatibility": ">=8.1.0",
   "platforms": [
     "local",
@@ -715,6 +715,59 @@
       }
     ],
     "conditions": [
+      {
+        "id": "price_among_lowest_during_time",
+        "title": {
+          "en": "Current price is one of the [x] lowest prices between [y] and [z]"
+        },
+        "titleFormatted": {
+          "en": "Current price is one of the [[ranked_hours]] lowest prices between [[start_time]] and [[end_time]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_hours",
+            "type": "number",
+            "title": {
+              "en": "Amount of lowest hours"
+            },
+            "placeholder": {
+              "en": "1"
+            },
+            "min": 1,
+            "max": 24,
+            "step": 1
+          },
+          {
+            "name": "start_time",
+            "type": "time",
+            "title": {
+              "en": "Start time"
+            },
+            "placeholder": {
+              "en": "08:00"
+            }
+          },
+          {
+            "name": "end_time",
+            "type": "time",
+            "title": {
+              "en": "End time"
+            },
+            "placeholder": {
+              "en": "14:00"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
       {
         "id": "current_price_below",
         "title": {
