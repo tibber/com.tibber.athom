@@ -2,6 +2,7 @@ import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
+import { noticeError } from 'newrelic';
 import {
   TibberApi,
   getRandomDelay,
@@ -22,6 +23,7 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
+import { InsightLoggerError } from '../../lib/errors';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -493,16 +495,6 @@ class HomeDevice extends Device {
           .catch(console.error);
         this.log('Triggering price_changed', currentPrice);
 
-        const priceLogger = await this.#createGetLog(
-          `${this.#insightId}_price`,
-          {
-            title: `${this.#getLoggerPrefix()}Current price`,
-            type: 'number',
-            decimals: 2,
-          },
-        );
-        priceLogger.createEntry(currentPrice.total).catch(console.error);
-
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
           .catch(console.error);
@@ -545,6 +537,25 @@ class HomeDevice extends Device {
           this.#priceAtHighestTodayTrigger
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
+        }
+        try {
+          const priceLogger = await this.#createGetLog(
+            `${this.#insightId}_price`,
+            {
+              title: `${this.#getLoggerPrefix()}Current price`,
+              type: 'number',
+              decimals: 2,
+            },
+          );
+          priceLogger.createEntry(currentPrice.total).catch(console.error);
+        } catch (err) {
+          const error = new InsightLoggerError(
+            `Failing priceLogger. Insight id: ${
+              this.#insightId
+            }_price. Error: ${err}`,
+          );
+          console.error(error.message);
+          noticeError(error);
         }
       }
     }
