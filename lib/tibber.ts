@@ -19,6 +19,7 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
+import { isSameDay } from './helpers';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -304,12 +305,21 @@ export class TibberApi {
         }),
     );
 
+    const yesterday = moment().startOf('day').subtract(1, 'day');
+    const pricesYesterday = this.#hourlyPrices?.filter((p) =>
+      isSameDay(p.startsAt, yesterday, 'Europe/Oslo'),
+    );
+
     const pricesToday =
       data.viewer?.home?.currentSubscription?.priceInfo?.today ?? [];
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
-    this.#hourlyPrices = [...pricesToday, ...pricesTomorrow];
+    this.#hourlyPrices = [
+      ...pricesYesterday,
+      ...pricesToday,
+      ...pricesTomorrow,
+    ];
 
     return this.#hourlyPrices;
   }

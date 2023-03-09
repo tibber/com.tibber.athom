@@ -1,13 +1,13 @@
 import { App, env } from 'homey';
 import ManagerCloud from 'homey/manager/cloud';
 import http from 'http.min';
-import { EventEmitter } from 'stream';
+import PairSession from 'homey/lib/PairSession';
 import { TibberApi } from './tibber';
 import { noticeError, startTransaction } from './newrelic-transaction';
 
 export const initiateOauth = async (
   { app, cloud }: { app: App; cloud: ManagerCloud },
-  session: EventEmitter,
+  session: PairSession,
   tibber: TibberApi,
 ): Promise<void> => {
   const state = Math.random()
@@ -54,7 +54,7 @@ export const initiateOauth = async (
 
         const params = JSON.parse(result.data);
         tibber.setDefaultToken(params.access_token);
-        session.emit('authorized');
+        session.emit('authorized', undefined);
       } catch (err) {
         console.error('request failed', err);
         session.emit('error', new Error(`Error fetching tokens`));

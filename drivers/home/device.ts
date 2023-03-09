@@ -11,11 +11,12 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
-import { isSameDay } from '../../lib/helpers';
+import { isSameDay, parseTimeString, TimeString } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
+import { InsightLoggerError } from '../../lib/errors';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -31,7 +32,6 @@ class HomeDevice extends Device {
   #insightId!: string;
   #hourlyPrices!: PriceInfoEntry[];
   #latestPrice?: PriceInfoEntry;
-  #location!: { lat: number; lon: number };
   #priceAtLowestToday?: PriceInfoEntry;
   #priceAtHighestToday?: PriceInfoEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
@@ -57,6 +57,7 @@ class HomeDevice extends Device {
   #currentPriceAtHighestTodayCondition!: FlowCard;
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
+  #currentPriceAmongLowestWithinTimeFrameCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
   #hasDeprecatedTotalPriceCapability = false;
   #hasDeprecatedPriceLevelCapability = false;
@@ -90,8 +91,6 @@ class HomeDevice extends Device {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
     this.#latestPrice = undefined;
-    const { latitude: lat, longitude: lon } = data.address;
-    this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
@@ -232,6 +231,12 @@ class HomeDevice extends Device {
       this.homey.flow.getConditionCard('cond_price_among_highest_today');
     this.#currentPriceAmongHighestTodayCondition.registerRunListener((args) =>
       this.#priceMinMaxComparer(args, { lowest: false }),
+    );
+
+    this.#currentPriceAmongLowestWithinTimeFrameCondition =
+      this.homey.flow.getConditionCard('price_among_lowest_during_time');
+    this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
+      (args) => this.#lowestPricesWithinTimeFrame(args),
     );
 
     this.#sendPushNotificationAction = this.homey.flow.getActionCard(
@@ -534,16 +539,6 @@ class HomeDevice extends Device {
           .catch(console.error);
         this.log('Triggering price_changed', currentPrice);
 
-        const priceLogger = await this.#createGetLog(
-          `${this.#insightId}_price`,
-          {
-            title: `${this.getLoggerPrefix()}Current price`,
-            type: 'number',
-            decimals: 2,
-          },
-        );
-        priceLogger.createEntry(currentPrice.total).catch(console.error);
-
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
           .catch(console.error);
@@ -586,6 +581,25 @@ class HomeDevice extends Device {
           this.#priceAtHighestTodayTrigger
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
+        }
+
+        try {
+          const priceLogger = await this.#createGetLog(
+            `${this.#insightId}_price`,
+            {
+              title: `${this.getLoggerPrefix()}Current price`,
+              type: 'number',
+              decimals: 2,
+            },
+          );
+          priceLogger.createEntry(currentPrice.total).catch(console.error);
+        } catch (err) {
+          const error = new InsightLoggerError(
+            `Failing priceLogger. Insight id: ${
+              this.#insightId
+            }_price. Error: ${err}`,
+          );
+          console.error(error.message);
         }
       }
     }
@@ -780,7 +794,7 @@ class HomeDevice extends Device {
   #priceMinMaxComparer(
     options: { hours?: number; ranked_hours?: number },
     { lowest }: { lowest: boolean },
-  ) {
+  ): boolean {
     if (options.hours === 0 || options.ranked_hours === 0) return false;
 
     const now = moment();
@@ -847,6 +861,77 @@ class HomeDevice extends Device {
         } = ${conditionMet}`,
       );
     }
+
+    return conditionMet;
+  }
+
+  #lowestPricesWithinTimeFrame({
+    ranked_hours,
+    start_time,
+    end_time,
+  }: {
+    ranked_hours: number;
+    start_time: TimeString;
+    end_time: TimeString;
+  }): boolean {
+    if (ranked_hours === 0) return false;
+
+    const now = moment().tz('Europe/Oslo');
+
+    const nonAdjustedStart = parseTimeString(start_time);
+    let start = nonAdjustedStart;
+
+    const nonAdjustedEnd = parseTimeString(end_time);
+    let end = nonAdjustedEnd;
+
+    const periodStretchesOverMidnight = nonAdjustedStart > nonAdjustedEnd;
+    const adjustStartToYesterday = now < nonAdjustedEnd;
+    const adjustEndToTomorrow = now > nonAdjustedEnd;
+
+    if (periodStretchesOverMidnight) {
+      start = nonAdjustedStart
+        .clone()
+        .subtract(adjustStartToYesterday ? 1 : 0, 'day');
+      end = nonAdjustedEnd.clone().add(adjustEndToTomorrow ? 1 : 0, 'day');
+    }
+
+    if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
+      this.log(`Time conditions not met`);
+      return false;
+    }
+
+    const pricesWithinTimeFrame = this.#hourlyPrices.filter((p) => {
+      const startsAt = moment(p.startsAt);
+      return startsAt.isSameOrAfter(start, 'hour') && startsAt.isBefore(end);
+    });
+
+    if (pricesWithinTimeFrame.length < 1) {
+      this.log(
+        `Cannot determine condition. No prices for next hours available.`,
+      );
+      return false;
+    }
+
+    if (this.#latestPrice === undefined) {
+      this.log(`Cannot determine condition. The last price is undefined`);
+      return false;
+    }
+
+    const sortedHours = _.sortBy(pricesWithinTimeFrame, ['total']);
+    const currentHourRank = sortedHours.findIndex(
+      (p) => p.startsAt === this.#latestPrice?.startsAt,
+    );
+    if (currentHourRank < 0) {
+      this.log(`Could not find the current hour rank among today's hours`);
+      return false;
+    }
+
+    const conditionMet = currentHourRank < ranked_hours;
+
+    this.log(
+      `${this.#latestPrice.total} is among the lowest ${ranked_hours}
+      prices between ${start} and ${end} = ${conditionMet}`,
+    );
 
     return conditionMet;
   }
