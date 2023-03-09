@@ -1,6 +1,6 @@
 {
   "id": "com.tibber",
-  "version": "1.9.0",
+  "version": "1.8.7",
   "compatibility": ">=8.1.0",
   "platforms": ["local", "cloud"],
   "sdk": 3,
@@ -24,6 +24,5 @@
   "bugs": {
     "url": "https://github.com/tibber/com.tibber.athom/issues"
   },
-  "source": "https://github.com/tibber/com.tibber.athom",
   "support": "mailto:hello@tibber.com"
 }

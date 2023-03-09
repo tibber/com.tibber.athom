@@ -10,6 +10,8 @@ export const queries = {
             address1
             postalCode
             city
+            latitude
+            longitude
           }
           features {
             realTimeConsumptionEnabled

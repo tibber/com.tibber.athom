@@ -19,7 +19,6 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
-import { isSameDay } from './helpers';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -109,6 +108,8 @@ export type Home = {
     address1: string;
     postalCode: string;
     city: string;
+    latitude: string;
+    longitude: string;
   };
   features: Partial<{
     realTimeConsumptionEnabled: boolean;
@@ -128,9 +129,9 @@ export class TibberApi {
   readonly #log: Logger;
   readonly #homeId?: string;
   #homeySettings: ManagerSettings;
+  #hourlyPrices: PriceInfoEntry[] = [];
   #token?: string;
   #client?: GraphQLClient;
-  hourlyPrices: PriceInfoEntry[] = [];
 
   constructor(
     log: Logger,
@@ -220,24 +221,26 @@ export class TibberApi {
     );
   }
 
-  async populateCachedPriceInfos(
+  async getPriceInfoCached(
     homeySetTimeout: (
       callback: (...args: unknown[]) => void,
       ms: number,
       ...args: unknown[]
     ) => NodeJS.Timeout,
-  ): Promise<void> {
-    if (!this.hourlyPrices.length) {
+  ): Promise<PriceInfoEntry[]> {
+    if (!this.#hourlyPrices.length) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
-      this.hourlyPrices = await startSegment(
+      this.#hourlyPrices = await startSegment(
         'GetPriceInfo.CacheEmpty',
         true,
         () => this.#getPriceInfo(),
       );
+
+      return this.#hourlyPrices;
     }
 
-    const last = _.last(this.hourlyPrices) as PriceInfoEntry;
+    const last = _.last(this.#hourlyPrices) as PriceInfoEntry;
     const lastPriceForDay = moment(last.startsAt).startOf('day');
     this.#log(
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
@@ -276,12 +279,15 @@ export class TibberApi {
             return;
           }
 
-          this.hourlyPrices = data;
+          this.#hourlyPrices = data;
         }, delay * 1000);
       });
+
+      return this.#hourlyPrices;
     }
 
     this.#log(`Last price info entry is up-to-date`);
+    return this.#hourlyPrices;
   }
 
   async #getPriceInfo(): Promise<PriceInfoEntry[]> {
@@ -298,19 +304,14 @@ export class TibberApi {
         }),
     );
 
-    const yesterday = moment().startOf('day').subtract(1, 'day');
-    const pricesYesterday = this.hourlyPrices?.filter((p) =>
-      isSameDay(p.startsAt, yesterday, 'Europe/Oslo'),
-    );
-
     const pricesToday =
       data.viewer?.home?.currentSubscription?.priceInfo?.today ?? [];
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
-    this.hourlyPrices = [...pricesYesterday, ...pricesToday, ...pricesTomorrow];
+    this.#hourlyPrices = [...pricesToday, ...pricesTomorrow];
 
-    return this.hourlyPrices;
+    return this.#hourlyPrices;
   }
 
   async getConsumptionData(

@@ -1,8 +1,8 @@
 import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
+import { mapSeries } from 'bluebird';
 import { ClientError } from 'graphql-request/dist/types';
-import { noticeError } from 'newrelic';
 import {
   TibberApi,
   getRandomDelay,
@@ -11,19 +11,11 @@ import {
   ConsumptionNode,
 } from '../../lib/tibber';
 import { startTransaction } from '../../lib/newrelic-transaction';
-import {
-  meanBy,
-  parseTimeString,
-  isSameDay,
-  TimeString,
-  takeFromStartOrEnd,
-  sumBy,
-} from '../../lib/helpers';
+import { isSameDay } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
-import { InsightLoggerError } from '../../lib/errors';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -37,7 +29,9 @@ class HomeDevice extends Device {
   #tibber!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
+  #hourlyPrices!: PriceInfoEntry[];
   #latestPrice?: PriceInfoEntry;
+  #location!: { lat: number; lon: number };
   #priceAtLowestToday?: PriceInfoEntry;
   #priceAtHighestToday?: PriceInfoEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
@@ -63,7 +57,6 @@ class HomeDevice extends Device {
   #currentPriceAtHighestTodayCondition!: FlowCard;
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
-  #currentPriceAmongLowestWithinTimeFrameCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
   #hasDeprecatedTotalPriceCapability = false;
   #hasDeprecatedPriceLevelCapability = false;
@@ -97,6 +90,8 @@ class HomeDevice extends Device {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
     this.#latestPrice = undefined;
+    const { latitude: lat, longitude: lon } = data.address;
+    this.#location = { lat, lon };
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
@@ -239,12 +234,6 @@ class HomeDevice extends Device {
       this.#priceMinMaxComparer(args, { lowest: false }),
     );
 
-    this.#currentPriceAmongLowestWithinTimeFrameCondition =
-      this.homey.flow.getConditionCard('price_among_lowest_during_time');
-    this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
-      (args) => this.#lowestPricesWithinTimeFrame(args),
-    );
-
     this.#sendPushNotificationAction = this.homey.flow.getActionCard(
       'sendPushNotification',
     );
@@ -282,7 +271,7 @@ class HomeDevice extends Device {
       await this.addCapability('measure_price_highest');
 
     this.log(`Tibber home device ${this.getName()} has been initialized`);
-    return this.#updateData();
+    return this.updateData();
   }
 
   onDeleted() {
@@ -300,27 +289,26 @@ class HomeDevice extends Device {
     return this.homey.app?.cleanupLogs(this.#insightId);
   }
 
-  async #updateData() {
+  isConsumptionReportEnabled() {
+    return this.getSetting('enable_consumption_report') || false;
+  }
+
+  async updateData() {
     try {
       this.log(`Begin update`);
 
-      await startTransaction('GetPriceInfo', 'API', () =>
-        this.#tibber.populateCachedPriceInfos((callback, ms, args) =>
+      const hourlyPrices = await startTransaction('GetPriceInfo', 'API', () =>
+        this.#tibber.getPriceInfoCached((callback, ms, args) =>
           this.homey.setTimeout(callback, ms, args),
         ),
       );
 
-      const now = moment();
-      const hourlyPrices = this.#tibber.hourlyPrices.filter((p) =>
-        moment.tz(p.startsAt, 'Europe/Oslo').isSameOrAfter(now, 'day'),
-      );
+      this.onPriceData(hourlyPrices).catch(() => {});
 
-      this.#handlePrice(hourlyPrices).catch(() => {});
-
-      if (this.#isConsumptionReportEnabled()) {
+      if (this.isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
-        const lastLoggedDailyConsumption =
-          this.#getLastLoggedDailyConsumption();
+        const now = moment();
+        const lastLoggedDailyConsumption = this.getLastLoggedDailyConsumption();
         let daysToFetch = 14;
 
         if (lastLoggedDailyConsumption) {
@@ -331,7 +319,7 @@ class HomeDevice extends Device {
         }
 
         const lastLoggedHourlyConsumption =
-          this.#getLastLoggedHourlyConsumption();
+          this.getLastLoggedHourlyConsumption();
 
         let hoursToFetch = 200;
         if (lastLoggedHourlyConsumption) {
@@ -354,7 +342,7 @@ class HomeDevice extends Device {
             () => this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
           );
 
-          await this.#handleConsumption(consumptionData);
+          await this.onConsumptionData(consumptionData);
         } else if (!hoursToFetch && !daysToFetch) {
           this.log(`Consumption data up to date. Skip fetch.`);
         } else {
@@ -379,7 +367,7 @@ class HomeDevice extends Device {
               return;
             }
 
-            await this.#handleConsumption(consumptionData);
+            await this.onConsumptionData(consumptionData);
           }, delay * 1000);
         }
       }
@@ -389,7 +377,7 @@ class HomeDevice extends Device {
         `Next time to run update is at system time ${nextHour.format()}`,
       );
       const delay = moment.duration(nextHour.diff(moment()));
-      this.#scheduleUpdate(delay.asSeconds());
+      this.scheduleUpdate(delay.asSeconds());
 
       this.log(`End update`);
     } catch (e) {
@@ -422,11 +410,62 @@ class HomeDevice extends Device {
 
       // Try again after a delay
       const delay = getRandomDelay(0, 5 * 60);
-      this.#scheduleUpdate(delay);
+      this.scheduleUpdate(delay);
     }
   }
 
-  async #handlePrice(hourlyPrices: PriceInfoEntry[]) {
+  scheduleUpdate(seconds: number) {
+    this.log(`Scheduling update again in ${seconds} seconds`);
+    this.homey.setTimeout(this.updateData.bind(this), seconds * 1000);
+  }
+
+  getLoggerPrefix() {
+    return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
+  }
+
+  #updateLowestAndHighestPrice(hourlyPrices: PriceInfoEntry[]) {
+    const now = moment();
+
+    this.log(
+      `The current lowest price is ${this.#priceAtLowestToday?.total} at ${
+        this.#priceAtLowestToday?.startsAt
+      }`,
+    );
+
+    this.log(
+      `The current highest price is ${this.#priceAtHighestToday?.total} at ${
+        this.#priceAtHighestToday?.startsAt
+      }`,
+    );
+
+    if (isSameDay(this.#priceAtLowestToday?.startsAt, now, 'Europe/Oslo')) {
+      this.log("Today's lowest and highest prices are up to date");
+      return;
+    }
+
+    const pricesToday = hourlyPrices.filter((p) =>
+      isSameDay(p.startsAt, now, 'Europe/Oslo'),
+    );
+
+    this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
+    this.#priceAtHighestToday = _.maxBy(pricesToday, 'total');
+
+    const lowestPrice = this.#priceAtLowestToday?.total ?? null;
+    this.setCapabilityValue('measure_price_lowest', lowestPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_lowest' capability to", lowestPrice);
+      });
+
+    const highestPrice = this.#priceAtHighestToday?.total ?? null;
+    this.setCapabilityValue('measure_price_highest', highestPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_highest' capability to", highestPrice);
+      });
+  }
+
+  async onPriceData(hourlyPrices: PriceInfoEntry[]) {
     this.#updateLowestAndHighestPrice(hourlyPrices);
 
     const currentHour = moment().startOf('hour');
@@ -444,6 +483,7 @@ class HomeDevice extends Device {
 
     if (currentPrice.startsAt !== this.#latestPrice?.startsAt) {
       this.#latestPrice = currentPrice;
+      this.#hourlyPrices = hourlyPrices;
 
       if (currentPrice.total !== null) {
         const capabilityPromises = [
@@ -494,6 +534,16 @@ class HomeDevice extends Device {
           .catch(console.error);
         this.log('Triggering price_changed', currentPrice);
 
+        const priceLogger = await this.#createGetLog(
+          `${this.#insightId}_price`,
+          {
+            title: `${this.getLoggerPrefix()}Current price`,
+            type: 'number',
+            decimals: 2,
+          },
+        );
+        priceLogger.createEntry(currentPrice.total).catch(console.error);
+
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
           .catch(console.error);
@@ -537,82 +587,44 @@ class HomeDevice extends Device {
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
         }
-        try {
-          const priceLogger = await this.#createGetLog(
-            `${this.#insightId}_price`,
-            {
-              title: `${this.#getLoggerPrefix()}Current price`,
-              type: 'number',
-              decimals: 2,
-            },
-          );
-          priceLogger.createEntry(currentPrice.total).catch(console.error);
-        } catch (err) {
-          const error = new InsightLoggerError(
-            `Failing priceLogger. Insight id: ${
-              this.#insightId
-            }_price. Error: ${err}`,
-          );
-          console.error(error.message);
-          noticeError(error);
-        }
       }
     }
   }
 
-  #updateLowestAndHighestPrice(hourlyPrices: PriceInfoEntry[]) {
-    const now = moment();
-
-    this.log(
-      `The current lowest price is ${this.#priceAtLowestToday?.total} at ${
-        this.#priceAtLowestToday?.startsAt
-      }`,
+  getLastLoggedDailyConsumption(): string {
+    return this.homey.settings.get(
+      `${this.#insightId}_lastLoggedDailyConsumption`,
     );
-
-    this.log(
-      `The current highest price is ${this.#priceAtHighestToday?.total} at ${
-        this.#priceAtHighestToday?.startsAt
-      }`,
-    );
-
-    if (isSameDay(this.#priceAtLowestToday?.startsAt, now, 'Europe/Oslo')) {
-      this.log("Today's lowest and highest prices are up to date");
-      return;
-    }
-
-    const pricesToday = hourlyPrices.filter((p) =>
-      isSameDay(p.startsAt, now, 'Europe/Oslo'),
-    );
-
-    this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
-    this.#priceAtHighestToday = _.maxBy(pricesToday, 'total');
-
-    const lowestPrice = this.#priceAtLowestToday?.total ?? null;
-    this.setCapabilityValue('measure_price_lowest', lowestPrice)
-      .catch(console.error)
-      .finally(() => {
-        this.log("Set 'measure_price_lowest' capability to", lowestPrice);
-      });
-
-    const highestPrice = this.#priceAtHighestToday?.total ?? null;
-    this.setCapabilityValue('measure_price_highest', highestPrice)
-      .catch(console.error)
-      .finally(() => {
-        this.log("Set 'measure_price_highest' capability to", highestPrice);
-      });
   }
 
-  async #handleConsumption(data: ConsumptionData) {
+  setLastLoggedDailyConsumption(value: string) {
+    this.homey.settings.set(
+      `${this.#insightId}_lastLoggedDailyConsumption`,
+      value,
+    );
+  }
+
+  getLastLoggedHourlyConsumption(): string {
+    return this.homey.settings.get(
+      `${this.#insightId}_lastLoggerHourlyConsumption`,
+    );
+  }
+
+  setLastLoggedHourlyConsumption(value: string) {
+    this.homey.settings.set(
+      `${this.#insightId}_lastLoggerHourlyConsumption`,
+      value,
+    );
+  }
+
+  async onConsumptionData(data: ConsumptionData) {
     try {
-      const lastLoggedDailyConsumption = this.#getLastLoggedDailyConsumption();
+      const lastLoggedDailyConsumption = this.getLastLoggedDailyConsumption();
       const consumptionsSinceLastReport: ConsumptionNode[] = [];
       const dailyConsumptions: ConsumptionNode[] =
         data.viewer.home?.daily?.nodes ?? [];
-
-      await Promise.all(
-        dailyConsumptions.map(async (dailyConsumption) => {
-          if (dailyConsumption.consumption === null) return;
-
+      await mapSeries(dailyConsumptions, async (dailyConsumption) => {
+        if (dailyConsumption.consumption !== null) {
           if (
             lastLoggedDailyConsumption &&
             moment(dailyConsumption.to) <= moment(lastLoggedDailyConsumption)
@@ -620,13 +632,13 @@ class HomeDevice extends Device {
             return;
 
           consumptionsSinceLastReport.push(dailyConsumption);
-          this.#setLastLoggedDailyConsumption(dailyConsumption.to);
+          this.setLastLoggedDailyConsumption(dailyConsumption.to);
 
           this.log('Got daily consumption', dailyConsumption);
           const consumptionLogger = await this.#createGetLog(
             `${this.#insightId}_dailyConsumption`,
             {
-              title: `${this.#getLoggerPrefix()}Daily consumption`,
+              title: `${this.getLoggerPrefix()}Daily consumption`,
               type: 'number',
               decimals: 1,
             },
@@ -639,7 +651,7 @@ class HomeDevice extends Device {
           const costLogger = await this.#createGetLog(
             `${this.#insightId}_dailyCost`,
             {
-              title: `${this.#getLoggerPrefix()}Daily total cost`,
+              title: `${this.getLoggerPrefix()}Daily total cost`,
               type: 'number',
               decimals: 1,
             },
@@ -647,27 +659,23 @@ class HomeDevice extends Device {
           costLogger
             .createEntry(dailyConsumption.totalCost)
             .catch(console.error);
-        }),
-      );
+        }
+      });
 
       if (consumptionsSinceLastReport.length > 0) {
         this.#consumptionReportTrigger
           .trigger(this, {
             consumption: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.consumption).toFixed(
-                2,
-              ),
+              _.sumBy(consumptionsSinceLastReport, 'consumption').toFixed(2),
             ),
             totalCost: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.totalCost).toFixed(2),
+              _.sumBy(consumptionsSinceLastReport, 'totalCost').toFixed(2),
             ),
             unitCost: Number(
-              sumBy(consumptionsSinceLastReport, (c) => c.unitCost).toFixed(2),
+              _.sumBy(consumptionsSinceLastReport, 'unitCost').toFixed(2),
             ),
             unitPrice: Number(
-              meanBy(consumptionsSinceLastReport, (c) => c.unitPrice).toFixed(
-                2,
-              ),
+              _.meanBy(consumptionsSinceLastReport, 'unitPrice').toFixed(2),
             ),
           })
           .catch(console.error);
@@ -677,27 +685,23 @@ class HomeDevice extends Device {
     }
 
     try {
-      const lastLoggedHourlyConsumption =
-        this.#getLastLoggedHourlyConsumption();
-      const hourlyConsumptions = data.viewer.home?.hourly?.nodes ?? [];
-
-      await Promise.all(
-        hourlyConsumptions.map(async (hourlyConsumption) => {
-          if (hourlyConsumption.consumption === null) return;
-
+      const lastLoggedHourlyConsumption = this.getLastLoggedHourlyConsumption();
+      const hourlyConsumptions = data.viewer.home?.hourly?.nodes || [];
+      await mapSeries(hourlyConsumptions, async (hourlyConsumption) => {
+        if (hourlyConsumption.consumption !== null) {
           if (
             lastLoggedHourlyConsumption &&
             moment(hourlyConsumption.to) <= moment(lastLoggedHourlyConsumption)
           )
             return;
 
-          this.#setLastLoggedHourlyConsumption(hourlyConsumption.to);
+          this.setLastLoggedHourlyConsumption(hourlyConsumption.to);
 
           this.log('Got hourly consumption', hourlyConsumption);
           const consumptionLogger = await this.#createGetLog(
             `${this.#insightId}hourlyConsumption`,
             {
-              title: `${this.#getLoggerPrefix()}Hourly consumption`,
+              title: `${this.getLoggerPrefix()}Hourly consumption`,
               type: 'number',
               decimals: 1,
             },
@@ -710,7 +714,7 @@ class HomeDevice extends Device {
           const costLogger = await this.#createGetLog(
             `${this.#insightId}_hourlyCost`,
             {
-              title: `${this.#getLoggerPrefix()}Hourly total cost`,
+              title: `${this.getLoggerPrefix()}Hourly total cost`,
               type: 'number',
               decimals: 1,
             },
@@ -718,37 +722,11 @@ class HomeDevice extends Device {
           costLogger
             .createEntry(hourlyConsumption.totalCost)
             .catch(console.error);
-        }),
-      );
+        }
+      });
     } catch (e) {
       console.error('Error logging hourly consumption', e);
     }
-  }
-
-  #getLastLoggedDailyConsumption(): string {
-    return this.homey.settings.get(
-      `${this.#insightId}_lastLoggedDailyConsumption`,
-    );
-  }
-
-  #setLastLoggedDailyConsumption(value: string) {
-    this.homey.settings.set(
-      `${this.#insightId}_lastLoggedDailyConsumption`,
-      value,
-    );
-  }
-
-  #getLastLoggedHourlyConsumption(): string {
-    return this.homey.settings.get(
-      `${this.#insightId}_lastLoggerHourlyConsumption`,
-    );
-  }
-
-  #setLastLoggedHourlyConsumption(value: string) {
-    this.homey.settings.set(
-      `${this.#insightId}_lastLoggerHourlyConsumption`,
-      value,
-    );
   }
 
   #priceAvgComparer(
@@ -758,25 +736,23 @@ class HomeDevice extends Device {
     if (hours === 0) return false;
 
     const now = moment();
-    let priceNextHours;
+    let avgPriceNextHours: number;
     if (hours) {
-      priceNextHours = takeFromStartOrEnd(
-        this.#tibber.hourlyPrices.filter((p) =>
+      avgPriceNextHours = _(this.#hourlyPrices)
+        .filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
-            : moment(p.startsAt).isBefore(now, 'hour'),
-        ),
-        hours,
-      );
+            : moment(p.startsAt).isBefore(now),
+        )
+        .take(Math.abs(hours))
+        .meanBy((x) => x.total);
     } else {
-      priceNextHours = this.#tibber.hourlyPrices.filter((p) =>
-        isSameDay(p.startsAt, now, 'Europe/Oslo'),
-      );
+      avgPriceNextHours = _(this.#hourlyPrices)
+        .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
+        .meanBy((x) => x.total);
     }
 
-    const avgPriceNextHours = _.meanBy(priceNextHours, 'total');
-
-    if (Number.isNaN(avgPriceNextHours)) {
+    if (avgPriceNextHours === undefined) {
       this.log(
         `Cannot determine condition. No prices for next hours available.`,
       );
@@ -802,29 +778,25 @@ class HomeDevice extends Device {
   }
 
   #priceMinMaxComparer(
-    options: {
-      hours?: number;
-      ranked_hours?: number;
-    },
+    options: { hours?: number; ranked_hours?: number },
     { lowest }: { lowest: boolean },
-  ): boolean {
+  ) {
     if (options.hours === 0 || options.ranked_hours === 0) return false;
 
     const now = moment();
-
     const pricesNextHours =
       options.hours !== undefined
-        ? takeFromStartOrEnd(
-            this.#tibber.hourlyPrices.filter((p) =>
+        ? _(this.#hourlyPrices)
+            .filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
-                : moment(p.startsAt).isBefore(now, 'hour'),
-            ),
-            options.hours,
-          )
-        : this.#tibber.hourlyPrices.filter((p) =>
-            isSameDay(p.startsAt, now, 'Europe/Oslo'),
-          );
+                : moment(p.startsAt).isBefore(now),
+            )
+            .take(Math.abs(options.hours))
+            .value()
+        : _(this.#hourlyPrices)
+            .filter((p) => isSameDay(p.startsAt, now, 'Europe/Oslo'))
+            .value();
 
     if (!pricesNextHours.length) {
       this.log(
@@ -877,91 +849,6 @@ class HomeDevice extends Device {
     }
 
     return conditionMet;
-  }
-
-  #lowestPricesWithinTimeFrame({
-    ranked_hours,
-    start_time,
-    end_time,
-  }: {
-    ranked_hours: number;
-    start_time: TimeString;
-    end_time: TimeString;
-  }): boolean {
-    if (ranked_hours === 0) return false;
-
-    const now = moment().tz('Europe/Oslo');
-
-    const nonAdjustedStart = parseTimeString(start_time);
-    let start = nonAdjustedStart;
-
-    const nonAdjustedEnd = parseTimeString(end_time);
-    let end = nonAdjustedEnd;
-
-    const periodStretchesOverMidnight = nonAdjustedStart > nonAdjustedEnd;
-    const adjustStartToYesterday = now < nonAdjustedEnd;
-    const adjustEndToTomorrow = now > nonAdjustedEnd;
-
-    if (periodStretchesOverMidnight) {
-      start = nonAdjustedStart
-        .clone()
-        .subtract(adjustStartToYesterday ? 1 : 0, 'day');
-      end = nonAdjustedEnd.clone().add(adjustEndToTomorrow ? 1 : 0, 'day');
-    }
-
-    if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
-      this.log(`Time conditions not met`);
-      return false;
-    }
-
-    const pricesWithinTimeFrame = this.#tibber.hourlyPrices.filter(
-      (p) =>
-        moment(p.startsAt).isSameOrAfter(start, 'hour') &&
-        moment(p.startsAt).isBefore(end),
-    );
-
-    if (!pricesWithinTimeFrame.length) {
-      this.log(
-        `Cannot determine condition. No prices for next hours available.`,
-      );
-      return false;
-    }
-
-    if (this.#latestPrice === undefined) {
-      this.log(`Cannot determine condition. The last price is undefined`);
-      return false;
-    }
-
-    const sortedHours = _.sortBy(pricesWithinTimeFrame, ['total']);
-    const currentHourRank = sortedHours.findIndex(
-      (p) => p.startsAt === this.#latestPrice?.startsAt,
-    );
-    if (currentHourRank < 0) {
-      this.log(`Could not find the current hour rank among today's hours`);
-      return false;
-    }
-
-    const conditionMet = currentHourRank < ranked_hours;
-
-    this.log(
-      `${this.#latestPrice.total} is among the lowest ${ranked_hours}
-      prices between ${start} and ${end} = ${conditionMet}`,
-    );
-
-    return conditionMet;
-  }
-
-  #scheduleUpdate(seconds: number) {
-    this.log(`Scheduling update again in ${seconds} seconds`);
-    this.homey.setTimeout(this.#updateData.bind(this), seconds * 1000);
-  }
-
-  #getLoggerPrefix() {
-    return this.driver.getDevices().length > 1 ? `${this.#deviceLabel} ` : '';
-  }
-
-  #isConsumptionReportEnabled() {
-    return this.getSetting('enable_consumption_report') || false;
   }
 
   async #createGetLog(

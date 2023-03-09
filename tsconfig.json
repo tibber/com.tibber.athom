@@ -15,7 +15,6 @@
     "/**/*.json",
     "./.eslintrc.js",
     "./newrelic.js",
-    "./jest.config.js",
     "package.json"
   ],
   "exclude": ["./build", "./app.json", "./package-lock.json"]

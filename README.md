@@ -34,7 +34,6 @@ Integration with Tibber, with Pulse and Watty support.
 - Current price is [x] percent above today's average
 - Current price is [x] percent below average of the next [y] hours
 - Current price is [x] percent above average of the next [y] hours
-- Current price is one of the [x] lowest prices between [y] and [z]
 - Current price is one of today's lowest [x] prices
 - Current price is one of today's highest [x] prices &nbsp;
 
@@ -56,15 +55,6 @@ Integration with Tibber, with Pulse and Watty support.
 &nbsp;
 
 ### Release Notes
-
-#### 1.9.0
-
-- Updated dependencies
-- Added caching of yesterdays prices
-- Added a new condition card: current price is one of the [x] lowest prices between [y] and [z]
-- Added new icons
-- Added source link to manifest
-- Small API refactoring
 
 #### 1.8.7
 

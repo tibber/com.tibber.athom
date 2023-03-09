@@ -1,13 +1,13 @@
 import { App, env } from 'homey';
 import ManagerCloud from 'homey/manager/cloud';
 import http from 'http.min';
-import PairSession from 'homey/lib/PairSession';
+import { EventEmitter } from 'stream';
 import { TibberApi } from './tibber';
 import { noticeError, startTransaction } from './newrelic-transaction';
 
 export const initiateOauth = async (
   { app, cloud }: { app: App; cloud: ManagerCloud },
-  session: PairSession,
+  session: EventEmitter,
   tibber: TibberApi,
 ): Promise<void> => {
   const state = Math.random()
@@ -20,8 +20,8 @@ export const initiateOauth = async (
 
   const myOAuth2Callback = await cloud.createOAuth2Callback(apiAuthUrl);
   myOAuth2Callback
-    .on('url', async (url) => {
-      await session.emit('url', url).catch(console.error);
+    .on('url', (url) => {
+      session.emit('url', url);
     })
     .on('code', async (code) => {
       try {
@@ -43,7 +43,7 @@ export const initiateOauth = async (
           const error = new Error(
             `Request failed with code ${result.response.statusCode}`,
           );
-          await session.emit('error', error).catch(console.error);
+          session.emit('error', error);
           noticeError(error);
 
           return app.error(
@@ -54,12 +54,10 @@ export const initiateOauth = async (
 
         const params = JSON.parse(result.data);
         tibber.setDefaultToken(params.access_token);
-        await session.emit('authorized', undefined).catch(console.error);
+        session.emit('authorized');
       } catch (err) {
         console.error('request failed', err);
-        await session
-          .emit('error', new Error(`Error fetching tokens`))
-          .catch(console.error);
+        session.emit('error', new Error(`Error fetching tokens`));
         app.error('api -> error fetching tokens:', err);
         noticeError(err as Error);
       }
