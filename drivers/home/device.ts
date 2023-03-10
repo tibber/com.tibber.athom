@@ -438,13 +438,13 @@ class HomeDevice extends Device {
     const now = moment();
 
     this.log(
-      `The current lowest price is ${this.#priceAtLowestToday?.total} at ${
+      `Today's lowest price is ${this.#priceAtLowestToday?.total} at ${
         this.#priceAtLowestToday?.startsAt
       }`,
     );
 
     this.log(
-      `The current highest price is ${this.#priceAtHighestToday?.total} at ${
+      `Today's highest price is ${this.#priceAtHighestToday?.total} at ${
         this.#priceAtHighestToday?.startsAt
       }`,
     );
