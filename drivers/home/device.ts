@@ -308,6 +308,12 @@ class HomeDevice extends Device {
         ),
       );
 
+      this.log(
+        `Price data: ${hourlyPrices.length} records; start: ${
+          _.first(hourlyPrices)?.startsAt
+        }, end: ${_.last(hourlyPrices)?.startsAt}`,
+      );
+
       this.onPriceData(hourlyPrices).catch(() => {});
 
       if (this.isConsumptionReportEnabled()) {

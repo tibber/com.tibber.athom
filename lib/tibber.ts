@@ -66,7 +66,7 @@ export interface ConsumptionData {
   };
 }
 
-export interface PriceRatingResponse {
+export interface PriceInfoResponse {
   viewer: {
     home: {
       currentSubscription: {
@@ -229,8 +229,11 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<PriceInfoEntry[]> {
+    const now = moment();
     if (!this.#hourlyPrices.length) {
-      this.#log(`No price infos cached. Fetch prices immediately.`);
+      this.#log(
+        `No price infos cached. Fetch prices immediately at system time ${now.format()}`,
+      );
 
       this.#hourlyPrices = await startSegment(
         'GetPriceInfo.CacheEmpty',
@@ -247,7 +250,6 @@ export class TibberApi {
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
     );
 
-    const now = moment();
     const today = moment().startOf('day');
     const tomorrow = today.add(1, 'day');
 
@@ -292,15 +294,19 @@ export class TibberApi {
   }
 
   async #getPriceInfo(): Promise<PriceInfoEntry[]> {
+    const now = moment();
     const client = this.#getClient();
 
-    this.#log('Get prices');
+    this.#log(`Get prices at system time ${now.format()}`);
     const data = await startSegment('GetPriceInfo.Fetch', true, () =>
       client
-        .request<PriceRatingResponse>(queries.getPriceQuery(this.#homeId!))
+        .request<PriceInfoResponse>(queries.getPriceQuery(this.#homeId!))
         .catch((e) => {
           noticeError(e);
-          console.error(`${new Date()} Error while fetching price data`, e);
+          console.error(
+            `Error while fetching price data at system time ${now.format()}`,
+            e,
+          );
           throw e;
         }),
     );
