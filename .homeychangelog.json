@@ -181,5 +181,8 @@
   },
   "1.9.7": {
     "en": "Rollback non functional changes"
+  },
+  "1.9.8": {
+    "en": "Internal logging changes"
   }
 }

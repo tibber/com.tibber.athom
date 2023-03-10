@@ -56,6 +56,10 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.9.8
+
+- Internal logging changes
+
 #### 1.9.7
 
 - Rollback non functional changes
