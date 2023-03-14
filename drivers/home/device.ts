@@ -3,6 +3,7 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
 import { noticeError } from 'newrelic';
+import * as util from 'util';
 import {
   ConsumptionData,
   ConsumptionNode,
@@ -304,6 +305,7 @@ class HomeDevice extends Device {
   async #updateData() {
     try {
       this.log(`Begin update`);
+      console.log(`strt: ${util.inspect(process.memoryUsage())}`);
 
       await startTransaction('GetPriceInfo', 'API', () =>
         this.#api.populateCachedPriceInfos((callback, ms, args) =>
@@ -398,6 +400,8 @@ class HomeDevice extends Device {
       this.#scheduleUpdate(delay.asSeconds());
 
       this.log(`End update`);
+
+      console.log(`end: ${util.inspect(process.memoryUsage())}`);
     } catch (e) {
       this.log('Error fetching data', e);
 
