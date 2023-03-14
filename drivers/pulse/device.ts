@@ -6,6 +6,7 @@ import { Subscription } from 'zen-observable-ts';
 import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
+import { randomBetweenRange } from '../../lib/helpers';
 
 class PulseDevice extends Device {
   #tibber!: TibberApi;
@@ -69,7 +70,7 @@ class PulseDevice extends Device {
       })`,
     );
 
-    const jitterSeconds = getRandomDelay(0, 10);
+    const jitterSeconds = randomBetweenRange(0, 10);
     const delaySeconds = 10 * 60;
     this.#resubscribeMaxWaitMilliseconds =
       (jitterSeconds + delaySeconds) * 1000;
@@ -159,7 +160,7 @@ class PulseDevice extends Device {
           noticeError(error);
           this.log('Subscription error occurred', error);
           // When server shuts down we end up here with message text "Unexpected server response: 503"
-          const delay = getRandomDelay(5, 120);
+          const delay = randomBetweenRange(5, 120);
           this.log(`Resubscribe after ${delay} seconds`);
           this.#resubscribeDebounce.cancel();
           this.homey.setTimeout(() => this.#subscribeToLive(), delay * 1000);

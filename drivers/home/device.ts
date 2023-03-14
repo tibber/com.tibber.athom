@@ -9,9 +9,10 @@ import {
   PriceInfoEntry,
   ConsumptionData,
   ConsumptionNode,
-} from '../../lib/tibber';
+} from '../../lib/api';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
+  randomBetweenRange,
   mean,
   parseTimeString,
   isSameDay,
@@ -358,7 +359,7 @@ class HomeDevice extends Device {
         } else if (!hoursToFetch && !daysToFetch) {
           this.log(`Consumption data up to date. Skip fetch.`);
         } else {
-          const delay = getRandomDelay(0, 59 * 60);
+          const delay = randomBetweenRange(0, 59 * 60);
           this.log(
             `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
           );
@@ -384,7 +385,10 @@ class HomeDevice extends Device {
         }
       }
 
-      const nextHour = moment().add(1, 'hour').startOf('hour');
+      const nextHour = moment()
+        .add(1, 'hour')
+        .startOf('hour')
+        .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
       this.log(
         `Next time to run update is at system time ${nextHour.format()}`,
       );
@@ -421,7 +425,7 @@ class HomeDevice extends Device {
       }
 
       // Try again after a delay
-      const delay = getRandomDelay(0, 5 * 60);
+      const delay = randomBetweenRange(0, 5 * 60);
       this.#scheduleUpdate(delay);
     }
   }

@@ -49,3 +49,6 @@ export const sum = <T>(arr: T[], func: (item: T) => number): number => {
 type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export type TimeString = `${Digit}${Digit}:${Digit}${Digit}`;
+
+export const randomBetweenRange = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min) + min);
