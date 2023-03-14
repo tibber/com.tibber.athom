@@ -17,7 +17,6 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/client": "^3.7.9",
-    "google-auth-library": "^8.0.2",
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0",
     "graphql-tag": "^2.11.0",
@@ -32,7 +31,6 @@
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",
-    "@types/bluebird": "^3.5.36",
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.3",
     "@types/jest": "^29.4.0",
     "@types/lodash": "^4.14.182",
