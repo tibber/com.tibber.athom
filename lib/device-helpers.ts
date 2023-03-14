@@ -1,7 +1,7 @@
 import PairSession from 'homey/lib/PairSession';
 import { ClientError } from 'graphql-request/dist/types';
 import { noticeError, startTransaction } from './newrelic-transaction';
-import { Home, Logger, TibberApi } from './tibber';
+import { Home, Logger, TibberApi } from './api';
 
 export interface HomeFilterPredicate {
   (home: Home): boolean;

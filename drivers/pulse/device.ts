@@ -3,13 +3,13 @@ import _ from 'lodash';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
+import { LiveMeasurement, TibberApi } from '../../lib/api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
 import { randomBetweenRange } from '../../lib/helpers';
 
 class PulseDevice extends Device {
-  #tibber!: TibberApi;
+  #api!: TibberApi;
   #deviceId!: string;
   #throttle!: number;
   #currency?: string;
@@ -37,7 +37,7 @@ class PulseDevice extends Device {
   async onInit() {
     const { id, t: token } = this.getData();
 
-    this.#tibber = new TibberApi(this.log, this.homey.settings, id, token);
+    this.#api = new TibberApi(this.log, this.homey.settings, id, token);
     this.#deviceId = id;
     this.#throttle = this.getSetting('pulse_throttle') || 30;
 
@@ -130,7 +130,7 @@ class PulseDevice extends Device {
 
     let websocketSubscriptionUrl;
     try {
-      const { viewer } = await this.#tibber.getHomeFeatures(this);
+      const { viewer } = await this.#api.getHomeFeatures(this);
       websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
       if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
@@ -152,7 +152,7 @@ class PulseDevice extends Device {
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
 
-    this.#wsSubscription = this.#tibber
+    this.#wsSubscription = this.#api
       .subscribeToLive(websocketSubscriptionUrl)
       .subscribe(
         (result) => this.subscribeCallback(result),

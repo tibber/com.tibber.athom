@@ -35,7 +35,7 @@ const deprecatedPriceLevelMap = {
 };
 
 class HomeDevice extends Device {
-  #tibber!: TibberApi;
+  #api!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
   #latestPrice?: PriceInfoEntry;
@@ -85,7 +85,7 @@ class HomeDevice extends Device {
     const data = this.getData();
     const { id: homeId, t: token } = data;
 
-    this.#tibber = new TibberApi(this.log, this.homey.settings, homeId, token);
+    this.#api = new TibberApi(this.log, this.homey.settings, homeId, token);
 
     if (data.address === undefined) {
       return this.setUnavailable(
@@ -250,7 +250,7 @@ class HomeDevice extends Device {
       'sendPushNotification',
     );
     this.#sendPushNotificationAction.registerRunListener(async (args) =>
-      this.#tibber.sendPush(args.title, args.message),
+      this.#api.sendPush(args.title, args.message),
     );
 
     if (!this.hasCapability('price_level'))
@@ -306,13 +306,13 @@ class HomeDevice extends Device {
       this.log(`Begin update`);
 
       await startTransaction('GetPriceInfo', 'API', () =>
-        this.#tibber.populateCachedPriceInfos((callback, ms, args) =>
+        this.#api.populateCachedPriceInfos((callback, ms, args) =>
           this.homey.setTimeout(callback, ms, args),
         ),
       );
 
       const now = moment();
-      const hourlyPrices = this.#tibber.hourlyPrices.filter((p) =>
+      const hourlyPrices = this.#api.hourlyPrices.filter((p) =>
         moment.tz(p.startsAt, 'Europe/Oslo').isSameOrAfter(now, 'day'),
       );
 
@@ -352,7 +352,7 @@ class HomeDevice extends Device {
           const consumptionData = await startTransaction(
             'GetConsumption',
             'API',
-            () => this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
+            () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
           );
 
           await this.#handleConsumption(consumptionData);
@@ -370,7 +370,6 @@ class HomeDevice extends Device {
                 'ScheduledGetConsumption',
                 'API',
                 () =>
-                  this.#tibber.getConsumptionData(daysToFetch, hoursToFetch),
               );
             } catch (e) {
               console.error(
@@ -761,7 +760,7 @@ class HomeDevice extends Device {
     let priceNextHours;
     if (hours) {
       priceNextHours = takeFromStartOrEnd(
-        this.#tibber.hourlyPrices.filter((p) =>
+        this.#api.hourlyPrices.filter((p) =>
           hours > 0
             ? moment(p.startsAt).isAfter(now)
             : moment(p.startsAt).isBefore(now, 'hour'),
@@ -769,7 +768,7 @@ class HomeDevice extends Device {
         hours,
       );
     } else {
-      priceNextHours = this.#tibber.hourlyPrices.filter((p) =>
+      priceNextHours = this.#api.hourlyPrices.filter((p) =>
         isSameDay(p.startsAt, now, 'Europe/Oslo'),
       );
     }
@@ -815,14 +814,14 @@ class HomeDevice extends Device {
     const pricesNextHours =
       options.hours !== undefined
         ? takeFromStartOrEnd(
-            this.#tibber.hourlyPrices.filter((p) =>
+            this.#api.hourlyPrices.filter((p) =>
               options.hours! > 0
                 ? moment(p.startsAt).isAfter(now)
                 : moment(p.startsAt).isBefore(now, 'hour'),
             ),
             options.hours,
           )
-        : this.#tibber.hourlyPrices.filter((p) =>
+        : this.#api.hourlyPrices.filter((p) =>
             isSameDay(p.startsAt, now, 'Europe/Oslo'),
           );
 
@@ -914,7 +913,7 @@ class HomeDevice extends Device {
       return false;
     }
 
-    const pricesWithinTimeFrame = this.#tibber.hourlyPrices.filter(
+    const pricesWithinTimeFrame = this.#api.hourlyPrices.filter(
       (p) =>
         moment(p.startsAt).isSameOrAfter(start, 'hour') &&
         moment(p.startsAt).isBefore(end),
