@@ -12,8 +12,8 @@ class TibberApp extends App {
     const { version: firmwareVersion } = this.homey;
     const { version: appVersion } = appJson;
 
-    this.log(`firmwareVersion: `, firmwareVersion);
-    this.log(`appVersion: `, appVersion);
+    this.log(`firmwareVersion:`, firmwareVersion);
+    this.log(`appVersion:`, appVersion);
 
     setGlobalAttributes({ firmwareVersion, appVersion });
 

@@ -1,4 +1,4 @@
-import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
+import { Device, env, FlowCard, FlowCardTriggerDevice } from 'homey';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
@@ -384,14 +384,17 @@ class HomeDevice extends Device {
         }
       }
 
-      const nextHour = moment()
-        .add(1, 'hour')
-        .startOf('hour')
-        .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
+      const nextUpdateTime = env.DEBUG_ACCELERATION
+        ? moment().add(10, 'seconds')
+        : moment()
+            .add(1, 'hour')
+            .startOf('hour')
+            .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
+
       this.log(
-        `Next time to run update is at system time ${nextHour.format()}`,
+        `Next time to run update is at system time ${nextUpdateTime.format()}`,
       );
-      const delay = moment.duration(nextHour.diff(moment()));
+      const delay = moment.duration(nextUpdateTime.diff(moment()));
       this.#scheduleUpdate(delay.asSeconds());
 
       this.log(`End update`);
@@ -445,7 +448,11 @@ class HomeDevice extends Device {
       return;
     }
 
-    if (currentPrice.startsAt !== this.#latestPrice?.startsAt) {
+    const shouldUpdate =
+      currentPrice.startsAt !== this.#latestPrice?.startsAt ||
+      env.DEBUG_ACCELERATION;
+
+    if (shouldUpdate) {
       this.#latestPrice = currentPrice;
 
       if (currentPrice.total !== null) {
@@ -857,8 +864,8 @@ class HomeDevice extends Device {
       );
     } else {
       const toCompare = lowest
-        ? _.minBy(pricesNextHours, 'total')!.total
-        : _.maxBy(pricesNextHours, 'total')!.total;
+        ? min(pricesNextHours, (p) => p.total)!.total
+        : max(pricesNextHours, (p) => p.total)!.total;
 
       conditionMet = lowest
         ? this.#latestPrice.total <= toCompare

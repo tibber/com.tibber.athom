@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
 import { ClientError } from 'graphql-request/dist/types';
@@ -19,7 +18,7 @@ import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
-import { randomBetweenRange } from './helpers';
+import { randomBetweenRange, takeFromStartOrEnd } from './helpers';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -243,7 +242,7 @@ export class TibberApi {
       return;
     }
 
-    const last: TransformedPriceEntry = _.last(this.hourlyPrices)!;
+    const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
     const lastPriceForDay = last.startsAt.startOf('day');
     this.#log(
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
