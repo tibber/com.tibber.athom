@@ -312,11 +312,11 @@ class HomeDevice extends Device {
       );
 
       const now = moment();
-      const hourlyPrices = this.#api.hourlyPrices.filter((p) =>
-        p.startsAt.isSameOrAfter(now, 'day'),
+      const pricesToday = this.#api.hourlyPrices.filter((p) =>
+        p.startsAt.isSame(now, 'day'),
       );
 
-      this.#handlePrice(hourlyPrices).catch(() => {});
+      this.#handlePrice(pricesToday).catch(() => {});
 
       if (this.#isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
@@ -432,18 +432,18 @@ class HomeDevice extends Device {
     }
   }
 
-  async #handlePrice(hourlyPrices: TransformedPriceEntry[]) {
-    this.#updateLowestAndHighestPrice(hourlyPrices);
+  async #handlePrice(pricesToday: TransformedPriceEntry[]) {
+    this.#updateLowestAndHighestPrice(pricesToday);
 
     const currentHour = moment().startOf('hour');
 
-    const currentPrice = hourlyPrices.find((p) =>
+    const currentPrice = pricesToday.find((p) =>
       currentHour.isSame(p.startsAt),
     );
     if (currentPrice === undefined) {
       this.log(
         `Error finding current price info for system time ${currentHour.format()}. Abort.`,
-        hourlyPrices,
+        pricesToday,
       );
       return;
     }
@@ -570,7 +570,7 @@ class HomeDevice extends Device {
     }
   }
 
-  #updateLowestAndHighestPrice(hourlyPrices: TransformedPriceEntry[]) {
+  #updateLowestAndHighestPrice(pricesToday: TransformedPriceEntry[]) {
     const now = moment();
 
     this.log(
@@ -589,10 +589,6 @@ class HomeDevice extends Device {
       this.log("Today's lowest and highest prices are up to date");
       return;
     }
-
-    const pricesToday = hourlyPrices.filter((p) =>
-      p.startsAt.isSame(now, 'day'),
-    );
 
     this.#priceAtLowestToday = min(pricesToday, (p) => p.total);
     this.#priceAtHighestToday = max(pricesToday, (p) => p.total);
