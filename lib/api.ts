@@ -87,6 +87,10 @@ export interface PriceInfoEntry {
   level: 'VERY_CHEAP' | 'CHEAP' | 'NORMAL' | 'EXPENSIVE' | 'VERY_EXPENSIVE';
 }
 
+export type TransformedPriceEntry = Omit<PriceInfoEntry, 'startsAt'> & {
+  startsAt: moment.Moment;
+};
+
 export interface Homes {
   viewer: {
     homes: Home[];
@@ -127,6 +131,7 @@ export class TibberApi {
   #homeySettings: ManagerSettings;
   #token?: string;
   #client?: GraphQLClient;
+  hourlyPrices: TransformedPriceEntry[] = [];
 
   constructor(
     log: Logger,
@@ -170,6 +175,7 @@ export class TibberApi {
         .then((data) => data)
         .catch((e) => {
           noticeError(e);
+          console.error('Error while fetching home data', e);
           throw e;
         }),
     );
@@ -188,6 +194,7 @@ export class TibberApi {
         })
         .catch(async (e) => {
           noticeError(e);
+          console.error('Error while fetching home features', e);
 
           const errorCode = (e as ClientError).response?.errors?.[0]?.extensions
             ?.code;
@@ -221,6 +228,7 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<void> {
+    if (this.hourlyPrices.length === 0) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
       this.hourlyPrices = await startSegment(
@@ -230,6 +238,13 @@ export class TibberApi {
       );
     }
 
+    if (this.hourlyPrices.length === 0) {
+      this.#log(`No prices available. Retry later.`);
+      return;
+    }
+
+    const last: TransformedPriceEntry = _.last(this.hourlyPrices)!;
+    const lastPriceForDay = last.startsAt.startOf('day');
     this.#log(
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
     );
@@ -255,12 +270,14 @@ export class TibberApi {
       );
       startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
         homeySetTimeout(async () => {
+          let data: TransformedPriceEntry[];
           try {
             data = await startTransaction('ScheduledGetPriceInfo', 'API', () =>
               this.#getPriceInfo(),
             );
           } catch (e) {
             console.error(
+              'The following error happened when trying to re-fetch stale prices',
               e,
             );
             return;
@@ -283,12 +300,14 @@ export class TibberApi {
         .request<PriceRatingResponse>(queries.getPriceQuery(this.#homeId!))
         .catch((e) => {
           noticeError(e);
+          console.error('Error while fetching price data', e);
           throw e;
         }),
     );
 
     const yesterday = moment().startOf('day').subtract(1, 'day');
     const pricesYesterday = this.hourlyPrices?.filter((p) =>
+      p.startsAt.isSame(yesterday, 'day'),
     );
 
     const pricesToday =
@@ -296,6 +315,11 @@ export class TibberApi {
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
+    return [
+      ...pricesYesterday,
+      ...pricesToday.map(transformPrice),
+      ...pricesTomorrow.map(transformPrice),
+    ];
   }
 
   async getConsumptionData(
@@ -312,6 +336,7 @@ export class TibberApi {
         )
         .catch((e) => {
           noticeError(e);
+          console.error('Error while fetching consumption data', e);
           throw e;
         }),
     );
@@ -326,9 +351,11 @@ export class TibberApi {
       client
         .request(push)
         .then((result) => {
+          console.log('Push notification sent', result);
         })
         .catch((e) => {
           noticeError(e);
+          console.error('Error sending push notification', e);
           throw e;
         }),
     );
@@ -371,3 +398,9 @@ export class TibberApi {
     return this.#homeySettings.get('token');
   }
 }
+
+const transformPrice = (priceEntry: PriceInfoEntry): TransformedPriceEntry => {
+  const res = priceEntry as unknown as TransformedPriceEntry;
+  res.startsAt = moment(priceEntry.startsAt);
+  return res;
+};

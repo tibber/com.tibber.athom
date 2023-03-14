@@ -4,21 +4,21 @@ import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
 import { noticeError } from 'newrelic';
 import {
-  TibberApi,
-  getRandomDelay,
-  PriceInfoEntry,
   ConsumptionData,
   ConsumptionNode,
+  TibberApi,
+  TransformedPriceEntry,
 } from '../../lib/api';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
   mean,
   parseTimeString,
-  isSameDay,
-  TimeString,
-  takeFromStartOrEnd,
   sum,
+  takeFromStartOrEnd,
+  TimeString,
+  min,
+  max,
 } from '../../lib/helpers';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
@@ -38,9 +38,9 @@ class HomeDevice extends Device {
   #api!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #latestPrice?: PriceInfoEntry;
-  #priceAtLowestToday?: PriceInfoEntry;
-  #priceAtHighestToday?: PriceInfoEntry;
+  #latestPrice?: TransformedPriceEntry;
+  #priceAtLowestToday?: TransformedPriceEntry;
+  #priceAtHighestToday?: TransformedPriceEntry;
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -313,7 +313,7 @@ class HomeDevice extends Device {
 
       const now = moment();
       const hourlyPrices = this.#api.hourlyPrices.filter((p) =>
-        moment.tz(p.startsAt, 'Europe/Oslo').isSameOrAfter(now, 'day'),
+        p.startsAt.isSameOrAfter(now, 'day'),
       );
 
       this.#handlePrice(hourlyPrices).catch(() => {});
@@ -369,11 +369,11 @@ class HomeDevice extends Device {
               consumptionData = await startTransaction(
                 'ScheduledGetConsumption',
                 'API',
-                () =>
+                () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
               );
             } catch (e) {
               console.error(
-                `${new Date()} The following error occurred during scheduled consumption fetch`,
+                'The following error occurred during scheduled consumption fetch',
                 e,
               );
               return;
@@ -429,13 +429,13 @@ class HomeDevice extends Device {
     }
   }
 
-  async #handlePrice(hourlyPrices: PriceInfoEntry[]) {
+  async #handlePrice(hourlyPrices: TransformedPriceEntry[]) {
     this.#updateLowestAndHighestPrice(hourlyPrices);
 
     const currentHour = moment().startOf('hour');
 
     const currentPrice = hourlyPrices.find((p) =>
-      currentHour.isSame(moment(p.startsAt)),
+      currentHour.isSame(p.startsAt),
     );
     if (currentPrice === undefined) {
       this.log(
@@ -563,7 +563,7 @@ class HomeDevice extends Device {
     }
   }
 
-  #updateLowestAndHighestPrice(hourlyPrices: PriceInfoEntry[]) {
+  #updateLowestAndHighestPrice(hourlyPrices: TransformedPriceEntry[]) {
     const now = moment();
 
     this.log(
@@ -578,17 +578,17 @@ class HomeDevice extends Device {
       }`,
     );
 
-    if (isSameDay(this.#priceAtLowestToday?.startsAt, now, 'Europe/Oslo')) {
+    if (this.#priceAtLowestToday?.startsAt.isSame(now, 'day')) {
       this.log("Today's lowest and highest prices are up to date");
       return;
     }
 
     const pricesToday = hourlyPrices.filter((p) =>
-      isSameDay(p.startsAt, now, 'Europe/Oslo'),
+      p.startsAt.isSame(now, 'day'),
     );
 
-    this.#priceAtLowestToday = _.minBy(pricesToday, 'total');
-    this.#priceAtHighestToday = _.maxBy(pricesToday, 'total');
+    this.#priceAtLowestToday = min(pricesToday, (p) => p.total);
+    this.#priceAtHighestToday = max(pricesToday, (p) => p.total);
 
     const lowestPrice = this.#priceAtLowestToday?.total ?? null;
     this.setCapabilityValue('measure_price_lowest', lowestPrice)
@@ -762,14 +762,14 @@ class HomeDevice extends Device {
       priceNextHours = takeFromStartOrEnd(
         this.#api.hourlyPrices.filter((p) =>
           hours > 0
-            ? moment(p.startsAt).isAfter(now)
-            : moment(p.startsAt).isBefore(now, 'hour'),
+            ? p.startsAt.isAfter(now)
+            : p.startsAt.isBefore(now, 'hour'),
         ),
         hours,
       );
     } else {
       priceNextHours = this.#api.hourlyPrices.filter((p) =>
-        isSameDay(p.startsAt, now, 'Europe/Oslo'),
+        p.startsAt.isSame(now, 'day'),
       );
     }
 
@@ -816,14 +816,12 @@ class HomeDevice extends Device {
         ? takeFromStartOrEnd(
             this.#api.hourlyPrices.filter((p) =>
               options.hours! > 0
-                ? moment(p.startsAt).isAfter(now)
-                : moment(p.startsAt).isBefore(now, 'hour'),
+                ? p.startsAt.isAfter(now)
+                : p.startsAt.isBefore(now, 'hour'),
             ),
             options.hours,
           )
-        : this.#api.hourlyPrices.filter((p) =>
-            isSameDay(p.startsAt, now, 'Europe/Oslo'),
-          );
+        : this.#api.hourlyPrices.filter((p) => p.startsAt.isSame(now, 'day'));
 
     if (!pricesNextHours.length) {
       this.log(
@@ -915,8 +913,7 @@ class HomeDevice extends Device {
 
     const pricesWithinTimeFrame = this.#api.hourlyPrices.filter(
       (p) =>
-        moment(p.startsAt).isSameOrAfter(start, 'hour') &&
-        moment(p.startsAt).isBefore(end),
+        p.startsAt.isSameOrAfter(start, 'hour') && p.startsAt.isBefore(end),
     );
 
     if (!pricesWithinTimeFrame.length) {

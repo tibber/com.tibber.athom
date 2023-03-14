@@ -1,14 +1,19 @@
-import moment from 'moment-timezone';
-import { isSameDay, mean, sum } from './helpers';
+import { max, mean, min, sum } from './helpers';
 
 describe('helpers', () => {
-  describe('isSameDay', () => {
-    test('start of day', () => {
-      const tz = 'Europe/Oslo';
-      const todayString = moment.tz(tz).format();
-      const startOfToday = moment.tz(tz).startOf('day');
-      const actual = isSameDay(todayString, startOfToday, tz);
-      expect(actual).toBe(true);
+  describe('min', () => {
+    test('simple', () => {
+      const values = [{ value: 7 }, { value: 13 }, { value: 2 }, { value: 5 }];
+      const actual = min(values, (item) => item.value);
+      expect(actual).toStrictEqual({ value: 2 });
+    });
+  });
+
+  describe('max', () => {
+    test('simple', () => {
+      const values = [{ value: 7 }, { value: 13 }, { value: 2 }, { value: 5 }];
+      const actual = max(values, (item) => item.value);
+      expect(actual).toStrictEqual({ value: 13 });
     });
   });
 
