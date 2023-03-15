@@ -1,9 +1,9 @@
 import { Device, env, FlowCard, FlowCardTriggerDevice } from 'homey';
-import _ from 'lodash';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
 import { noticeError } from 'newrelic';
 import * as util from 'util';
+import { sort } from 'fast-sort';
 import {
   ConsumptionData,
   ConsumptionNode,
@@ -844,7 +844,7 @@ class HomeDevice extends Device {
 
     let conditionMet;
     if (options.ranked_hours !== undefined) {
-      const sortedHours = _.sortBy(pricesNextHours, ['total']);
+      const sortedHours = sort(pricesNextHours).asc((p) => p.total);
       const currentHourRank = sortedHours.findIndex(
         (p) => p.startsAt === this.#latestPrice?.startsAt,
       );
@@ -935,7 +935,7 @@ class HomeDevice extends Device {
       return false;
     }
 
-    const sortedHours = _.sortBy(pricesWithinTimeFrame, ['total']);
+    const sortedHours = sort(pricesWithinTimeFrame).asc((p) => p.total);
     const currentHourRank = sortedHours.findIndex(
       (p) => p.startsAt === this.#latestPrice?.startsAt,
     );
