@@ -39,9 +39,11 @@ class HomeDevice extends Device {
   #api!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #latestPrice?: TransformedPriceEntry;
-  #priceAtLowestToday?: TransformedPriceEntry;
-  #priceAtHighestToday?: TransformedPriceEntry;
+  #prices: {
+    latest?: TransformedPriceEntry;
+    lowestToday?: TransformedPriceEntry;
+    highestToday?: TransformedPriceEntry;
+  } = {};
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -98,7 +100,7 @@ class HomeDevice extends Device {
     this.#insightId = this.#deviceLabel
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
-    this.#latestPrice = undefined;
+    this.#prices.latest = undefined;
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
@@ -170,8 +172,8 @@ class HomeDevice extends Device {
       'current_price_below',
     );
     this.#currentPriceBelowCondition.registerRunListener((args, _state) => {
-      if (this.#latestPrice === undefined) return false;
-      return args.price > Number(this.#latestPrice.total);
+      if (this.#prices.latest === undefined) return false;
+      return args.price > Number(this.#prices.latest.total);
     });
 
     this.#currentPriceBelowAvgCondition = this.homey.flow.getConditionCard(
@@ -453,11 +455,11 @@ class HomeDevice extends Device {
     }
 
     const shouldUpdate =
-      currentPrice.startsAt !== this.#latestPrice?.startsAt ||
+      currentPrice.startsAt !== this.#prices.latest?.startsAt ||
       env.DEBUG_ACCELERATION;
 
     if (shouldUpdate) {
-      this.#latestPrice = currentPrice;
+      this.#prices.latest = currentPrice;
 
       if (currentPrice.total !== null) {
         const capabilityPromises = [
@@ -578,33 +580,33 @@ class HomeDevice extends Device {
     const now = moment();
 
     this.log(
-      `The current lowest price is ${this.#priceAtLowestToday?.total} at ${
-        this.#priceAtLowestToday?.startsAt
+      `The current lowest price is ${this.#prices.lowestToday?.total} at ${
+        this.#prices.lowestToday?.startsAt
       }`,
     );
 
     this.log(
-      `The current highest price is ${this.#priceAtHighestToday?.total} at ${
-        this.#priceAtHighestToday?.startsAt
+      `The current highest price is ${this.#prices.highestToday?.total} at ${
+        this.#prices.highestToday?.startsAt
       }`,
     );
 
-    if (this.#priceAtLowestToday?.startsAt.isSame(now, 'day')) {
+    if (this.#prices.lowestToday?.startsAt.isSame(now, 'day')) {
       this.log("Today's lowest and highest prices are up to date");
       return;
     }
 
-    this.#priceAtLowestToday = min(pricesToday, (p) => p.total);
-    this.#priceAtHighestToday = max(pricesToday, (p) => p.total);
+    this.#prices.lowestToday = min(pricesToday, (p) => p.total);
+    this.#prices.highestToday = max(pricesToday, (p) => p.total);
 
-    const lowestPrice = this.#priceAtLowestToday?.total ?? null;
+    const lowestPrice = this.#prices.lowestToday?.total ?? null;
     this.setCapabilityValue('measure_price_lowest', lowestPrice)
       .catch(console.error)
       .finally(() => {
         this.log("Set 'measure_price_lowest' capability to", lowestPrice);
       });
 
-    const highestPrice = this.#priceAtHighestToday?.total ?? null;
+    const highestPrice = this.#prices.highestToday?.total ?? null;
     this.setCapabilityValue('measure_price_highest', highestPrice)
       .catch(console.error)
       .finally(() => {
@@ -789,14 +791,15 @@ class HomeDevice extends Device {
       return false;
     }
 
-    if (!this.#latestPrice) return false;
+    if (!this.#prices.latest) return false;
 
     let diffAvgCurrent =
-      ((this.#latestPrice.total - avgPriceNextHours) / avgPriceNextHours) * 100;
+      ((this.#prices.latest.total - avgPriceNextHours) / avgPriceNextHours) *
+      100;
     if (below) diffAvgCurrent *= -1;
 
     this.log(
-      `${this.#latestPrice.total} is ${diffAvgCurrent}% ${
+      `${this.#prices.latest.total} is ${diffAvgCurrent}% ${
         below ? 'below' : 'above'
       } avg (${avgPriceNextHours}) ${
         hours ? `next ${hours} hours` : 'today'
@@ -837,7 +840,7 @@ class HomeDevice extends Device {
       return false;
     }
 
-    if (this.#latestPrice === undefined) {
+    if (this.#prices.latest === undefined) {
       this.log(`Cannot determine condition. The last price is undefined`);
       return false;
     }
@@ -846,7 +849,7 @@ class HomeDevice extends Device {
     if (options.ranked_hours !== undefined) {
       const sortedHours = sort(pricesNextHours).asc((p) => p.total);
       const currentHourRank = sortedHours.findIndex(
-        (p) => p.startsAt === this.#latestPrice?.startsAt,
+        (p) => p.startsAt === this.#prices.latest?.startsAt,
       );
       if (currentHourRank < 0) {
         this.log(`Could not find the current hour rank among today's hours`);
@@ -858,7 +861,7 @@ class HomeDevice extends Device {
         : currentHourRank >= sortedHours.length - options.ranked_hours;
 
       this.log(
-        `${this.#latestPrice.total} is among the ${
+        `${this.#prices.latest.total} is among the ${
           lowest ? 'lowest' : 'highest'
         } ${options.ranked_hours} hours today = ${conditionMet}`,
       );
@@ -868,11 +871,11 @@ class HomeDevice extends Device {
         : max(pricesNextHours, (p) => p.total)!.total;
 
       conditionMet = lowest
-        ? this.#latestPrice.total <= toCompare
-        : this.#latestPrice.total >= toCompare;
+        ? this.#prices.latest.total <= toCompare
+        : this.#prices.latest.total >= toCompare;
 
       this.log(
-        `${this.#latestPrice.total} is ${
+        `${this.#prices.latest.total} is ${
           lowest ? 'lower than the lowest' : 'higher than the highest'
         } (${toCompare}) ${
           options.hours ? `among the next ${options.hours} hours` : 'today'
@@ -930,14 +933,14 @@ class HomeDevice extends Device {
       return false;
     }
 
-    if (this.#latestPrice === undefined) {
+    if (this.#prices.latest === undefined) {
       this.log(`Cannot determine condition. The last price is undefined`);
       return false;
     }
 
     const sortedHours = sort(pricesWithinTimeFrame).asc((p) => p.total);
     const currentHourRank = sortedHours.findIndex(
-      (p) => p.startsAt === this.#latestPrice?.startsAt,
+      (p) => p.startsAt === this.#prices.latest?.startsAt,
     );
     if (currentHourRank < 0) {
       this.log(`Could not find the current hour rank among today's hours`);
@@ -947,7 +950,7 @@ class HomeDevice extends Device {
     const conditionMet = currentHourRank < ranked_hours;
 
     this.log(
-      `${this.#latestPrice.total} is among the lowest ${ranked_hours}
+      `${this.#prices.latest.total} is among the lowest ${ranked_hours}
       prices between ${start} and ${end} = ${conditionMet}`,
     );
 
