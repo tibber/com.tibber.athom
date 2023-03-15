@@ -17,12 +17,12 @@ export const takeFromStartOrEnd = <T>(arr: T[], quantity?: number): T[] => {
   let endIndex;
   if (Math.sign(quantity) === -1) {
     startIndex = quantity;
-    endIndex = -quantity;
+    endIndex = undefined;
   } else {
     startIndex = 0;
     endIndex = quantity;
   }
-  return arr.splice(startIndex, endIndex);
+  return arr.slice(startIndex, endIndex);
 };
 
 export const mean = <T>(arr: T[], func: (item: T) => number): number =>
