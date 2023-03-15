@@ -28,13 +28,13 @@ export interface LiveMeasurement {
   data?: {
     liveMeasurement: {
       timestamp: string;
-      power: number | null;
-      accumulatedConsumption: number | null;
+      power: number;
+      accumulatedConsumption: number;
       accumulatedCost: number | null;
       currency: string | null;
-      minPower: number | null;
-      averagePower: number | null;
-      maxPower: number | null;
+      minPower: number;
+      averagePower: number;
+      maxPower: number;
       powerProduction: number | null;
       currentL1: number | null;
       currentL2: number | null;

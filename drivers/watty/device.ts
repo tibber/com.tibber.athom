@@ -111,10 +111,7 @@ class WattyDevice extends Device {
   async #subscribeToLive() {
     this.#resubscribeDebounce();
 
-    if (
-      this.#wsSubscription &&
-      _.isFunction(this.#wsSubscription.unsubscribe)
-    ) {
+    if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
         this.log(
           `No data received in ${
@@ -253,7 +250,7 @@ class WattyDevice extends Device {
     }
 
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
-    if (consumption && _.isNumber(consumption)) {
+    if (consumption !== undefined) {
       const fixedConsumption = Number(consumption.toFixed(2));
       if (fixedConsumption !== this.#prevConsumption) {
         if (fixedConsumption < this.#prevConsumption) {
@@ -332,7 +329,7 @@ class WattyDevice extends Device {
           }
         }
 
-        if (!_.isNumber(this.#cachedNordPoolPrice?.price)) return;
+        if (typeof this.#cachedNordPoolPrice?.price !== 'number') return;
 
         cost = this.#cachedNordPoolPrice!.price * consumption!;
       } catch (e) {
@@ -340,7 +337,7 @@ class WattyDevice extends Device {
       }
     }
 
-    if (cost && _.isNumber(cost)) {
+    if (cost !== undefined && cost !== null) {
       const fixedCost = Number(cost.toFixed(2));
       if (fixedCost !== this.#prevCost) {
         this.#prevCost = fixedCost;
@@ -364,10 +361,7 @@ class WattyDevice extends Device {
   }
 
   destroy() {
-    if (
-      this.#wsSubscription &&
-      _.isFunction(this.#wsSubscription.unsubscribe)
-    ) {
+    if (typeof this.#wsSubscription.unsubscribe === 'function') {
       try {
         this.log('Unsubscribing from previous connection');
         this.#wsSubscription.unsubscribe();
