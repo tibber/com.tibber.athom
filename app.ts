@@ -1,3 +1,6 @@
+// pull in newrelic first to ensure proper instrumentation
+import 'newrelic';
+
 import sourceMapSupport from 'source-map-support';
 import { App } from 'homey';
 import { setGlobalAttributes } from './lib/newrelic-transaction';

@@ -1,7 +1,6 @@
 import { Device, env, FlowCard, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
-import { noticeError } from 'newrelic';
 import * as util from 'util';
 import { sort } from 'fast-sort';
 import {
@@ -10,7 +9,7 @@ import {
   TibberApi,
   TransformedPriceEntry,
 } from '../../lib/api';
-import { startTransaction } from '../../lib/newrelic-transaction';
+import { noticeError, startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
   mean,
@@ -40,10 +39,11 @@ class HomeDevice extends Device {
   #deviceLabel!: string;
   #insightId!: string;
   #prices: {
+    today: TransformedPriceEntry[];
     latest?: TransformedPriceEntry;
     lowestToday?: TransformedPriceEntry;
     highestToday?: TransformedPriceEntry;
-  } = {};
+  } = { today: [] };
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -306,8 +306,10 @@ class HomeDevice extends Device {
 
   async #updateData() {
     try {
-      this.log(`Begin update`);
+      // NOTE: temporary
       console.log(`strt: ${util.inspect(process.memoryUsage())}`);
+
+      this.log(`Begin update`);
 
       await startTransaction('GetPriceInfo', 'API', () =>
         this.#api.populateCachedPriceInfos((callback, ms, args) =>
@@ -316,76 +318,12 @@ class HomeDevice extends Device {
       );
 
       const now = moment();
-      const pricesToday = this.#api.hourlyPrices.filter((p) =>
-        p.startsAt.isSame(now, 'day'),
-      );
 
-      this.#handlePrice(pricesToday).catch(() => {});
+      await this.#handlePrice(now);
 
       if (this.#isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
-        const lastLoggedDailyConsumption =
-          this.#getLastLoggedDailyConsumption();
-        let daysToFetch = 14;
-
-        if (lastLoggedDailyConsumption) {
-          const durationSinceLastDailyConsumption = moment.duration(
-            now.diff(moment(lastLoggedDailyConsumption)),
-          );
-          daysToFetch = Math.floor(durationSinceLastDailyConsumption.asDays());
-        }
-
-        const lastLoggedHourlyConsumption =
-          this.#getLastLoggedHourlyConsumption();
-
-        let hoursToFetch = 200;
-        if (lastLoggedHourlyConsumption) {
-          const durationSinceLastHourlyConsumption = moment.duration(
-            now.diff(moment(lastLoggedHourlyConsumption)),
-          );
-          hoursToFetch = Math.floor(
-            durationSinceLastHourlyConsumption.asHours(),
-          );
-        }
-
-        this.log(
-          `Last logged daily consumption at ${lastLoggedDailyConsumption} hourly consumption at ${lastLoggedHourlyConsumption}. Fetch ${daysToFetch} days ${hoursToFetch} hours`,
-        );
-
-        if (!lastLoggedDailyConsumption || !lastLoggedHourlyConsumption) {
-          const consumptionData = await startTransaction(
-            'GetConsumption',
-            'API',
-            () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
-          );
-
-          await this.#handleConsumption(consumptionData);
-        } else if (!hoursToFetch && !daysToFetch) {
-          this.log(`Consumption data up to date. Skip fetch.`);
-        } else {
-          const delay = randomBetweenRange(0, 59 * 60);
-          this.log(
-            `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
-          );
-          this.homey.setTimeout(async () => {
-            let consumptionData;
-            try {
-              consumptionData = await startTransaction(
-                'ScheduledGetConsumption',
-                'API',
-                () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
-              );
-            } catch (e) {
-              console.error(
-                'The following error occurred during scheduled consumption fetch',
-                e,
-              );
-              return;
-            }
-
-            await this.#handleConsumption(consumptionData);
-          }, delay * 1000);
-        }
+        await this.#generateConsumptionReport(now);
       }
 
       const nextUpdateTime = env.DEBUG_ACCELERATION
@@ -403,6 +341,7 @@ class HomeDevice extends Device {
 
       this.log(`End update`);
 
+      // NOTE: temporary
       console.log(`end: ${util.inspect(process.memoryUsage())}`);
     } catch (e) {
       this.log('Error fetching data', e);
@@ -438,18 +377,23 @@ class HomeDevice extends Device {
     }
   }
 
-  async #handlePrice(pricesToday: TransformedPriceEntry[]) {
-    this.#updateLowestAndHighestPrice(pricesToday);
+  async #handlePrice(now: moment.Moment) {
+    this.#prices.today = this.#api.hourlyPrices.filter((p) =>
+      p.startsAt.isSame(now, 'day'),
+    );
 
-    const currentHour = moment().startOf('hour');
+    // NOTE: this also updates capability values
+    this.#updateLowestAndHighestPrice(now);
 
-    const currentPrice = pricesToday.find((p) =>
+    const currentHour = now.clone().startOf('hour');
+
+    const currentPrice = this.#prices.today.find((p) =>
       currentHour.isSame(p.startsAt),
     );
     if (currentPrice === undefined) {
       this.log(
         `Error finding current price info for system time ${currentHour.format()}. Abort.`,
-        pricesToday,
+        this.#prices.today,
       );
       return;
     }
@@ -553,6 +497,7 @@ class HomeDevice extends Device {
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
         }
+
         try {
           const priceLogger = await this.#createGetLog(
             `${this.#insightId}_price`,
@@ -576,9 +521,7 @@ class HomeDevice extends Device {
     }
   }
 
-  #updateLowestAndHighestPrice(pricesToday: TransformedPriceEntry[]) {
-    const now = moment();
-
+  #updateLowestAndHighestPrice(now: moment.Moment) {
     this.log(
       `The current lowest price is ${this.#prices.lowestToday?.total} at ${
         this.#prices.lowestToday?.startsAt
@@ -596,8 +539,8 @@ class HomeDevice extends Device {
       return;
     }
 
-    this.#prices.lowestToday = min(pricesToday, (p) => p.total);
-    this.#prices.highestToday = max(pricesToday, (p) => p.total);
+    this.#prices.lowestToday = min(this.#prices.today, (p) => p.total);
+    this.#prices.highestToday = max(this.#prices.today, (p) => p.total);
 
     const lowestPrice = this.#prices.lowestToday?.total ?? null;
     this.setCapabilityValue('measure_price_lowest', lowestPrice)
@@ -614,7 +557,68 @@ class HomeDevice extends Device {
       });
   }
 
-  async #handleConsumption(data: ConsumptionData) {
+  async #generateConsumptionReport(now: moment.Moment) {
+    const lastLoggedDailyConsumption = this.#getLastLoggedDailyConsumption();
+    let daysToFetch = 14;
+
+    if (lastLoggedDailyConsumption) {
+      const durationSinceLastDailyConsumption = moment.duration(
+        now.diff(moment(lastLoggedDailyConsumption)),
+      );
+      daysToFetch = Math.floor(durationSinceLastDailyConsumption.asDays());
+    }
+
+    const lastLoggedHourlyConsumption = this.#getLastLoggedHourlyConsumption();
+
+    let hoursToFetch = 200;
+    if (lastLoggedHourlyConsumption) {
+      const durationSinceLastHourlyConsumption = moment.duration(
+        now.diff(moment(lastLoggedHourlyConsumption)),
+      );
+      hoursToFetch = Math.floor(durationSinceLastHourlyConsumption.asHours());
+    }
+
+    this.log(
+      `Last logged daily consumption at ${lastLoggedDailyConsumption} hourly consumption at ${lastLoggedHourlyConsumption}. Fetch ${daysToFetch} days ${hoursToFetch} hours`,
+    );
+
+    if (!lastLoggedDailyConsumption || !lastLoggedHourlyConsumption) {
+      const consumptionData = await startTransaction(
+        'GetConsumption',
+        'API',
+        () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
+      );
+
+      await this.#logConsumptionInsightsAndInvokeTrigger(consumptionData);
+    } else if (!hoursToFetch && !daysToFetch) {
+      this.log(`Consumption data up to date. Skip fetch.`);
+    } else {
+      const delay = randomBetweenRange(0, 59 * 60);
+      this.log(
+        `Schedule consumption fetch for ${daysToFetch} days ${hoursToFetch} hours after ${delay} seconds.`,
+      );
+      this.homey.setTimeout(async () => {
+        let consumptionData;
+        try {
+          consumptionData = await startTransaction(
+            'ScheduledGetConsumption',
+            'API',
+            () => this.#api.getConsumptionData(daysToFetch, hoursToFetch),
+          );
+        } catch (e) {
+          console.error(
+            'The following error occurred during scheduled consumption fetch',
+            e,
+          );
+          return;
+        }
+
+        await this.#logConsumptionInsightsAndInvokeTrigger(consumptionData);
+      }, delay * 1000);
+    }
+  }
+
+  async #logConsumptionInsightsAndInvokeTrigger(data: ConsumptionData) {
     try {
       const lastLoggedDailyConsumption = this.#getLastLoggedDailyConsumption();
       const consumptionsSinceLastReport: ConsumptionNode[] = [];
@@ -766,25 +770,21 @@ class HomeDevice extends Device {
     if (hours === 0) return false;
 
     const now = moment();
-    let priceNextHours;
-    if (hours) {
-      priceNextHours = takeFromStartOrEnd(
-        this.#api.hourlyPrices.filter((p) =>
-          hours > 0
-            ? p.startsAt.isAfter(now)
-            : p.startsAt.isBefore(now, 'hour'),
-        ),
-        hours,
-      );
-    } else {
-      priceNextHours = this.#api.hourlyPrices.filter((p) =>
-        p.startsAt.isSame(now, 'day'),
-      );
-    }
+    const prices =
+      hours !== undefined
+        ? takeFromStartOrEnd(
+            this.#api.hourlyPrices.filter((p) =>
+              hours! > 0
+                ? p.startsAt.isAfter(now)
+                : p.startsAt.isBefore(now, 'hour'),
+            ),
+            hours,
+          )
+        : this.#prices.today;
 
-    const avgPriceNextHours = mean(priceNextHours, (item) => item.total);
+    const avgPrice = mean(prices, (item) => item.total);
 
-    if (Number.isNaN(avgPriceNextHours)) {
+    if (Number.isNaN(avgPrice)) {
       this.log(
         `Cannot determine condition. No prices for next hours available.`,
       );
@@ -794,14 +794,13 @@ class HomeDevice extends Device {
     if (!this.#prices.latest) return false;
 
     let diffAvgCurrent =
-      ((this.#prices.latest.total - avgPriceNextHours) / avgPriceNextHours) *
-      100;
+      ((this.#prices.latest.total - avgPrice) / avgPrice) * 100;
     if (below) diffAvgCurrent *= -1;
 
     this.log(
       `${this.#prices.latest.total} is ${diffAvgCurrent}% ${
         below ? 'below' : 'above'
-      } avg (${avgPriceNextHours}) ${
+      } avg (${avgPrice}) ${
         hours ? `next ${hours} hours` : 'today'
       }. Condition of min ${percentage} percentage met = ${
         diffAvgCurrent > percentage
@@ -821,7 +820,7 @@ class HomeDevice extends Device {
 
     const now = moment();
 
-    const pricesNextHours =
+    const prices =
       options.hours !== undefined
         ? takeFromStartOrEnd(
             this.#api.hourlyPrices.filter((p) =>
@@ -831,9 +830,9 @@ class HomeDevice extends Device {
             ),
             options.hours,
           )
-        : this.#api.hourlyPrices.filter((p) => p.startsAt.isSame(now, 'day'));
+        : this.#prices.today;
 
-    if (!pricesNextHours.length) {
+    if (!prices.length) {
       this.log(
         `Cannot determine condition. No prices for next hours available.`,
       );
@@ -847,8 +846,8 @@ class HomeDevice extends Device {
 
     let conditionMet;
     if (options.ranked_hours !== undefined) {
-      const sortedHours = sort(pricesNextHours).asc((p) => p.total);
-      const currentHourRank = sortedHours.findIndex(
+      const sortedPrices = sort(prices).asc((p) => p.total);
+      const currentHourRank = sortedPrices.findIndex(
         (p) => p.startsAt === this.#prices.latest?.startsAt,
       );
       if (currentHourRank < 0) {
@@ -858,7 +857,7 @@ class HomeDevice extends Device {
 
       conditionMet = lowest
         ? currentHourRank < options.ranked_hours
-        : currentHourRank >= sortedHours.length - options.ranked_hours;
+        : currentHourRank >= sortedPrices.length - options.ranked_hours;
 
       this.log(
         `${this.#prices.latest.total} is among the ${
@@ -867,8 +866,8 @@ class HomeDevice extends Device {
       );
     } else {
       const toCompare = lowest
-        ? min(pricesNextHours, (p) => p.total)!.total
-        : max(pricesNextHours, (p) => p.total)!.total;
+        ? min(prices, (p) => p.total)!.total
+        : max(prices, (p) => p.total)!.total;
 
       conditionMet = lowest
         ? this.#prices.latest.total <= toCompare
