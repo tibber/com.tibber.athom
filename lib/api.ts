@@ -90,6 +90,13 @@ export type TransformedPriceEntry = Omit<PriceInfoEntry, 'startsAt'> & {
   startsAt: moment.Moment;
 };
 
+export interface PriceData {
+  today: TransformedPriceEntry[];
+  latest?: TransformedPriceEntry;
+  lowestToday?: TransformedPriceEntry;
+  highestToday?: TransformedPriceEntry;
+}
+
 export interface Homes {
   viewer: {
     homes: Home[];

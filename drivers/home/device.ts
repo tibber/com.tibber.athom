@@ -1,20 +1,17 @@
 import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
-import { sort } from 'fast-sort';
 import {
   ConsumptionData,
   ConsumptionNode,
+  PriceData,
   TibberApi,
-  TransformedPriceEntry,
 } from '../../lib/api';
 import { noticeError, startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
   mean,
-  parseTimeString,
   sum,
-  takeFromStartOrEnd,
   TimeString,
   min,
   max,
@@ -24,6 +21,11 @@ import {
   ERROR_CODE_UNAUTHENTICATED,
 } from '../../lib/constants';
 import { InsightLoggerError } from '../../lib/errors';
+import {
+  averagePrice,
+  lowestPricesWithinTimeFrame,
+  minMaxPrice,
+} from '../../lib/comparers';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -37,12 +39,7 @@ class HomeDevice extends Device {
   #api!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
-  #prices: {
-    today: TransformedPriceEntry[];
-    latest?: TransformedPriceEntry;
-    lowestToday?: TransformedPriceEntry;
-    highestToday?: TransformedPriceEntry;
-  } = { today: [] };
+  #prices: PriceData = { today: [] };
   #priceChangedTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
@@ -754,49 +751,16 @@ class HomeDevice extends Device {
   }
 
   #priceAvgComparer(
-    { hours, percentage }: { hours: number; percentage: number },
-    { below }: { below: boolean },
+    options: { hours: number; percentage: number },
+    args: { below: boolean },
   ): boolean {
-    if (hours === 0) return false;
-
-    const now = moment();
-    const prices =
-      hours !== undefined
-        ? takeFromStartOrEnd(
-            this.#api.hourlyPrices.filter((p) =>
-              hours! > 0
-                ? p.startsAt.isAfter(now)
-                : p.startsAt.isBefore(now, 'hour'),
-            ),
-            hours,
-          )
-        : this.#prices.today;
-
-    const avgPrice = mean(prices, (item) => item.total);
-
-    if (Number.isNaN(avgPrice)) {
-      this.log(
-        `Cannot determine condition. No prices for next hours available.`,
-      );
-      return false;
-    }
-
-    if (!this.#prices.latest) return false;
-
-    let diffAvgCurrent =
-      ((this.#prices.latest.total - avgPrice) / avgPrice) * 100;
-    if (below) diffAvgCurrent *= -1;
-
-    this.log(
-      `${this.#prices.latest.total} is ${diffAvgCurrent}% ${
-        below ? 'below' : 'above'
-      } avg (${avgPrice}) ${
-        hours ? `next ${hours} hours` : 'today'
-      }. Condition of min ${percentage} percentage met = ${
-        diffAvgCurrent > percentage
-      }`,
+    return averagePrice(
+      this.log,
+      this.#api.hourlyPrices,
+      this.#prices,
+      options,
+      args,
     );
-    return diffAvgCurrent > percentage;
   }
 
   #priceMinMaxComparer(
@@ -804,147 +768,28 @@ class HomeDevice extends Device {
       hours?: number;
       ranked_hours?: number;
     },
-    { lowest }: { lowest: boolean },
+    args: { lowest: boolean },
   ): boolean {
-    if (options.hours === 0 || options.ranked_hours === 0) return false;
-
-    const now = moment();
-
-    const prices =
-      options.hours !== undefined
-        ? takeFromStartOrEnd(
-            this.#api.hourlyPrices.filter((p) =>
-              options.hours! > 0
-                ? p.startsAt.isAfter(now)
-                : p.startsAt.isBefore(now, 'hour'),
-            ),
-            options.hours,
-          )
-        : this.#prices.today;
-
-    if (!prices.length) {
-      this.log(
-        `Cannot determine condition. No prices for next hours available.`,
-      );
-      return false;
-    }
-
-    if (this.#prices.latest === undefined) {
-      this.log(`Cannot determine condition. The last price is undefined`);
-      return false;
-    }
-
-    let conditionMet;
-    if (options.ranked_hours !== undefined) {
-      const sortedPrices = sort(prices).asc((p) => p.total);
-      const currentHourRank = sortedPrices.findIndex(
-        (p) => p.startsAt === this.#prices.latest?.startsAt,
-      );
-      if (currentHourRank < 0) {
-        this.log(`Could not find the current hour rank among today's hours`);
-        return false;
-      }
-
-      conditionMet = lowest
-        ? currentHourRank < options.ranked_hours
-        : currentHourRank >= sortedPrices.length - options.ranked_hours;
-
-      this.log(
-        `${this.#prices.latest.total} is among the ${
-          lowest ? 'lowest' : 'highest'
-        } ${options.ranked_hours} hours today = ${conditionMet}`,
-      );
-    } else {
-      const toCompare = lowest
-        ? min(prices, (p) => p.total)!.total
-        : max(prices, (p) => p.total)!.total;
-
-      conditionMet = lowest
-        ? this.#prices.latest.total <= toCompare
-        : this.#prices.latest.total >= toCompare;
-
-      this.log(
-        `${this.#prices.latest.total} is ${
-          lowest ? 'lower than the lowest' : 'higher than the highest'
-        } (${toCompare}) ${
-          options.hours ? `among the next ${options.hours} hours` : 'today'
-        } = ${conditionMet}`,
-      );
-    }
-
-    return conditionMet;
+    return minMaxPrice(
+      this.log,
+      this.#api.hourlyPrices,
+      this.#prices,
+      options,
+      args,
+    );
   }
 
-  #lowestPricesWithinTimeFrame({
-    ranked_hours,
-    start_time,
-    end_time,
-  }: {
+  #lowestPricesWithinTimeFrame(options: {
     ranked_hours: number;
     start_time: TimeString;
     end_time: TimeString;
   }): boolean {
-    if (ranked_hours === 0) return false;
-
-    const now = moment().tz('Europe/Oslo');
-
-    const nonAdjustedStart = parseTimeString(start_time);
-    let start = nonAdjustedStart;
-
-    const nonAdjustedEnd = parseTimeString(end_time);
-    let end = nonAdjustedEnd;
-
-    const periodStretchesOverMidnight =
-      nonAdjustedStart.isAfter(nonAdjustedEnd);
-    const adjustStartToYesterday = now.isBefore(nonAdjustedEnd);
-    const adjustEndToTomorrow = now.isAfter(nonAdjustedEnd);
-
-    if (periodStretchesOverMidnight) {
-      start = nonAdjustedStart
-        .clone()
-        .subtract(adjustStartToYesterday ? 1 : 0, 'day');
-      end = nonAdjustedEnd.clone().add(adjustEndToTomorrow ? 1 : 0, 'day');
-    }
-
-    if (!now.isSameOrAfter(start) || !now.isBefore(end)) {
-      this.log(`Time conditions not met`);
-      return false;
-    }
-
-    const pricesWithinTimeFrame = this.#api.hourlyPrices.filter(
-      (p) =>
-        p.startsAt.isSameOrAfter(start, 'hour') && p.startsAt.isBefore(end),
+    return lowestPricesWithinTimeFrame(
+      this.log,
+      this.#api.hourlyPrices,
+      this.#prices,
+      options,
     );
-
-    if (!pricesWithinTimeFrame.length) {
-      this.log(
-        `Cannot determine condition. No prices for next hours available.`,
-      );
-      return false;
-    }
-
-    if (this.#prices.latest === undefined) {
-      this.log(`Cannot determine condition. The last price is undefined`);
-      return false;
-    }
-
-    const sortedHours = sort(pricesWithinTimeFrame).asc((p) => p.total);
-    const currentHourRank = sortedHours.findIndex(
-      (p) => p.startsAt === this.#prices.latest?.startsAt,
-    );
-    if (currentHourRank < 0) {
-      this.log(`Could not find the current hour rank among today's hours`);
-      return false;
-    }
-
-    const conditionMet = currentHourRank < ranked_hours;
-
-    this.log(
-      `${this.#prices.latest.total} is among the lowest ${ranked_hours}
-      prices between ${start} and ${end} = ${conditionMet}`,
-    );
-
-    return conditionMet;
   }
 
   #scheduleUpdate(seconds: number) {
