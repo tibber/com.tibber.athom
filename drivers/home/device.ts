@@ -1,7 +1,6 @@
 import { Device, env, FlowCard, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
-import * as util from 'util';
 import { sort } from 'fast-sort';
 import {
   ConsumptionData,
@@ -306,9 +305,6 @@ class HomeDevice extends Device {
 
   async #updateData() {
     try {
-      // NOTE: temporary
-      console.log(`strt: ${util.inspect(process.memoryUsage())}`);
-
       this.log(`Begin update`);
 
       await startTransaction('GetPriceInfo', 'API', () =>
@@ -340,9 +336,6 @@ class HomeDevice extends Device {
       this.#scheduleUpdate(delay.asSeconds());
 
       this.log(`End update`);
-
-      // NOTE: temporary
-      console.log(`end: ${util.inspect(process.memoryUsage())}`);
     } catch (e) {
       this.log('Error fetching data', e);
 
