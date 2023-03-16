@@ -1,4 +1,4 @@
-import { Device, env, FlowCard, FlowCardTriggerDevice } from 'homey';
+import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import { ClientError } from 'graphql-request/dist/types';
 import { sort } from 'fast-sort';
@@ -322,12 +322,10 @@ class HomeDevice extends Device {
         await this.#generateConsumptionReport(now);
       }
 
-      const nextUpdateTime = env.DEBUG_ACCELERATION
-        ? moment().add(10, 'seconds')
-        : moment()
-            .add(1, 'hour')
-            .startOf('hour')
-            .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
+      const nextUpdateTime = moment()
+        .add(1, 'hour')
+        .startOf('hour')
+        .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
 
       this.log(
         `Next time to run update is at system time ${nextUpdateTime.format()}`,
@@ -392,8 +390,7 @@ class HomeDevice extends Device {
     }
 
     const shouldUpdate =
-      currentPrice.startsAt !== this.#prices.latest?.startsAt ||
-      env.DEBUG_ACCELERATION;
+      currentPrice.startsAt !== this.#prices.latest?.startsAt;
 
     if (shouldUpdate) {
       this.#prices.latest = currentPrice;
