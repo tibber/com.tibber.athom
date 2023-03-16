@@ -57,7 +57,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-#### 1.9.12
+#### 1.9.13
 
 - Reintroduce changes from 1.9.0
 - Reduce resource utilization
