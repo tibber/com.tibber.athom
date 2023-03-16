@@ -243,7 +243,7 @@ export class TibberApi {
     }
 
     const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
-    const lastPriceForDay = last.startsAt.startOf('day');
+    const lastPriceForDay = last.startsAt.clone().startOf('day');
     this.#log(
       `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
     );
