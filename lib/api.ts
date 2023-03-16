@@ -243,14 +243,10 @@ export class TibberApi {
     }
 
     const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
-    const lastPriceForDay = last.startsAt.clone().startOf('day');
+    const lastPriceForDayLocal = last.startsAt.clone().startOf('day');
     this.#log(
-      `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
+      `Last price info entry is for day at local time ${lastPriceForDayLocal.format()}`,
     );
-
-    const now = moment();
-    const today = moment().startOf('day');
-    const tomorrow = today.add(1, 'day');
 
     // Last cache entry is OK but there might be new prices available
     const expectedPricePublishTime = moment
@@ -262,7 +258,13 @@ export class TibberApi {
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
     );
 
-    if (lastPriceForDay < tomorrow && now > expectedPricePublishTime) {
+    const nowLocal = moment();
+    const tomorrowLocal = moment().startOf('day').add(1, 'day');
+
+    if (
+      lastPriceForDayLocal.isBefore(tomorrowLocal) &&
+      nowLocal.isAfter(expectedPricePublishTime)
+    ) {
       const delay = randomBetweenRange(0, 50 * 60);
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00 CET. Schedule re-fetch prices after ${delay} seconds.`,
@@ -304,9 +306,12 @@ export class TibberApi {
         }),
     );
 
-    const yesterday = moment().startOf('day').subtract(1, 'day');
-    const pricesYesterday = this.hourlyPrices?.filter((p) =>
-      p.startsAt.isSame(yesterday, 'day'),
+    const startOfToday = moment().tz('Europe/Oslo').startOf('day');
+    const startOfYesterday = startOfToday.clone().subtract(1, 'day');
+    const pricesYesterday = this.hourlyPrices?.filter(
+      (p) =>
+        p.startsAt.isBefore(startOfToday) &&
+        p.startsAt.isSameOrAfter(startOfYesterday),
     );
 
     const pricesToday =

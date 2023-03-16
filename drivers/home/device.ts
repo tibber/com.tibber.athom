@@ -379,7 +379,7 @@ class HomeDevice extends Device {
 
   async #handlePrice(now: moment.Moment) {
     this.#prices.today = this.#api.hourlyPrices.filter((p) =>
-      p.startsAt.isSame(now, 'day'),
+      p.startsAt.tz('Europe/Oslo').isSame(now, 'day'),
     );
 
     // NOTE: this also updates capability values
@@ -904,9 +904,10 @@ class HomeDevice extends Device {
     const nonAdjustedEnd = parseTimeString(end_time);
     let end = nonAdjustedEnd;
 
-    const periodStretchesOverMidnight = nonAdjustedStart > nonAdjustedEnd;
-    const adjustStartToYesterday = now < nonAdjustedEnd;
-    const adjustEndToTomorrow = now > nonAdjustedEnd;
+    const periodStretchesOverMidnight =
+      nonAdjustedStart.isAfter(nonAdjustedEnd);
+    const adjustStartToYesterday = now.isBefore(nonAdjustedEnd);
+    const adjustEndToTomorrow = now.isAfter(nonAdjustedEnd);
 
     if (periodStretchesOverMidnight) {
       start = nonAdjustedStart
