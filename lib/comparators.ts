@@ -23,13 +23,13 @@ export const averagePrice = (
   logger: (...args: unknown[]) => void,
   hourlyPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
+  now: moment.Moment,
   options: AveragePriceOptions,
   { below }: AveragePriceArguments,
 ): boolean => {
   const { hours, percentage } = options;
   if (hours === 0) return false;
 
-  const now = moment();
   const prices =
     hours !== undefined
       ? takeFromStartOrEnd(
@@ -66,26 +66,25 @@ export const averagePrice = (
   return diffAvgCurrent > percentage;
 };
 
-export interface MinMaxPriceOptions {
+export interface PriceExtremesOptions {
   hours?: number;
   ranked_hours?: number;
 }
 
-export interface MinMaxPriceArguments {
+export interface PriceExtremesArguments {
   lowest: boolean;
 }
 
-export const minMaxPrice = (
+export const priceExtremes = (
   logger: (...args: unknown[]) => void,
   hourlyPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
-  options: MinMaxPriceOptions,
-  { lowest }: MinMaxPriceArguments,
+  now: moment.Moment,
+  options: PriceExtremesOptions,
+  { lowest }: PriceExtremesArguments,
 ): boolean => {
   const { hours, ranked_hours: rankedHours } = options;
   if (hours === 0 || rankedHours === 0) return false;
-
-  const now = moment();
 
   const prices =
     hours !== undefined
@@ -160,6 +159,7 @@ export const lowestPricesWithinTimeFrame = (
   logger: (...args: unknown[]) => void,
   hourlyPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
+  now: moment.Moment,
   options: LowestPricesWithinTimeFrameOptions,
 ): boolean => {
   const {
@@ -169,8 +169,6 @@ export const lowestPricesWithinTimeFrame = (
   } = options;
 
   if (rankedHours === 0) return false;
-
-  const now = moment().tz('Europe/Oslo');
 
   const nonAdjustedStart = parseTimeString(startTime);
   let start = nonAdjustedStart;

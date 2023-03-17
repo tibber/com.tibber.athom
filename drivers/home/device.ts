@@ -24,8 +24,8 @@ import { InsightLoggerError } from '../../lib/errors';
 import {
   averagePrice,
   lowestPricesWithinTimeFrame,
-  minMaxPrice,
-} from '../../lib/comparers';
+  priceExtremes,
+} from '../../lib/comparators';
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -107,39 +107,39 @@ class HomeDevice extends Device {
     this.#priceBelowAvgTrigger =
       this.homey.flow.getDeviceTriggerCard('price_below_avg');
     this.#priceBelowAvgTrigger.registerRunListener(
-      this.#priceAvgComparer.bind(this),
+      this.#priceAvgComparator.bind(this),
     );
 
     this.#priceAboveAvgTrigger =
       this.homey.flow.getDeviceTriggerCard('price_above_avg');
     this.#priceAboveAvgTrigger.registerRunListener(
-      this.#priceAvgComparer.bind(this),
+      this.#priceAvgComparator.bind(this),
     );
 
     this.#priceBelowAvgTodayTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_below_avg_today',
     );
     this.#priceBelowAvgTodayTrigger.registerRunListener(
-      this.#priceAvgComparer.bind(this),
+      this.#priceAvgComparator.bind(this),
     );
 
     this.#priceAboveAvgTodayTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_above_avg_today',
     );
     this.#priceAboveAvgTodayTrigger.registerRunListener(
-      this.#priceAvgComparer.bind(this),
+      this.#priceAvgComparator.bind(this),
     );
 
     this.#priceAtLowestTrigger =
       this.homey.flow.getDeviceTriggerCard('price_at_lowest');
     this.#priceAtLowestTrigger.registerRunListener(
-      this.#priceMinMaxComparer.bind(this),
+      this.#priceMinMaxComparator.bind(this),
     );
 
     this.#priceAtHighestTrigger =
       this.homey.flow.getDeviceTriggerCard('price_at_highest');
     this.#priceAtHighestTrigger.registerRunListener(
-      this.#priceMinMaxComparer.bind(this),
+      this.#priceMinMaxComparator.bind(this),
     );
 
     this.#priceAtLowestTodayTrigger = this.homey.flow.getDeviceTriggerCard(
@@ -154,14 +154,14 @@ class HomeDevice extends Device {
       'price_among_lowest_today',
     );
     this.#priceAmongLowestTrigger.registerRunListener(
-      this.#priceMinMaxComparer.bind(this),
+      this.#priceMinMaxComparator.bind(this),
     );
 
     this.#priceAmongHighestTrigger = this.homey.flow.getDeviceTriggerCard(
       'price_among_highest_today',
     );
     this.#priceAmongHighestTrigger.registerRunListener(
-      this.#priceMinMaxComparer.bind(this),
+      this.#priceMinMaxComparator.bind(this),
     );
 
     this.#currentPriceBelowCondition = this.homey.flow.getConditionCard(
@@ -176,67 +176,67 @@ class HomeDevice extends Device {
       'cond_price_below_avg',
     );
     this.#currentPriceBelowAvgCondition.registerRunListener((args) =>
-      this.#priceAvgComparer(args, { below: true }),
+      this.#priceAvgComparator(args, { below: true }),
     );
 
     this.#currentPriceAboveAvgCondition = this.homey.flow.getConditionCard(
       'cond_price_above_avg',
     );
     this.#currentPriceAboveAvgCondition.registerRunListener((args) =>
-      this.#priceAvgComparer(args, { below: false }),
+      this.#priceAvgComparator(args, { below: false }),
     );
 
     this.#currentPriceBelowAvgTodayCondition = this.homey.flow.getConditionCard(
       'cond_price_below_avg_today',
     );
     this.#currentPriceBelowAvgTodayCondition.registerRunListener((args) =>
-      this.#priceAvgComparer(args, { below: true }),
+      this.#priceAvgComparator(args, { below: true }),
     );
 
     this.#currentPriceAboveAvgTodayCondition = this.homey.flow.getConditionCard(
       'cond_price_above_avg_today',
     );
     this.#currentPriceAboveAvgTodayCondition.registerRunListener((args) =>
-      this.#priceAvgComparer(args, { below: false }),
+      this.#priceAvgComparator(args, { below: false }),
     );
 
     this.#currentPriceAtLowestCondition = this.homey.flow.getConditionCard(
       'cond_price_at_lowest',
     );
     this.#currentPriceAtLowestCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: true }),
+      this.#priceMinMaxComparator(args, { lowest: true }),
     );
 
     this.#currentPriceAtHighestCondition = this.homey.flow.getConditionCard(
       'cond_price_at_highest',
     );
     this.#currentPriceAtHighestCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: false }),
+      this.#priceMinMaxComparator(args, { lowest: false }),
     );
 
     this.#currentPriceAtLowestTodayCondition = this.homey.flow.getConditionCard(
       'cond_price_at_lowest_today',
     );
     this.#currentPriceAtLowestTodayCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: true }),
+      this.#priceMinMaxComparator(args, { lowest: true }),
     );
 
     this.#currentPriceAtHighestTodayCondition =
       this.homey.flow.getConditionCard('cond_price_at_highest_today');
     this.#currentPriceAtHighestTodayCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: false }),
+      this.#priceMinMaxComparator(args, { lowest: false }),
     );
 
     this.#currentPriceAmongLowestTodayCondition =
       this.homey.flow.getConditionCard('cond_price_among_lowest_today');
     this.#currentPriceAmongLowestTodayCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: true }),
+      this.#priceMinMaxComparator(args, { lowest: true }),
     );
 
     this.#currentPriceAmongHighestTodayCondition =
       this.homey.flow.getConditionCard('cond_price_among_highest_today');
     this.#currentPriceAmongHighestTodayCondition.registerRunListener((args) =>
-      this.#priceMinMaxComparer(args, { lowest: false }),
+      this.#priceMinMaxComparator(args, { lowest: false }),
     );
 
     this.#currentPriceAmongLowestWithinTimeFrameCondition =
@@ -473,13 +473,13 @@ class HomeDevice extends Device {
           .trigger(this, undefined, { lowest: false })
           .catch(console.error);
 
-        if (this.#priceMinMaxComparer({}, { lowest: true })) {
+        if (this.#priceMinMaxComparator({}, { lowest: true })) {
           this.#priceAtLowestTodayTrigger
             .trigger(this, undefined, { lowest: true })
             .catch(console.error);
         }
 
-        if (this.#priceMinMaxComparer({}, { lowest: false })) {
+        if (this.#priceMinMaxComparator({}, { lowest: false })) {
           this.#priceAtHighestTodayTrigger
             .trigger(this, undefined, { lowest: false })
             .catch(console.error);
@@ -750,30 +750,34 @@ class HomeDevice extends Device {
     );
   }
 
-  #priceAvgComparer(
+  #priceAvgComparator(
     options: { hours: number; percentage: number },
     args: { below: boolean },
   ): boolean {
+    const now = moment();
     return averagePrice(
       this.log,
       this.#api.hourlyPrices,
       this.#prices,
+      now,
       options,
       args,
     );
   }
 
-  #priceMinMaxComparer(
+  #priceMinMaxComparator(
     options: {
       hours?: number;
       ranked_hours?: number;
     },
     args: { lowest: boolean },
   ): boolean {
-    return minMaxPrice(
+    const now = moment();
+    return priceExtremes(
       this.log,
       this.#api.hourlyPrices,
       this.#prices,
+      now,
       options,
       args,
     );
@@ -784,10 +788,14 @@ class HomeDevice extends Device {
     start_time: TimeString;
     end_time: TimeString;
   }): boolean {
+    // we need to parse times w/o tz info here, so we need to assume a tz.
+    // consider moving into the helper function
+    const now = moment().tz('Europe/Oslo');
     return lowestPricesWithinTimeFrame(
       this.log,
       this.#api.hourlyPrices,
       this.#prices,
+      now,
       options,
     );
   }
