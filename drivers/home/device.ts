@@ -7,7 +7,7 @@ import {
   PriceData,
   TibberApi,
 } from '../../lib/api';
-import { noticeError, startTransaction } from '../../lib/newrelic-transaction';
+import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
   mean,
@@ -282,7 +282,8 @@ class HomeDevice extends Device {
       await this.addCapability('measure_price_highest');
 
     this.log(`Tibber home device ${this.getName()} has been initialized`);
-    return this.#updateData();
+    await this.#updateData();
+    return undefined;
   }
 
   onDeleted() {
@@ -502,7 +503,6 @@ class HomeDevice extends Device {
             }_price. Error: ${err}`,
           );
           console.error(error.message);
-          noticeError(error);
         }
       }
     }
