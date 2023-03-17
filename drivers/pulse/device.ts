@@ -2,7 +2,7 @@ import { Device, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { debounce, DebouncedFunction } from 'ts-debounce';
+import _ from 'lodash';
 import { LiveMeasurement, TibberApi } from '../../lib/api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
@@ -24,7 +24,7 @@ class PulseDevice extends Device {
   #prevConsumption?: number;
   #prevCost?: number;
   #wsSubscription!: Subscription;
-  #resubscribeDebounce!: DebouncedFunction<[], () => unknown>;
+  #resubscribeDebounce!: _.DebouncedFunc<() => void>;
   #resubscribeMaxWaitMilliseconds!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
@@ -76,7 +76,7 @@ class PulseDevice extends Device {
       (jitterSeconds + delaySeconds) * 1000;
 
     // Resubscribe if no data for delay + jitter
-    this.#resubscribeDebounce = debounce(
+    this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
       this.#resubscribeMaxWaitMilliseconds,
     );
@@ -110,8 +110,7 @@ class PulseDevice extends Device {
   }
 
   async #subscribeToLive() {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.#resubscribeDebounce().then(() => {});
+    this.#resubscribeDebounce();
 
     if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
@@ -168,8 +167,7 @@ class PulseDevice extends Device {
   }
 
   async subscribeCallback(result: LiveMeasurement) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.#resubscribeDebounce().then(() => {});
+    this.#resubscribeDebounce();
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
