@@ -109,8 +109,9 @@ class WattyDevice extends Device {
   }
 
   async #subscribeToLive() {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.#resubscribeDebounce().then(() => {});
+    this.#resubscribeDebounce().catch((err) => {
+      this.log('Unable to call resubscribe debounce in subscribe to live', err);
+    });
 
     if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
@@ -167,8 +168,9 @@ class WattyDevice extends Device {
   }
 
   async subscribeCallback(result: LiveMeasurement) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.#resubscribeDebounce().then(() => {});
+    this.#resubscribeDebounce().catch((err) => {
+      this.log('Unable to call subscribe debounce in callback', err);
+    });
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
@@ -363,7 +365,7 @@ class WattyDevice extends Device {
   }
 
   destroy() {
-    if (typeof this.#wsSubscription.unsubscribe === 'function') {
+    if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
         this.log('Unsubscribing from previous connection');
         this.#wsSubscription.unsubscribe();
