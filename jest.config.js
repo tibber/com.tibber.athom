@@ -2,5 +2,6 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)', '!build/**/*'],
+  testPathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/.homeybuild/'],
+  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
 };
