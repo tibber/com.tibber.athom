@@ -313,7 +313,11 @@ class HomeDevice extends Device {
 
       const now = moment();
 
-      await this.#handlePrice(now);
+      try {
+        await this.#handlePrice(now);
+      } catch (err) {
+        console.error(err);
+      }
 
       if (this.#isConsumptionReportEnabled()) {
         this.log(`Consumption report enabled. Begin update`);
