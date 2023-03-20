@@ -185,7 +185,7 @@
   "1.9.7": {
     "en": "Rollback non functional changes"
   },
-  "1.9.17": {
+  "1.9.18": {
     "en": "Reintroduce changes from 1.9.0. Reduce resource utilization. Improve trigger reliability"
   }
 }
