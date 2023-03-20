@@ -2,7 +2,7 @@ import { Device, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { debounce, DebouncedFunction } from 'ts-debounce';
+import _ from 'lodash';
 import { LiveMeasurement, TibberApi } from '../../lib/api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
@@ -24,7 +24,7 @@ class WattyDevice extends Device {
   #prevConsumption!: number;
   #prevCost?: number;
   #wsSubscription!: Subscription;
-  #resubscribeDebounce!: DebouncedFunction<[], () => unknown>;
+  #resubscribeDebounce!: _.DebouncedFunc<() => void>;
   #resubscribeMaxWaitMilliseconds!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
@@ -77,7 +77,7 @@ class WattyDevice extends Device {
       (jitterSeconds + delaySeconds) * 1000;
 
     // Resubscribe if no data for delay + jitter
-    this.#resubscribeDebounce = debounce(
+    this.#resubscribeDebounce = _.debounce(
       this.#subscribeToLive.bind(this),
       this.#resubscribeMaxWaitMilliseconds,
     );
@@ -109,9 +109,7 @@ class WattyDevice extends Device {
   }
 
   async #subscribeToLive() {
-    this.#resubscribeDebounce().catch((err) => {
-      this.log('Unable to call resubscribe debounce in subscribe to live', err);
-    });
+    this.#resubscribeDebounce();
 
     if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
@@ -168,9 +166,7 @@ class WattyDevice extends Device {
   }
 
   async subscribeCallback(result: LiveMeasurement) {
-    this.#resubscribeDebounce().catch((err) => {
-      this.log('Unable to call subscribe debounce in callback', err);
-    });
+    this.#resubscribeDebounce();
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
