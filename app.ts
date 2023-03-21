@@ -1,22 +1,29 @@
 import 'newrelic';
 import sourceMapSupport from 'source-map-support';
 import { App } from 'homey';
+import Homey from 'homey/lib/Homey';
 import { setGlobalAttributes } from './lib/newrelic-transaction';
 import * as appJson from './app.json';
 
 sourceMapSupport.install();
 
+type HomeyWithMissingTypings = Homey & {
+  platformVersion: string;
+};
+
 class TibberApp extends App {
   async onInit() {
     this.log('Tibber app is running...');
 
-    const { version: firmwareVersion } = this.homey;
+    const { version: firmwareVersion, platformVersion } = this
+      .homey as HomeyWithMissingTypings;
     const { version: appVersion } = appJson;
 
+    this.log(`platformVersion:`, platformVersion);
     this.log(`firmwareVersion:`, firmwareVersion);
     this.log(`appVersion:`, appVersion);
 
-    setGlobalAttributes({ firmwareVersion, appVersion });
+    setGlobalAttributes({ firmwareVersion, platformVersion, appVersion });
 
     const v = this.homey.settings.get('v');
     if (v !== 2) {
