@@ -2,20 +2,26 @@ import newrelic from 'newrelic';
 
 export interface TransactionAttributes {
   firmwareVersion?: string;
+  platformVersion?: string;
   appVersion?: string;
 }
 
 const attributes: TransactionAttributes = {
   firmwareVersion: undefined,
+  platformVersion: undefined,
   appVersion: undefined,
 };
 
 export const setGlobalAttributes = ({
   firmwareVersion,
+  platformVersion,
   appVersion,
 }: TransactionAttributes): void => {
   if (firmwareVersion !== undefined)
     attributes.firmwareVersion = firmwareVersion;
+
+  if (platformVersion !== undefined)
+    attributes.platformVersion = platformVersion;
 
   if (appVersion !== undefined) attributes.appVersion = appVersion;
 };
@@ -23,10 +29,13 @@ export const setGlobalAttributes = ({
 export const getGlobalAttributes = (): TransactionAttributes => attributes;
 
 const addAttributesToTransaction = (): void => {
-  const { firmwareVersion, appVersion } = attributes;
+  const { firmwareVersion, platformVersion, appVersion } = attributes;
 
   if (firmwareVersion !== undefined)
     newrelic.addCustomAttribute('firmwareVersion', firmwareVersion);
+
+  if (platformVersion !== undefined)
+    newrelic.addCustomAttribute('platformVersion', platformVersion);
 
   if (appVersion !== undefined)
     newrelic.addCustomAttribute('appVersion', appVersion);

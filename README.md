@@ -57,6 +57,24 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+#### 1.9.18
+
+- Reintroduce changes from 1.9.0
+- Reduce resource utilization
+- Improve trigger reliability
+
+#### 1.9.7
+
+- Rollback non functional changes
+
+#### 1.9.6
+
+- Revert caching
+
+#### 1.9.4
+
+- Performance improvements
+
 #### 1.9.0
 
 - Updated dependencies

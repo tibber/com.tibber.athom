@@ -1,17 +1,5 @@
 import moment from 'moment-timezone';
 
-export const isSameDay = (
-  first: string | undefined | null,
-  second: moment.Moment,
-  tz: string,
-): boolean => {
-  if (first === undefined) return false;
-  if (first === null) return false;
-  if (first.length === 0) return false;
-
-  return moment(first).tz(tz).isSame(second, 'day');
-};
-
 export const parseTimeString = (time: TimeString): moment.Moment => {
   const [h, m] = time.split(':');
   return moment
@@ -29,20 +17,42 @@ export const takeFromStartOrEnd = <T>(arr: T[], quantity?: number): T[] => {
   let endIndex;
   if (Math.sign(quantity) === -1) {
     startIndex = quantity;
-    endIndex = -quantity;
+    endIndex = undefined;
   } else {
     startIndex = 0;
     endIndex = quantity;
   }
-  return arr.splice(startIndex, endIndex);
+  return arr.slice(startIndex, endIndex);
 };
 
-export const meanBy = <T>(arr: T[], func: (item: T) => number): number =>
-  sumBy(arr, func) / arr.length;
+export const mean = <T>(arr: readonly T[], func: (item: T) => number): number =>
+  sum(arr, func) / arr.length;
 
-export const sumBy = <T>(arr: T[], func: (item: T) => number): number =>
-  arr.reduce((acc, item) => acc + func(item), 0);
+export const sum = <T>(
+  arr: readonly T[],
+  func: (item: T) => number,
+): number => {
+  let result = 0;
+  for (const item of arr) result += func(item);
+  return result;
+};
+
+export const min = <T>(arr: readonly T[], predicate: (item: T) => number) => {
+  const minimum = Math.min(...arr.map(predicate));
+  return arr.find((item) => predicate(item) === minimum);
+};
+
+export const max = <T>(arr: readonly T[], predicate: (item: T) => number) => {
+  const maximum = Math.max(...arr.map(predicate));
+  return arr.find((item) => predicate(item) === maximum);
+};
 
 type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export type TimeString = `${Digit}${Digit}:${Digit}${Digit}`;
+
+export const randomBetweenRange = (
+  lowerLimit: number,
+  upperLimitExclusive: number,
+) =>
+  Math.floor(Math.random() * (upperLimitExclusive - lowerLimit) + lowerLimit);

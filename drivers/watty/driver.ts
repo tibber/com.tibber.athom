@@ -2,29 +2,29 @@ import { Driver } from 'homey';
 import PairSession from 'homey/lib/PairSession';
 import { createListDeviceHandler } from '../../lib/device-helpers';
 import { initiateOauth } from '../../lib/oauth';
-import { TibberApi } from '../../lib/tibber';
+import { TibberApi } from '../../lib/api';
 
 class WattyDriver extends Driver {
-  #tibber!: TibberApi;
+  #api!: TibberApi;
 
   async onInit() {
     this.log('Tibber Watty driver has been initialized');
   }
 
   onPair(session: PairSession) {
-    this.#tibber = new TibberApi(this.log, this.homey.settings);
+    this.#api = new TibberApi(this.log, this.homey.settings);
 
     session.setHandler(
       'list_devices',
       createListDeviceHandler(
         this.log,
-        this.#tibber,
+        this.#api,
         (home) => Boolean(home?.features?.realTimeConsumptionEnabled),
         formatDeviceName,
       ),
     );
 
-    initiateOauth(this.homey, session, this.#tibber).catch(console.error);
+    initiateOauth(this.homey, session, this.#api).catch(console.error);
   }
 }
 

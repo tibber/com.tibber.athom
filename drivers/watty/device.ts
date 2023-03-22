@@ -1,14 +1,15 @@
 import { Device, FlowCardTriggerDevice } from 'homey';
-import _ from 'lodash';
 import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
-import { LiveMeasurement, TibberApi, getRandomDelay } from '../../lib/tibber';
+import _ from 'lodash';
+import { LiveMeasurement, TibberApi } from '../../lib/api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
+import { randomBetweenRange } from '../../lib/helpers';
 
 class WattyDevice extends Device {
-  #tibber!: TibberApi;
+  #api!: TibberApi;
   #deviceId!: string;
   #throttle!: number;
   #currency?: string;
@@ -36,7 +37,7 @@ class WattyDevice extends Device {
   async onInit() {
     const { id, t: token } = this.getData();
 
-    this.#tibber = new TibberApi(this.log, this.homey.settings, id, token);
+    this.#api = new TibberApi(this.log, this.homey.settings, id, token);
     this.#deviceId = id;
     this.#throttle = this.getSetting('pulse_throttle') || 30;
 
@@ -70,7 +71,7 @@ class WattyDevice extends Device {
       })`,
     );
 
-    const jitterSeconds = getRandomDelay(0, 10);
+    const jitterSeconds = randomBetweenRange(0, 10);
     const delaySeconds = 10 * 60;
     this.#resubscribeMaxWaitMilliseconds =
       (jitterSeconds + delaySeconds) * 1000;
@@ -110,10 +111,7 @@ class WattyDevice extends Device {
   async #subscribeToLive() {
     this.#resubscribeDebounce();
 
-    if (
-      this.#wsSubscription &&
-      _.isFunction(this.#wsSubscription.unsubscribe)
-    ) {
+    if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
         this.log(
           `No data received in ${
@@ -128,7 +126,7 @@ class WattyDevice extends Device {
 
     let websocketSubscriptionUrl = '';
     try {
-      const { viewer } = await this.#tibber.getHomeFeatures(this);
+      const { viewer } = await this.#api.getHomeFeatures(this);
       websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
       if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
@@ -150,7 +148,7 @@ class WattyDevice extends Device {
 
     this.log('Subscribing to live data for homeId', this.#deviceId);
 
-    this.#wsSubscription = this.#tibber
+    this.#wsSubscription = this.#api
       .subscribeToLive(websocketSubscriptionUrl)
       .subscribe(
         (result) => this.subscribeCallback(result),
@@ -158,7 +156,7 @@ class WattyDevice extends Device {
           noticeError(error);
           this.log('Subscription error occurred', error);
           // When server shuts down we end up here with message text "Unexpected server response: 503"
-          const delay = getRandomDelay(5, 120);
+          const delay = randomBetweenRange(5, 120);
           this.log(`Resubscribe after ${delay} seconds`);
           this.#resubscribeDebounce.cancel();
           this.homey.setTimeout(() => this.#subscribeToLive(), delay * 1000);
@@ -252,7 +250,7 @@ class WattyDevice extends Device {
     }
 
     const consumption = result.data?.liveMeasurement?.accumulatedConsumption;
-    if (consumption && _.isNumber(consumption)) {
+    if (consumption !== undefined) {
       const fixedConsumption = Number(consumption.toFixed(2));
       if (fixedConsumption !== this.#prevConsumption) {
         if (fixedConsumption < this.#prevConsumption) {
@@ -331,7 +329,7 @@ class WattyDevice extends Device {
           }
         }
 
-        if (!_.isNumber(this.#cachedNordPoolPrice?.price)) return;
+        if (typeof this.#cachedNordPoolPrice?.price !== 'number') return;
 
         cost = this.#cachedNordPoolPrice!.price * consumption!;
       } catch (e) {
@@ -339,7 +337,7 @@ class WattyDevice extends Device {
       }
     }
 
-    if (cost && _.isNumber(cost)) {
+    if (cost !== undefined && cost !== null) {
       const fixedCost = Number(cost.toFixed(2));
       if (fixedCost !== this.#prevCost) {
         this.#prevCost = fixedCost;
@@ -363,10 +361,7 @@ class WattyDevice extends Device {
   }
 
   destroy() {
-    if (
-      this.#wsSubscription &&
-      _.isFunction(this.#wsSubscription.unsubscribe)
-    ) {
+    if (typeof this.#wsSubscription?.unsubscribe === 'function') {
       try {
         this.log('Unsubscribing from previous connection');
         this.#wsSubscription.unsubscribe();

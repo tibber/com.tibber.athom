@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { GraphQLClient } from 'graphql-request';
 import { ClientError } from 'graphql-request/dist/types';
@@ -10,16 +9,16 @@ import { Device } from 'homey';
 import { UserAgentWebSocket } from './UserAgentWebSocket';
 import { queries } from './queries';
 import {
+  getUserAgent,
   noticeError,
   startSegment,
   startTransaction,
-  getUserAgent,
 } from './newrelic-transaction';
 import {
   ERROR_CODE_HOME_NOT_FOUND,
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
-import { isSameDay } from './helpers';
+import { randomBetweenRange, takeFromStartOrEnd } from './helpers';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -29,13 +28,13 @@ export interface LiveMeasurement {
   data?: {
     liveMeasurement: {
       timestamp: string;
-      power: number | null;
-      accumulatedConsumption: number | null;
+      power: number;
+      accumulatedConsumption: number;
       accumulatedCost: number | null;
       currency: string | null;
-      minPower: number | null;
-      averagePower: number | null;
-      maxPower: number | null;
+      minPower: number;
+      averagePower: number;
+      maxPower: number;
       powerProduction: number | null;
       currentL1: number | null;
       currentL2: number | null;
@@ -87,6 +86,17 @@ export interface PriceInfoEntry {
   level: 'VERY_CHEAP' | 'CHEAP' | 'NORMAL' | 'EXPENSIVE' | 'VERY_EXPENSIVE';
 }
 
+export type TransformedPriceEntry = Omit<PriceInfoEntry, 'startsAt'> & {
+  startsAt: moment.Moment;
+};
+
+export interface PriceData {
+  today: TransformedPriceEntry[];
+  latest?: TransformedPriceEntry;
+  lowestToday?: TransformedPriceEntry;
+  highestToday?: TransformedPriceEntry;
+}
+
 export interface Homes {
   viewer: {
     homes: Home[];
@@ -121,16 +131,13 @@ export type Home = {
 const apiHost = 'https://api.tibber.com';
 const apiPath = '/v1-beta/gql';
 
-export const getRandomDelay = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min) + min);
-
 export class TibberApi {
   readonly #log: Logger;
   readonly #homeId?: string;
   #homeySettings: ManagerSettings;
   #token?: string;
   #client?: GraphQLClient;
-  hourlyPrices: PriceInfoEntry[] = [];
+  hourlyPrices: TransformedPriceEntry[] = [];
 
   constructor(
     log: Logger,
@@ -174,7 +181,7 @@ export class TibberApi {
         .then((data) => data)
         .catch((e) => {
           noticeError(e);
-          console.error(`${new Date()} Error while fetching home data`, e);
+          console.error('Error while fetching home data', e);
           throw e;
         }),
     );
@@ -193,7 +200,7 @@ export class TibberApi {
         })
         .catch(async (e) => {
           noticeError(e);
-          console.error(`${new Date()} Error while fetching home features`, e);
+          console.error('Error while fetching home features', e);
 
           const errorCode = (e as ClientError).response?.errors?.[0]?.extensions
             ?.code;
@@ -227,7 +234,7 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<void> {
-    if (!this.hourlyPrices.length) {
+    if (this.hourlyPrices.length === 0) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
       this.hourlyPrices = await startSegment(
@@ -237,40 +244,48 @@ export class TibberApi {
       );
     }
 
-    const last = _.last(this.hourlyPrices) as PriceInfoEntry;
-    const lastPriceForDay = moment(last.startsAt).startOf('day');
-    this.#log(
-      `Last price info entry is for day at system time ${lastPriceForDay.format()}`,
-    );
+    if (this.hourlyPrices.length === 0) {
+      this.#log(`No prices available. Retry later.`);
+      return;
+    }
 
-    const now = moment();
-    const today = moment().startOf('day');
-    const tomorrow = today.add(1, 'day');
+    const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
+    const lastPriceForDayLocal = last.startsAt.clone().startOf('day');
+    this.#log(
+      `Last price info entry is for day at local time ${lastPriceForDayLocal.format()}`,
+    );
 
     // Last cache entry is OK but there might be new prices available
     const expectedPricePublishTime = moment
       .tz('Europe/Oslo')
       .startOf('day')
       .add(13, 'hours');
+
     this.#log(
       `Expected price publish time is after ${expectedPricePublishTime.format()}`,
     );
 
-    if (lastPriceForDay < tomorrow && now > expectedPricePublishTime) {
-      const delay = getRandomDelay(0, 50 * 60);
+    const nowLocal = moment();
+    const tomorrowLocal = moment().startOf('day').add(1, 'day');
+
+    if (
+      lastPriceForDayLocal.isBefore(tomorrowLocal) &&
+      nowLocal.isAfter(expectedPricePublishTime)
+    ) {
+      const delay = randomBetweenRange(0, 50 * 60);
       this.#log(
         `Last price info entry is before tomorrow and current time is after 13:00 CET. Schedule re-fetch prices after ${delay} seconds.`,
       );
       startSegment('GetPriceInfo.ScheduleFetchNewPrices', true, () => {
         homeySetTimeout(async () => {
-          let data: PriceInfoEntry[];
+          let data: TransformedPriceEntry[];
           try {
             data = await startTransaction('ScheduledGetPriceInfo', 'API', () =>
               this.#getPriceInfo(),
             );
           } catch (e) {
             console.error(
-              `${new Date()} The following error happened when trying to re-fetch stale prices`,
+              'The following error happened when trying to re-fetch stale prices',
               e,
             );
             return;
@@ -284,7 +299,7 @@ export class TibberApi {
     this.#log(`Last price info entry is up-to-date`);
   }
 
-  async #getPriceInfo(): Promise<PriceInfoEntry[]> {
+  async #getPriceInfo(): Promise<TransformedPriceEntry[]> {
     const client = this.#getClient();
 
     this.#log('Get prices');
@@ -293,14 +308,17 @@ export class TibberApi {
         .request<PriceRatingResponse>(queries.getPriceQuery(this.#homeId!))
         .catch((e) => {
           noticeError(e);
-          console.error(`${new Date()} Error while fetching price data`, e);
+          console.error('Error while fetching price data', e);
           throw e;
         }),
     );
 
-    const yesterday = moment().startOf('day').subtract(1, 'day');
-    const pricesYesterday = this.hourlyPrices?.filter((p) =>
-      isSameDay(p.startsAt, yesterday, 'Europe/Oslo'),
+    const startOfToday = moment().tz('Europe/Oslo').startOf('day');
+    const startOfYesterday = startOfToday.clone().subtract(1, 'day');
+    const pricesYesterday = this.hourlyPrices?.filter(
+      (p) =>
+        p.startsAt.isBefore(startOfToday) &&
+        p.startsAt.isSameOrAfter(startOfYesterday),
     );
 
     const pricesToday =
@@ -308,9 +326,11 @@ export class TibberApi {
     const pricesTomorrow =
       data.viewer?.home?.currentSubscription?.priceInfo?.tomorrow ?? [];
 
-    this.hourlyPrices = [...pricesYesterday, ...pricesToday, ...pricesTomorrow];
-
-    return this.hourlyPrices;
+    return [
+      ...pricesYesterday,
+      ...pricesToday.map(transformPrice),
+      ...pricesTomorrow.map(transformPrice),
+    ];
   }
 
   async getConsumptionData(
@@ -327,10 +347,7 @@ export class TibberApi {
         )
         .catch((e) => {
           noticeError(e);
-          console.error(
-            `${new Date()} Error while fetching consumption data`,
-            e,
-          );
+          console.error('Error while fetching consumption data', e);
           throw e;
         }),
     );
@@ -345,11 +362,11 @@ export class TibberApi {
       client
         .request(push)
         .then((result) => {
-          console.log(`${new Date()} Push notification sent`, result);
+          console.log('Push notification sent', result);
         })
         .catch((e) => {
           noticeError(e);
-          console.error(`${new Date()} Error sending push notification`, e);
+          console.error('Error sending push notification', e);
           throw e;
         }),
     );
@@ -392,3 +409,9 @@ export class TibberApi {
     return this.#homeySettings.get('token');
   }
 }
+
+const transformPrice = (priceEntry: PriceInfoEntry): TransformedPriceEntry => {
+  const res = priceEntry as unknown as TransformedPriceEntry;
+  res.startsAt = moment(priceEntry.startsAt);
+  return res;
+};
