@@ -7,7 +7,7 @@ body:
       value: | 
         Thank you for taking the time to bring this issue to our attention! We would appreciate a lot if you could fill in this bug report below.
         In addition, we kindly request that you send the link of the bug report to our support team at hello@tibber.com or via our Tibber app too, as this will allow us to access all the relevant customer information in a more efficient manner.
-  -type: dropdown
+  - type: dropdown
     id: model
     attributes:
       label: Homey model
@@ -19,7 +19,7 @@ body:
         - Homey Bridge
     validations:
       required: true
-  -type: input
+  - type: input
     id: firmware
     attributes:
       label: Firmware
@@ -27,17 +27,17 @@ body:
       placeholder: ex. v8.1.4
     validations:
       required: false
-  -type: dropdown
+  - type: dropdown
     id: powerAdapter
     attributes:
       label: Power adapter
       description: If you have the Homey Pro 2023 do you have the new power adapter that delivers enough voltage?
       options:
-        - Yes
-        - No
+        - 'Yes'
+        - 'No'
     validations:
       required: false
-  -type: input
+  - type: input
     id: bridgePremium
     attributes:
       label: Homey Bridge Premium
@@ -45,7 +45,7 @@ body:
       placeholder: ex. no, 4 devices
     validations:
       required: false
-  -type: input
+  - type: input
     id: tibberVersion
     attributes:
       label: Tibber version
@@ -53,14 +53,14 @@ body:
       placeholder: ex. 1.9.18
     validations:
       required: false
-  -type: textarea
+  - type: textarea
     id: issue
     attributes:
       label: The bug
       description: What is the issue? What were you expecting to happen? Is this something that have worked differently for you before but isn't working anymore?
     validations:
       required: true
-  -type: textarea
+  - type: textarea
     id: frequency
     attributes:
       label: How frequent does this happen?
@@ -68,7 +68,7 @@ body:
       placeholder: ex. Everyday at noon
     validations:
       required: false
-  -type: input
+  - type: input
     id: subscription
     attributes:
       label: Tibber Premium
@@ -76,7 +76,7 @@ body:
       placeholder: ex. yes
     validations:
       required: false
-  -type: input
+  - type: input
     id: diagnosticsReport
     attributes:
       label: Diagnostics report
