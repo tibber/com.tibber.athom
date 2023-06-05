@@ -73,7 +73,7 @@ body:
     attributes:
       label: Tibber Premium
       description: If the issue relates to “Home” do you have an active subscription in Tibber? That is ongoing and has not yet ended?
-      placeholder: ex. yes
+      placeholder: ex. Yes
     validations:
       required: false
   - type: input
