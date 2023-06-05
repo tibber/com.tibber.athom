@@ -31,7 +31,7 @@ body:
     id: powerAdapter
     attributes:
       label: Power adapter
-      description: If you have the Homey Pro 2023 do you have the new power adapter that delivers enough voltage?
+      description: If you have the Homey Pro 2023 do you have [the new power adapter that delivers enough voltage](https://mailchi.mp/217770f9b300/homey-pros-power-adapter)?
       options:
         - 'Yes'
         - 'No'
@@ -42,7 +42,7 @@ body:
     attributes:
       label: Homey Bridge Premium
       description: If you have a Homey Bridge do you have Homey Premium? If not, how many devices have you connected to the Bridge?
-      placeholder: ex. no, 4 devices
+      placeholder: ex. Yes
     validations:
       required: false
   - type: input
