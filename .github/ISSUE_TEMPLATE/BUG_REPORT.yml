@@ -63,7 +63,7 @@ body:
   - type: textarea
     id: frequency
     attributes:
-      label: How frequent does this happen?
+      label: How frequently does this happen?
       description: Is the issue something that happens only now and then, if so could you provide at least a few dates and times on when they have happened?
       placeholder: ex. Everyday at noon
     validations:
