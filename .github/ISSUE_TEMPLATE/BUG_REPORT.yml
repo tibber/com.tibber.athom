@@ -1,0 +1,92 @@
+name: Bug Report
+description: File a bug report
+title: "Bug: "
+body:
+  - type: markdown
+    attributes:
+      value: | 
+        Thank you for taking the time to bring this issue to our attention! We would appreciate a lot if you could fill in this bug report below.
+        In addition, we kindly request that you send the link of the bug report to our support team at hello@tibber.com or via our Tibber app too, as this will allow us to access all the relevant customer information in a more efficient manner.
+  - type: dropdown
+    id: model
+    attributes:
+      label: Homey model
+      description: What Homey model do you have?
+      options:
+        - Homey (2016 -2019)
+        - Homey Pro Early 2019
+        - Homey Pro Early 2023
+        - Homey Bridge
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware
+      description: What firmware version is your Homey running?
+      placeholder: ex. v8.1.4
+    validations:
+      required: false
+  - type: dropdown
+    id: powerAdapter
+    attributes:
+      label: Power adapter
+      description: If you have the Homey Pro 2023 do you have [the new power adapter that delivers enough voltage](https://mailchi.mp/217770f9b300/homey-pros-power-adapter)?
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: false
+  - type: input
+    id: bridgePremium
+    attributes:
+      label: Homey Bridge Premium
+      description: If you have a Homey Bridge do you have Homey Premium? If not, how many devices have you connected to the Bridge?
+      placeholder: ex. Yes
+    validations:
+      required: false
+  - type: input
+    id: tibberVersion
+    attributes:
+      label: Tibber version
+      description: Which Tibber app version are you running on your Homey?
+      placeholder: ex. 1.9.18
+    validations:
+      required: false
+  - type: textarea
+    id: issue
+    attributes:
+      label: The bug
+      description: What is the issue? What were you expecting to happen? Is this something that have worked differently for you before but isn't working anymore?
+    validations:
+      required: true
+  - type: textarea
+    id: frequency
+    attributes:
+      label: How frequently does this happen?
+      description: Is the issue something that happens only now and then, if so could you provide at least a few dates and times on when they have happened?
+      placeholder: ex. Everyday at noon
+    validations:
+      required: false
+  - type: input
+    id: subscription
+    attributes:
+      label: Tibber Premium
+      description: If the issue relates to “Home” do you have an active subscription in Tibber? That is ongoing and has not yet ended?
+      placeholder: ex. Yes
+    validations:
+      required: false
+  - type: input
+    id: diagnosticsReport
+    attributes:
+      label: Diagnostics report
+      description: If you sent in a diagnostic report to Tibber app, what was the log id?
+      placeholder: ex. 050010b8-5187-4460-8c7e-27ac718cd238
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: | 
+        Thank you for being an awesome part of our community and for taking the time to share your bug report with us.
+        We can't express enough how grateful we are for your effort in helping us make our products even better.
+        Your input is crucial in our mission to enhance our products and provide a better experience for all our customers. 
