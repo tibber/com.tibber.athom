@@ -5,6 +5,7 @@ metadata:
   description: The Tibber app for Homey
   annotations:
     github.com/project-slug: tibber/com.tibber.athom
+    circleci.com/project-slug: gh/tibber/homey-app
   tags:
   - typescript
 spec:
