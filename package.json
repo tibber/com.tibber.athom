@@ -18,7 +18,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.9",
     "fast-sort": "^3.2.1",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "graphql-request": "^5.1.0",
     "graphql-tag": "^2.11.0",
     "graphql-ws": "^5.11.3",
