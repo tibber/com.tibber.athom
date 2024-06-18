@@ -27,7 +27,7 @@
     "moment-timezone": "^0.5.35",
     "newrelic": "^9.10.2",
     "source-map-support": "^0.5.21",
-    "ws": "^8.12.1",
+    "ws": "^8.17.1",
     "zen-observable-ts": "^1.2.5"
   },
   "devDependencies": {
