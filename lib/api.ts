@@ -31,6 +31,8 @@ export interface LiveMeasurement {
       power: number;
       accumulatedConsumption: number;
       accumulatedCost: number | null;
+      lastMeterConsumption: number | null;
+      lastMeterProduction: number | null;
       currency: string | null;
       minPower: number;
       averagePower: number;

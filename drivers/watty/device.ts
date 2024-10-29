@@ -350,6 +350,32 @@ class WattyDevice extends Device {
           });
       }
     }
+
+    const lastMeterConsumption =
+      result.data?.liveMeasurement?.lastMeterConsumption;
+    if (typeof lastMeterConsumption === 'number') {
+      if (this.hasCapability('meter_power.imported') !== true)
+        await this.addCapability('meter_power.imported').catch(console.error);
+
+      const fixedLastMeterConsumption = Number(lastMeterConsumption.toFixed(2));
+      this.setCapabilityValue(
+        'meter_power.imported',
+        fixedLastMeterConsumption,
+      ).catch(console.error);
+    }
+
+    const lastMeterProduction =
+      result.data?.liveMeasurement?.lastMeterProduction;
+    if (typeof lastMeterProduction === 'number') {
+      if (this.hasCapability('meter_power.exported') !== true)
+        await this.addCapability('meter_power.exported').catch(console.error);
+
+      const fixedLastMeterProduction = Number(lastMeterProduction.toFixed(2));
+      this.setCapabilityValue(
+        'meter_power.exported',
+        fixedLastMeterProduction,
+      ).catch(console.error);
+    }
   }
 
   onDeleted() {
