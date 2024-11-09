@@ -1,7 +1,7 @@
 {
   "id": "com.tibber",
   "version": "1.9.18",
-  "compatibility": ">=8.1.0",
+  "compatibility": ">=12.1.0",
   "platforms": ["local", "cloud"],
   "sdk": 3,
   "author": {

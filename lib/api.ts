@@ -5,7 +5,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
 import type ManagerSettings from 'homey/manager/settings';
-import { Device } from 'homey';
+import { Device, env } from 'homey';
 import { UserAgentWebSocket } from './UserAgentWebSocket';
 import { queries } from './queries';
 import {
@@ -406,6 +406,9 @@ export class TibberApi {
   }
 
   getDefaultToken(): string {
+    if (env.ACCESS_TOKEN != undefined){
+      return env.ACCESS_TOKEN;
+    }
     return this.#homeySettings.get('token');
   }
 }

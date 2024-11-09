@@ -1,0 +1,81 @@
+{
+    "name": {
+        "en": "Price",
+        "de": "Preis"
+    },
+    "settings": [
+        {
+            "id": "device_home",
+            "type": "autocomplete",
+            "title": {
+                "en": "Home device"
+            }
+        },
+        {
+            "id": "device_pulse",
+            "type": "autocomplete",
+            "title": {
+                "en": "Pulse device"
+            }
+        },
+        {
+            "id": "chart_display",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Display chart"
+            }
+        },
+        {
+            "id": "chart_zoom",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Zoom chart"
+            }
+        },
+        {
+            "id": "chart_colored",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Colored chart"
+            }
+        },
+        {
+            "id": "chart_color_style",
+            "type": "dropdown",
+            "value": "colored_line_range",
+            "title": {
+                "en": "Color style"
+            },
+            "values":[
+                {
+                    "id": "colored_line_range",
+                    "label": {
+                        "en": "Colored line based on range"
+                    }
+                },
+                {
+                    "id": "colored_line_level",
+                    "label": {
+                        "en": "Colored line based on price level"
+                    }
+                },
+                {
+                    "id": "vertical_segments",
+                    "label": {
+                        "en": "Vertical segments based on price level"
+                    }
+                }
+            ]
+        }
+    ],
+    "height": 70,
+    "api": {
+        "triggerRealtimeData": {
+            "method": "GET",
+            "path": "/trigger_realtime_data"
+        }
+    }
+  }
