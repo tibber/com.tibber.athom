@@ -1754,26 +1754,26 @@
           "values": [
             {
               "id": "colored_line_range",
-              "label": {
+              "title": {
                 "en": "Colored line based on range"
               }
             },
             {
               "id": "colored_line_level",
-              "label": {
+              "title": {
                 "en": "Colored line based on price level"
               }
             },
             {
               "id": "vertical_segments",
-              "label": {
+              "title": {
                 "en": "Vertical segments based on price level"
               }
             }
           ]
         }
       ],
-      "height": 200,
+      "height": 70,
       "api": {
         "triggerRealtimeData": {
           "method": "GET",
