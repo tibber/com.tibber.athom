@@ -1,0 +1,583 @@
+<html id="html">
+
+<head>
+    <link rel="stylesheet" href="index.css" type="text/css">
+</head>
+
+<!-- <body class="homey-widget-small"> -->
+<body id="body" class="homey-widget-small">
+
+    <div id="background">
+        <div class="data_container_outer">
+            <div class="logo">
+                <div class="homey-custom-icon-logo"></div>
+
+            </div>
+            <div class="data_container_inner">
+                <div id="pulse" style="display: none;">
+                    <div id="energy_data" class="capability_container">
+                        <div class="capability">
+                            <div class="capability">
+                                <div class="homey-custom-icon-power"></div>
+                                <span id="text_power" class="text_value_large"></span>
+                            </div>
+                            <div class="capability">
+                                <div class="homey-custom-icon-acc_consumption"></div>
+                                <span id="text_acc_consumption" class="text_value"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="energy_data2" class="capability_container">
+                        <div class="capability">
+                            <div class="homey-custom-icon-min_power"></div>
+                            <span id="text_min_power" class="text_value_small"></span>
+                        </div>
+                        <div class="capability">
+                            <div class="homey-custom-icon-max_power"></div>
+                            <span id="text_max_power" class="text_value_small"></span>
+                        </div>
+                        <div class="capability">
+                            <div class="homey-custom-icon-avg_power"></div>
+                            <span id="text_avg_power" class="text_value"></span>
+                        </div>
+                        
+                        <div class="capability" style="display: none;">
+                            <span id="text_prod_power" class="text_value"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="home" style="display: none;">
+                    <div id="price_data" class="capability_container">
+                        <div class="capability_column">
+                            <div class="capability">
+                                <div class="homey-custom-icon-coin"></div>
+                                <span id="text_current_price" class="text_value_large"></span>
+                                <div class="price_line_frame">
+                                    <div id="price_line" class="price_line"></div>
+                                </div>
+                            </div>
+                            <div class="capability">
+                                <span id="text_current_price_time" class="text_value_small"></span>
+                            </div>
+                        </div>
+                        <div class="capability_column">
+                            <div class="capability">
+                                <div class="homey-custom-icon-min_power"></div>
+                                <span id="text_min_price" class="text_value_small"></span>
+                            </div>
+                            <div class="capability">
+                                <span id="text_min_price_time" class="text_value_small"></span>
+                            </div>
+                        </div>
+                        <div class="capability_column">
+                            <div class="capability">
+                                <div class="homey-custom-icon-max_power"></div>
+                                <span id="text_max_price" class="text_value_small"></span>
+                            </div>
+                            <div class="capability">
+                                <span id="text_max_price_time" class="text_value_small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="price_chart" class="chart" style="display: none;"></div>
+    </div>
+
+    <script src="echarts.min.js"></script>
+
+    <script type="text/javascript">
+        let settings = {};
+
+        async function onHomeyReady(Homey) {
+            Homey.ready({ height: 70 });
+            settings = Homey.getSettings();
+
+            console.log('instanceId: ', Homey.getWidgetInstanceId());
+            console.log('settings', Homey.getSettings());
+
+            // Realtime event for changed car data
+            Homey.on('device_update', (data)=> _deviceUpdate(data));
+
+            // Show frames if devices are connected
+            // if (Homey.getSettings().device_home && Homey.getSettings().device_home.id){
+            //     document.getElementById('home').style.display = "flex";
+            // }
+            // if (Homey.getSettings().device_pulse && Homey.getSettings().device_pulse.id){
+            //     document.getElementById('pulse').style.display = "flex";
+            // }
+
+            // Trigger realtime event
+            console.log('Trigger device data...');
+            let data = await Homey.api('GET', '/trigger_realtime_data', {});
+
+        }
+
+        async function _deviceUpdate(data){
+            switch (data.driver_id) {
+                case 'home':
+                    if (settings.device_home && settings.device_home.id && settings.device_home.id == data.device_id){
+                        console.log('Update Home device data: ', data);
+                        await _deviceUpdateHome(data);
+                        document.getElementById('home').style.display = "flex";
+                    }
+                    break;
+                case 'pulse':
+                    if (settings.device_pulse && settings.device_pulse.id && settings.device_pulse.id == data.device_id){
+                        // console.log('Update Pulse device data: ', data);
+                        await _deviceUpdatePulse(data);
+                        document.getElementById('pulse').style.display = "flex";
+                    }
+                    break;
+            }
+
+            // TEST ==>
+            // --homey-font-scale: 0.800000011920929;
+            // await document.getElementById('html').style.setProperty('--homey-font-scale', 1.5);
+            // <== TEST
+
+            // await Homey.setHeight(document.getElementById('body').offsetHeight);
+            await Homey.setHeight( document.getElementById('body').offsetHeight );
+
+        }
+
+        async function _deviceUpdatePulse(data){
+            if (data == undefined) return;
+
+            // Energy values
+            if (data.liveMeasurement.accumulatedConsumption)
+                data.liveMeasurement.accumulatedConsumption = data.liveMeasurement.accumulatedConsumption.toFixed(2);
+            else
+                data.liveMeasurement.accumulatedConsumption = 0;
+            if (data.liveMeasurement.power)
+                data.liveMeasurement.power = data.liveMeasurement.power.toFixed(0);
+            else
+                data.liveMeasurement.power = 0;
+            if (data.liveMeasurement.minPower)
+                data.liveMeasurement.minPower = data.liveMeasurement.minPower.toFixed(0);
+            else
+                data.liveMeasurement.minPower = 0;
+            if (data.liveMeasurement.maxPower)
+                data.liveMeasurement.maxPower = data.liveMeasurement.maxPower.toFixed(0);
+            else
+                data.liveMeasurement.maxPower = 0;
+            if (data.liveMeasurement.averagePower)
+                data.liveMeasurement.averagePower = data.liveMeasurement.averagePower.toFixed(0);
+            else
+                data.liveMeasurement.averagePower = 0;
+            if (data.liveMeasurement.powerProduction)
+                data.liveMeasurement.powerProduction = data.liveMeasurement.powerProduction.toFixed(0);
+            else
+                data.liveMeasurement.powerProduction = 0;
+
+            document.getElementById('text_power').innerText = data.liveMeasurement.power + ' W';
+            document.getElementById('text_min_power').innerText = data.liveMeasurement.minPower + ' W';
+            document.getElementById('text_max_power').innerText = data.liveMeasurement.maxPower + ' W';
+            document.getElementById('text_avg_power').innerText = data.liveMeasurement.averagePower + ' W';
+            document.getElementById('text_prod_power').innerText = data.liveMeasurement.powerProduction + ' W';
+            document.getElementById('text_acc_consumption').innerText = data.liveMeasurement.accumulatedConsumption + ' kWh';
+
+        }
+
+        async function _deviceUpdateHome(data){
+            if (data == undefined) return;
+
+            // Price values
+            document.getElementById('text_current_price').innerText = data.currentPrice.total.toFixed(2);
+            switch (data.currentPrice.level) {
+                case 'VERY_EXPENSIVE':
+                    document.getElementById('text_current_price').style.color = 'var(--color_very_expensive';
+                    break;                
+                case 'EXPENSIVE':
+                    document.getElementById('text_current_price').style.color = 'var(--color_expensive';
+                    break;                
+                case 'NORMAL':
+                    document.getElementById('text_current_price').style.color = 'var(--color_normal)';
+                    break;                
+                case 'CHEAP':
+                    document.getElementById('text_current_price').style.color = 'var(--color_cheap)';
+                    break;                
+                case 'VERY_CHEAP':
+                    document.getElementById('text_current_price').style.color = 'var(--color_very_cheap)';
+                    break;                
+            }
+
+            document.getElementById('text_min_price').innerText = data.lowestToday.total.toFixed(2);
+            document.getElementById('text_max_price').innerText = data.highestToday.total.toFixed(2);
+
+            let currPrice = data.currentPrice.total;
+            let maxPrice = data.highestToday.total;
+            let minPrice = data.lowestToday.total;
+            let perc = ((currPrice-minPrice)*100/(maxPrice-minPrice)).toFixed(0);
+            console.log('curr:'+currPrice+' min:'+minPrice+' max:'+maxPrice+' perc:'+perc);
+
+            document.getElementsByClassName('price_line')[0].style.setProperty('--price_percentage', perc+'%');
+
+            let time;
+            time = new Date(data.currentPrice.startsAt).toLocaleString(data.language, 
+            { 
+                hour12: false, 
+                timeZone: data.tz,
+                hour: "2-digit",
+                minute: "2-digit",
+                // day: "2-digit",
+                // month: "2-digit",
+                // year: "numeric"
+            });
+            document.getElementById('text_current_price_time').innerText = time;
+
+            time = new Date(data.lowestToday.startsAt).toLocaleString(data.language, 
+            { 
+                hour12: false, 
+                timeZone: data.tz,
+                hour: "2-digit",
+                minute: "2-digit",
+                // day: "2-digit",
+                // month: "2-digit",
+                // year: "numeric"
+            });
+            document.getElementById('text_min_price_time').innerText = time;
+
+            time = new Date(data.highestToday.startsAt).toLocaleString(data.language, 
+            { 
+                hour12: false, 
+                timeZone: data.tz,
+                hour: "2-digit",
+                minute: "2-digit",
+                // day: "2-digit",
+                // month: "2-digit",
+                // year: "numeric"
+            });
+            document.getElementById('text_max_price_time').innerText = time;
+
+
+            // Echarts
+            let echarts_data = [];
+            let yAxisMax = 0;
+            let yAxisMin = 999;
+            // // price segments
+            // let priceSegments = {
+            // };
+
+
+            // Convert data to eCharts series array
+            data.hourlyPrices.forEach( (element) => {
+                let price = element.total*100; 
+                echarts_data.push([
+                    new Date(element.startsAt), 
+                    price, 
+                    element.level 
+                ]);
+
+                // calculate min/max yAxis range
+                if (yAxisMin > price){
+                    yAxisMin = price;
+                }
+                if (yAxisMax < price){
+                    yAxisMax = price;
+                }
+
+                // // calculate price segments based on level
+                // if (priceSegments[element.level] == undefined){
+                //     priceSegments[element.level] = {};
+                // }
+                // if (priceSegments[element.level].min == undefined || priceSegments[element.level].min > price){
+                //     priceSegments[element.level].min = price;
+                // }
+                // if (priceSegments[element.level].max == undefined || priceSegments[element.level].max < price){
+                //     priceSegments[element.level].max = price;
+                // }
+            });
+            console.log('Chart data:',echarts_data);
+
+            // Chart settings: Zoom in 
+            let markYAxisMin = yAxisMin;
+            let markYAxisMax = yAxisMax;
+            // Chart settings: color style (visualMap)
+            let visualMapPieces = [];
+            let visualMap = null;
+            let areaStyle = null;
+            let seriesLineColor = 'var(--chart_default_line_color)';
+            // calculate color range based on yAxis range
+            let priceSegmentsPart = (yAxisMax - yAxisMin) / 5; 
+            let priceSegments = {
+                VERY_EXPENSIVE: {
+                    max: yAxisMax,
+                    min: yAxisMax - priceSegmentsPart
+                },
+                EXPENSIVE: {
+                    max: yAxisMax - priceSegmentsPart,
+                    min: yAxisMax - priceSegmentsPart * 2
+                },
+                NORMAL: {
+                    max: yAxisMax - priceSegmentsPart * 2,
+                    min: yAxisMax - priceSegmentsPart * 3
+                },
+                CHEAP: {
+                    max: yAxisMax - priceSegmentsPart * 3,
+                    min: yAxisMax - priceSegmentsPart * 4
+                },
+                VERY_CHEAP: {
+                    max: yAxisMax - priceSegmentsPart * 4,
+                    min: yAxisMin
+                }  
+            };
+            console.log('Price Segments: ',priceSegments);
+
+            if (settings.chart_zoom){
+                yAxisMin = Math.floor( (yAxisMin-1) / 10) *10
+                yAxisMax = Math.ceil( (yAxisMax+1) / 10) *10
+                markYAxisMin = yAxisMin;
+                markYAxisMax = yAxisMax;
+
+            }
+            else{
+                yAxisMin = null;
+                yAxisMax = Math.ceil( (yAxisMax+1) / 10) *10
+                markYAxisMin = 0;
+                markYAxisMax = yAxisMax;
+            }
+
+            // TEST
+            // settings.chart_color_style = 'colored_line_range';
+
+            if (settings.chart_colored){
+
+                for(let i = 0; i < echarts_data.length; i++){
+                    let min = echarts_data[i][0];
+                    let max = 0;
+                    if (echarts_data[i+1]){
+                        max = echarts_data[i+1][0];
+                    }
+                    let piece = {
+                        min: new Date(min).getTime(),
+                        max: new Date(max).getTime(),
+                        // opacity: 0.5
+                    }
+                    switch (echarts_data[i][2]){
+                        case 'VERY_CHEAP':
+                            piece.color = 'rgba(var(--color_grb_very_cheap), var(--chart_opacity))';
+                            break;
+                        case 'CHEAP':
+                            piece.color = 'rgba(var(--color_rgb_cheap), var(--chart_opacity))';
+                            break;
+                        case 'NORMAL':
+                            piece.color = 'rgba(var(--color_rgb_normal), var(--chart_opacity))';
+                            break;
+                        case 'EXPENSIVE':
+                            piece.color = 'rgba(var(--color_rgb_expensive), var(--chart_opacity))';
+                            break;
+                        case 'VERY_EXPENSIVE':
+                            piece.color = 'rgba(var(--color_rgb_very_expensive), var(--chart_opacity))';
+                            break;                            
+                    }
+                    visualMapPieces.push( piece );
+                }
+                console.log('VisualMap pieces: ',visualMapPieces);
+                
+                visualMap = {
+                    show: false,
+                    type: 'piecewise',
+                    dimension: 0,
+                    seriesIndex: 0,
+                    pieces: visualMapPieces
+                };
+
+                if (settings.chart_color_style == 'vertical_segments'){
+                    // activate chart area
+                    areaStyle = {};
+                }
+                else if (settings.chart_color_style == 'colored_line_level'){
+                    // clear fix line color
+                    seriesLineColor = null;
+                }
+                else if (settings.chart_color_style == 'colored_line_range'){
+
+                    visualMap = 
+                    {
+                        show: false,
+                        type: 'piecewise',
+                        dimension: 1,
+                        pieces: [
+                        {
+                            gte: priceSegments.VERY_CHEAP.min-1,
+                            lte: priceSegments.VERY_CHEAP.max,
+                            color: 'var(--color_very_cheap)'
+                        },
+                        {
+                            gt: priceSegments.CHEAP.min,
+                            lte: priceSegments.CHEAP.max,
+                            color: 'var(--color_cheap)'
+                        },
+                        {
+                            gt: priceSegments.NORMAL.min,
+                            lte: priceSegments.NORMAL.max,
+                            color: 'var(--color_normal)'
+                        },
+                        {
+                            gt: priceSegments.EXPENSIVE.min,
+                            lte: priceSegments.EXPENSIVE.max,
+                            color: 'var(--color_expensive)'
+                        },
+                        {
+                            gt: priceSegments.VERY_EXPENSIVE.min,
+                            lte: priceSegments.VERY_EXPENSIVE.max+1,
+                            color: 'var(--color_very_expensive)'
+                        }
+                        ],
+                        outOfRange: {
+                        color: '#555555'
+                        }
+                    }
+                    // areaStyle = {};
+                    seriesLineColor = null;
+
+                }
+                else{
+                    // visualMap = null;
+                    // areaStyle = null;
+                }
+            }
+
+            if (settings.chart_display){
+                document.getElementById('price_chart').style.display = "flex";
+
+                // Initialize the echarts instance based on the prepared dom
+                var myChart = echarts.init(document.getElementById('price_chart'), null, {
+                    renderer: 'svg'
+                });
+                // Specify the configuration items and data for the chart
+                var option = {
+                    grid: {
+                        top: 5,
+                        bottom: 5,
+                        left: 5,
+                        right: 5,
+                        containLabel: true
+                    },
+                    xAxis: {
+                        // show: false,
+                        type: 'time',
+                        // interval: 10,
+                        splitNumber: 12,
+                        axisLabel:{
+                            show:false
+                        },
+                        splitLine:{
+                            show: true,
+                            lineStyle:{
+                                color: 'var(--homey-color-mono-700)',
+                                opacity: 0.1
+                            }
+                        },
+                        axisLabel:{
+                            fontSize: 7,
+                            margin: 5,
+                            height:30
+                        },
+                        axisTick:{
+                            show: true
+                        },
+                        minorTick: {
+                            show: true,
+                            splitNumber: 4
+                        }
+                    },
+                    yAxis: {
+                        // show: false
+                        min: yAxisMin,
+                        max: yAxisMax,
+                        // min: function (value) {
+                        //     return Math.floor( (value.min-1) / 10) *10;
+                        // },
+                        // max: function (value) {
+                        //     return Math.ceil( (value.max+1) /10)*10;
+                        // },
+                        interval: 10,
+                        position: 'right',
+                        axisLine:{
+                            show:true
+                        },
+                        splitLine:{
+                            show: true,
+                            lineStyle:{
+                                color: 'var(--homey-color-mono-700)',
+                                opacity: 0.2
+                            }
+                        },
+                        axisTick:{
+                            show:true,
+                            length: 2,
+                        },
+                        axisLabel:{
+                            fontSize: 7,
+                            margin: 5
+                        },
+                        minorTick: {
+                            show: true,
+                            splitNumber: 2
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'price',
+                            type: 'line',
+                            lineStyle:{
+                                color: seriesLineColor,
+                                width: 1
+                            },
+                            silent: true,
+                            areaStyle: areaStyle,
+                            animation: false,
+                            step: 'end',
+                            showSymbol: false,
+                            data: echarts_data,
+                            markLine: {
+                                lineStyle:{
+                                    color: '#E0C157',
+                                    opacity: 0.8
+                                },
+                                symbol: 'none',
+                                data: [[
+                                    { xAxis: new Date(), yAxis: markYAxisMin  },
+                                    { xAxis: new Date(),  yAxis: markYAxisMax }
+                                ]]
+                            }
+                        }
+                    ],
+                    
+                    // visualMap: {
+                    //     show: false,
+                    //     type: 'piecewise',
+                    //     dimension: 0,
+                    //     seriesIndex: 0,
+                    //     pieces: visualMapPieces
+                    // }
+                    visualMap: visualMap 
+                };
+                // Display the chart using the configuration items and data just specified.
+                myChart.setOption(option);
+                myChart.resize();
+            }
+            else{
+                document.getElementById('price_chart').style.display = "none";
+            }
+
+
+            // TEST ==>
+            // --homey-font-scale: 0.800000011920929;
+            // await document.getElementById('html').style.setProperty('--homey-font-scale', 1.5);
+            // <== TEST
+
+            // await Homey.setHeight(document.getElementById('body').offsetHeight);
+
+        }
+
+    </script>
+
+</body>
+
+</html>
