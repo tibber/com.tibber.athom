@@ -10,10 +10,14 @@
     "accumulatedCost",
     "measure_current.L1",
     "measure_current.L2",
-    "measure_current.L3"
+    "measure_current.L3",
+    "meter_power.imported",
+    "meter_power.exported"
   ],
   "energy": {
-    "cumulative": true
+    "cumulative": true,
+    "cumulativeImportedCapability": "meter_power.imported",
+    "cumulativeExportedCapability": "meter_power.exported"
   },
   "capabilitiesOptions": {
     "accumulatedCost": {
