@@ -57,7 +57,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
-### 1.9.19
+### 1.9.20
 
 - Imported/exported power accumulated capabilities
 - Updated dependencies
