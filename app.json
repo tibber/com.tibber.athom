@@ -1240,6 +1240,16 @@
           "title": {
             "en": "Current phase 3"
           }
+        },
+        "meter_power.imported": {
+          "title": {
+            "en": "Imported"
+          }
+        },
+        "meter_power.exported": {
+          "title": {
+            "en": "Exported"
+          }
         }
       },
       "class": "other",
@@ -1486,6 +1496,16 @@
         "measure_current.L3": {
           "title": {
             "en": "Current phase 3"
+          }
+        },
+        "meter_power.imported": {
+          "title": {
+            "en": "Imported"
+          }
+        },
+        "meter_power.exported": {
+          "title": {
+            "en": "Exported"
           }
         }
       },
