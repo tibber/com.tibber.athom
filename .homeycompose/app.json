@@ -1,8 +1,11 @@
 {
   "id": "com.tibber",
-  "version": "1.9.18",
+  "version": "1.9.19",
   "compatibility": ">=8.1.0",
-  "platforms": ["local", "cloud"],
+  "platforms": [
+    "local",
+    "cloud"
+  ],
   "sdk": 3,
   "author": {
     "name": "Tibber AS",
@@ -15,7 +18,9 @@
   "description": {
     "en": "Be in charge of your household energy"
   },
-  "category": ["energy"],
+  "category": [
+    "energy"
+  ],
   "permissions": [],
   "images": {
     "large": "/assets/images/large.png",
