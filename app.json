@@ -1747,17 +1747,11 @@
         {
           "id": "chart_color_style",
           "type": "dropdown",
-          "value": "colored_line_range",
+          "value": "colored_line_level",
           "title": {
             "en": "Color style"
           },
           "values": [
-            {
-              "id": "colored_line_range",
-              "title": {
-                "en": "Colored line based on range"
-              }
-            },
             {
               "id": "colored_line_level",
               "title": {
@@ -1765,9 +1759,21 @@
               }
             },
             {
+              "id": "colored_line_range",
+              "title": {
+                "en": "Colored line based on range"
+              }
+            },
+            {
               "id": "vertical_segments",
               "title": {
                 "en": "Vertical segments based on price level"
+              }
+            },
+            {
+              "id": "horizontal_segments",
+              "title": {
+                "en": "Horizontal segments based on range"
               }
             }
           ]

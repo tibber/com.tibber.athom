@@ -376,9 +376,8 @@
                     }
                     visualMapPieces.push( piece );
                 }
-                console.log('VisualMap pieces: ',visualMapPieces);
-                
-                visualMap = {
+                // console.log('VisualMap pieces: ',visualMapPieces);
+                visualMapX = {
                     show: false,
                     type: 'piecewise',
                     dimension: 0,
@@ -386,53 +385,105 @@
                     pieces: visualMapPieces
                 };
 
-                if (settings.chart_color_style == 'vertical_segments'){
-                    // activate chart area
-                    areaStyle = {};
-                }
-                else if (settings.chart_color_style == 'colored_line_level'){
-                    // clear fix line color
-                    seriesLineColor = null;
-                }
-                else if (settings.chart_color_style == 'colored_line_range'){
-
-                    visualMap = 
-                    {
-                        show: false,
-                        type: 'piecewise',
-                        dimension: 1,
-                        pieces: [
+                visualMapY = 
+                {
+                    show: false,
+                    type: 'piecewise',
+                    dimension: 1,
+                    pieces: [
                         {
-                            gte: priceSegments.VERY_CHEAP.min-1,
+                            gte: markYAxisMin, //priceSegments.VERY_CHEAP.min,
                             lte: priceSegments.VERY_CHEAP.max,
-                            color: 'var(--color_very_cheap)'
+                            color: 'rgba(var(--color_rgb_very_cheap), var(--chart_opacity))'
                         },
                         {
                             gt: priceSegments.CHEAP.min,
                             lte: priceSegments.CHEAP.max,
-                            color: 'var(--color_cheap)'
+                            color: 'rgba(var(--color_rgb_cheap), var(--chart_opacity))'
                         },
                         {
                             gt: priceSegments.NORMAL.min,
                             lte: priceSegments.NORMAL.max,
-                            color: 'var(--color_normal)'
+                            color: 'rgba(var(--color_rgb_normal), var(--chart_opacity))'
                         },
                         {
                             gt: priceSegments.EXPENSIVE.min,
                             lte: priceSegments.EXPENSIVE.max,
-                            color: 'var(--color_expensive)'
+                            color: 'rgba(var(--color_rgb_expensive), var(--chart_opacity))'
                         },
                         {
                             gt: priceSegments.VERY_EXPENSIVE.min,
                             lte: priceSegments.VERY_EXPENSIVE.max+1,
-                            color: 'var(--color_very_expensive)'
+                            color: 'rgba(var(--color_rgb_very_expensive), var(--chart_opacity))'
                         }
-                        ],
-                        outOfRange: {
-                        color: '#555555'
-                        }
+                    ],
+                    outOfRange: {
+                        color: 'rgba(var(--color_rgb_very_cheap), var(--chart_opacity))'
                     }
+                };
+
+                if (settings.chart_color_style == 'vertical_segments'){
+                    // activate chart area
+                    areaStyle = {};
+                    // Use visual map based on time and prive level (xAxis)
+                    visualMap = visualMapX;
+                    seriesLineColor = null;
+                }
+                if (settings.chart_color_style == 'horizontal_segments'){
+                    // activate chart area
+                    areaStyle = {};
+                    // Use visual map based on price (yAxis)
+                    visualMap = visualMapY;
+                    seriesLineColor = null;
+                    areaStyle = {};
+                }
+                else if (settings.chart_color_style == 'colored_line_level'){
+                    // Use visual map based on time and prive level (xAxis)
+                    visualMap = visualMapX;
+                    // clear fix line color
+                    seriesLineColor = null;
+                    areaStyle = {
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0, color: 'rgba(var(--color_rgb_gradient), var(--gradient_opacity))'
+                                },
+                                {
+                                    offset: 1, color: '#00000000'
+                                }
+                            ],
+                            global: false // default is false
+                            }
+                    };
+                }
+                else if (settings.chart_color_style == 'colored_line_range'){
+
+                    // Use visual map based on price (yAxis)
+                    visualMap = visualMapY;
                     // areaStyle = {};
+                    areaStyle = {
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0, color: 'rgba(var(--color_rgb_gradient), var(--gradient_opacity))'
+                                },
+                                {
+                                    offset: 1, color: '#00000000'
+                                }
+                            ],
+                            global: false // default is false
+                            }
+                    };
                     seriesLineColor = null;
 
                 }
@@ -440,6 +491,27 @@
                     // visualMap = null;
                     // areaStyle = null;
                 }
+            }
+            else{
+                areaStyle = {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                            {
+                                offset: 0, color: 'rgba(var(--color_rgb_gradient), var(--gradient_opacity))'
+                            },
+                            {
+                                offset: 1, color: '#00000000'
+                            }
+                        ],
+                        global: false // default is false
+                        }
+                };
+
             }
 
             if (settings.chart_display){
@@ -525,14 +597,14 @@
                         {
                             name: 'price',
                             type: 'line',
+                            step: 'end',
                             lineStyle:{
                                 color: seriesLineColor,
-                                width: 1
+                                width: 1.5
                             },
                             silent: true,
                             areaStyle: areaStyle,
                             animation: false,
-                            step: 'end',
                             showSymbol: false,
                             data: echarts_data,
                             markLine: {

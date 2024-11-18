@@ -5,13 +5,16 @@
     --color_rgb_cheap: 154, 205, 50;
     --color_rgb_very_cheap: 50, 205, 50;
 
+    --color_rgb_gradient: 239, 235, 220;
+
     --color_very_expensive: rgb(var(--color_rgb_very_expensive));
     --color_expensive: rgb(var(--color_rgb_expensive));
     --color_normal: rgb(var(--color_rgb_normal));
     --color_cheap: rgb(var(--color_rgb_cheap));
     --color_very_cheap: rgb(var(--color_rgb_very_cheap));
 
-    --chart_opacity: 0.5;
+    --chart_opacity: 0.8;
+    --gradient_opacity: 0.5;
     --chart_default_line_color: rgb(100, 149, 237);
 }
 
