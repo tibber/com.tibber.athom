@@ -106,6 +106,8 @@ export const queries = {
         power
         accumulatedConsumption
         accumulatedCost
+        lastMeterConsumption
+        lastMeterProduction
         currency
         minPower
         averagePower
