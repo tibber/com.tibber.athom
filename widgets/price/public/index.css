@@ -1,0 +1,149 @@
+:root {
+    --color_rgb_very_expensive: 255, 69, 0;
+    --color_rgb_expensive: 255, 165, 0;
+    --color_rgb_normal: 255, 215, 0;
+    --color_rgb_cheap: 154, 205, 50;
+    --color_rgb_very_cheap: 50, 205, 50;
+
+    --color_rgb_gradient: 239, 235, 220;
+
+    --color_very_expensive: rgb(var(--color_rgb_very_expensive));
+    --color_expensive: rgb(var(--color_rgb_expensive));
+    --color_normal: rgb(var(--color_rgb_normal));
+    --color_cheap: rgb(var(--color_rgb_cheap));
+    --color_very_cheap: rgb(var(--color_rgb_very_cheap));
+
+    --chart_opacity: 0.8;
+    --gradient_opacity: 0.5;
+    --chart_default_line_color: rgb(100, 149, 237);
+}
+
+#pulse{
+    position: relative;
+    flex-flow: column;
+
+}
+
+#home{
+    position: relative;    
+}
+
+.logo {
+    margin-top: 2px;
+    width: 40px;
+}
+
+.data_container_outer {
+    width: 100%;
+    display: flex;
+    /* align-items: center; */
+}
+
+.data_container_inner {
+    width: 100%;
+}
+
+.capability_container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}   
+
+.capability{
+    display: flex;
+    align-items: center;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.capability_column{
+    display: grid;
+    justify-items: center;
+}
+
+.price_line_frame{
+    display: flex;
+    align-items: end;
+    height: 100%;
+    margin-left: 3px;
+    border: var(--homey-color-mono-500);
+    border-width: 1px;
+    border-style: inset;
+}
+
+.price_line{
+    --price_percentage: 0%;
+    width: 5px;
+    background-color: #E0C157;
+    /* padding-top: calc(100% - var(--price_percentage));  */
+    height: var(--price_percentage); 
+}
+
+/* .partial-border{
+    border-right: 2px solid transparent;
+    border-image: linear-gradient(to bottom, #fff 75%, transparent 75%); 
+    border-image-slice: 1;
+} */
+
+
+.text_value{
+    font-size: var(--homey-font-size-regular);
+}
+
+.text_value_large{
+    font-size: var(--homey-font-size-xxlarge);
+    font-weight: var(--homey-font-weight-bold);
+}
+
+.text_value_small{
+    font-size: var(--homey-font-size-medium);
+}
+
+.chart{
+    position: relative;
+    display: flex;
+    /* top: 5%; */
+    /* left: 20px; */
+    width: 100%;
+    height: 150px;
+    margin-top: 10px;
+    z-index: 1;
+}
+
+.homey-custom-icon-logo {
+    -webkit-mask-image: url('tibber-icon.svg');
+    mask-image: url('tibber-icon.svg');
+    background-color: #4DBABE;
+    width: 40px;
+    height: 40px;
+}
+
+.homey-custom-icon-coin {
+    -webkit-mask-image: url('coin.svg');
+    mask-image: url('coin.svg');
+}
+.homey-custom-icon-power {
+    -webkit-mask-image: url('pwr.svg');
+    mask-image: url('pwr.svg');
+    /* background-color: #4DBABE; */
+}
+.homey-custom-icon-min_power {
+    -webkit-mask-image: url('min.svg');
+    mask-image: url('min.svg');
+}
+.homey-custom-icon-max_power {
+    -webkit-mask-image: url('max.svg');
+    mask-image: url('max.svg');
+}
+.homey-custom-icon-avg_power {
+    -webkit-mask-image: url('avg.svg');
+    mask-image: url('avg.svg');
+}
+.homey-custom-icon-acc_consumption {
+    -webkit-mask-image: url('sum.svg');
+    mask-image: url('sum.svg');
+}

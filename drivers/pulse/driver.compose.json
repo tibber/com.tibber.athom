@@ -57,6 +57,13 @@
   "class": "other",
   "pair": [
     {
+      "id": "loading",
+      "template": "loading",
+      "navigation": {
+        "next": "login_oauth2"
+      }
+    },
+    {
       "id": "login_oauth2",
       "template": "login_oauth2"
     },

@@ -1,0 +1,87 @@
+{
+    "name": {
+        "en": "Price",
+        "de": "Preis"
+    },
+    "settings": [
+        {
+            "id": "device_home",
+            "type": "autocomplete",
+            "title": {
+                "en": "Home device"
+            }
+        },
+        {
+            "id": "device_pulse",
+            "type": "autocomplete",
+            "title": {
+                "en": "Pulse device"
+            }
+        },
+        {
+            "id": "chart_display",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Display chart"
+            }
+        },
+        {
+            "id": "chart_zoom",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Zoom chart"
+            }
+        },
+        {
+            "id": "chart_colored",
+            "type": "checkbox",
+            "value": true,
+            "title": {
+                "en": "Colored chart"
+            }
+        },
+        {
+            "id": "chart_color_style",
+            "type": "dropdown",
+            "value": "colored_line_level",
+            "title": {
+                "en": "Color style"
+            },
+            "values":[
+                {
+                    "id": "colored_line_level",
+                    "title": {
+                        "en": "Colored line based on price level"
+                    }
+                },
+                {
+                    "id": "colored_line_range",
+                    "title": {
+                        "en": "Colored line based on range"
+                    }
+                },
+                {
+                    "id": "vertical_segments",
+                    "title": {
+                        "en": "Vertical segments based on price level"
+                    }
+                },
+                {
+                    "id": "horizontal_segments",
+                    "title": {
+                        "en": "Horizontal segments based on range"
+                    }
+                }
+            ]
+        }
+    ],
+    "height": 70,
+    "api": {
+        "triggerRealtimeData": {
+            "method": "GET",
+            "path": "/trigger_realtime_data"
+        }
+    }
+  }

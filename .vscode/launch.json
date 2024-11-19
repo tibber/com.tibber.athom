@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "restart": true,
+            "name": "Attach Tibber to HomeyPro 19",
+            "address": "192.168.1.13",
+            "port": 9291,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/"
+        }, 
+        {
+            "type": "node",
+            "request": "attach",
+            "restart": true,
+            "name": "Attach Tibber to HomeyPro 23",
+            "address": "192.168.1.12",
+            "port": 9291,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/"
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "restart": true,
+            "name": "Attach Tibber to HomeyPro 23 Docker",
+            "address": "192.168.1.42",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app/"
+        }
+    ]
+}

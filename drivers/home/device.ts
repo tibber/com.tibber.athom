@@ -35,7 +35,7 @@ const deprecatedPriceLevelMap = {
   VERY_EXPENSIVE: 'HIGH',
 };
 
-class HomeDevice extends Device {
+export class HomeDevice extends Device {
   #api!: TibberApi;
   #deviceLabel!: string;
   #insightId!: string;
@@ -390,6 +390,21 @@ class HomeDevice extends Device {
       );
       return;
     }
+
+    // Realtime event - Widget update 
+    await this.homey.api.realtime("device_update", {
+      driver_id:'home', 
+      device_id: this.getData().id,
+      now: now,
+      currentHour: currentHour,
+      currentPrice: currentPrice,
+      lowestToday: this.#prices.lowestToday,
+      highestToday: this.#prices.highestToday,
+      pricesToday: this.#prices.today,
+      hourlyPrices: this.#api.hourlyPrices,
+      tz: this.homey.clock.getTimezone(),
+      language: this.homey.i18n.getLanguage()
+    } );
 
     const shouldUpdate =
       currentPrice.startsAt !== this.#prices.latest?.startsAt;
@@ -833,6 +848,15 @@ class HomeDevice extends Device {
         `Could not find log ${name} (error: ${e}). Creating new log.`,
       );
       return await this.homey.insights.createLog(name, options);
+    }
+  }
+
+  async triggerRealtimeData(){
+    const now = moment();
+    try {
+      await this.#handlePrice(now);
+    } catch (err) {
+      console.error(err);
     }
   }
 }
