@@ -50,7 +50,7 @@ body:
     attributes:
       label: Tibber version
       description: Which Tibber app version are you running on your Homey?
-      placeholder: ex. 1.9.20
+      placeholder: ex. 1.9.21
     validations:
       required: false
   - type: textarea

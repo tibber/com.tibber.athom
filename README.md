@@ -57,6 +57,11 @@ Integration with Tibber, with Pulse and Watty support.
 
 ### Release Notes
 
+### 1.9.21
+
+- Updated `cross-spawn` dependency
+- Internal instrumentation change
+
 ### 1.9.20
 
 - Imported/exported power accumulated capabilities

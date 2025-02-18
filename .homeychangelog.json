@@ -190,5 +190,8 @@
   },
   "1.9.20": {
     "en": "Imported/exported power accumulated capabilities. Updated dependencies."
+  },
+  "1.9.21": {
+    "en": "Updated `cross-spawn` dependency"
   }
 }
