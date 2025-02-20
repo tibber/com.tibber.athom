@@ -36,7 +36,7 @@ exports.config = {
    */
   allow_all_headers: true,
   distributed_tracing: {
-    enabled: true,
+    enabled: false,
   },
   attributes: {
     /**
