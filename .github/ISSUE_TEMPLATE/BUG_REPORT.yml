@@ -1,10 +1,10 @@
 name: Bug Report
 description: File a bug report
-title: "Bug: "
+title: 'Bug: '
 body:
   - type: markdown
     attributes:
-      value: | 
+      value: |
         Thank you for taking the time to bring this issue to our attention! We would appreciate a lot if you could fill in this bug report below.
         In addition, we kindly request that you send the link of the bug report to our support team at hello@tibber.com or via our Tibber app too, as this will allow us to access all the relevant customer information in a more efficient manner.
   - type: dropdown
@@ -50,7 +50,7 @@ body:
     attributes:
       label: Tibber version
       description: Which Tibber app version are you running on your Homey?
-      placeholder: ex. 1.9.18
+      placeholder: ex. 1.9.21
     validations:
       required: false
   - type: textarea
@@ -86,7 +86,7 @@ body:
       required: false
   - type: markdown
     attributes:
-      value: | 
+      value: |
         Thank you for being an awesome part of our community and for taking the time to share your bug report with us.
         We can't express enough how grateful we are for your effort in helping us make our products even better.
-        Your input is crucial in our mission to enhance our products and provide a better experience for all our customers. 
+        Your input is crucial in our mission to enhance our products and provide a better experience for all our customers.
