@@ -401,9 +401,7 @@ export class HomeDevice extends Device {
       lowestToday: this.#prices.lowestToday,
       highestToday: this.#prices.highestToday,
       pricesToday: this.#prices.today,
-      hourlyPrices: this.#api.hourlyPrices,
-      tz: this.homey.clock.getTimezone(),
-      language: this.homey.i18n.getLanguage()
+      hourlyPrices: this.#api.hourlyPrices
     } );
 
     const shouldUpdate =

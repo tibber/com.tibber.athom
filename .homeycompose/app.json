@@ -25,5 +25,19 @@
     "url": "https://github.com/tibber/com.tibber.athom/issues"
   },
   "source": "https://github.com/tibber/com.tibber.athom",
-  "support": "mailto:hello@tibber.com"
+  "support": "mailto:hello@tibber.com",
+  "api": {
+    "triggerRealtimeData": {
+      "method": "get",
+      "path": "/trigger_realtime_data/"
+    },
+    "getHomeDevices": {
+      "method": "get",
+      "path": "/home_devices/"
+    },
+    "getPulseDevices": {
+      "method": "get",
+      "path": "/pulse_devices/"
+    }
+  }
 }

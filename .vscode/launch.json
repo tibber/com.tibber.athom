@@ -16,10 +16,10 @@
             "request": "attach",
             "restart": true,
             "name": "Attach Tibber to HomeyPro 23",
-            "address": "192.168.1.12",
+            "address": "192.168.1.16",
             "port": 9291,
             "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/"
+            "remoteRoot": "/app/"
         },
         {
             "type": "node",

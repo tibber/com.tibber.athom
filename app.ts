@@ -45,7 +45,6 @@ class TibberApp extends App {
       this.homey.settings.set('v', 2);
       this.cleanupLogs('*').catch(console.error);
     }
-    this.#initWidgets();
   }
 
   async cleanupLogs(prefix: string) {
@@ -65,42 +64,41 @@ class TibberApp extends App {
   async onUninit() {
     this.log('Tibber app is stopping');
   }
-
-  // WIDGET Settings ==============================================================================
-  async #initWidgets(){
-    // @ts-expect-error
-    this.homey.dashboards.getWidget('price').registerSettingAutocompleteListener('device_home', async (query: string, settings: any) => { 
-      let homes: { name: string; id: any; }[] = [];
-      let devices = this.homey.drivers.getDriver('home').getDevices();
-      devices.forEach(device => {
-          homes.push({
-            name: device.getName(),
-            id: device.getData().id
-          })
-      });
-      return homes.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()));
-    });
-    // @ts-expect-error
-    this.homey.dashboards.getWidget('price').registerSettingAutocompleteListener('device_pulse', async (query: string, settings: any) => { 
-      let homes: { name: string; id: any; }[] = [];
-      let devices = this.homey.drivers.getDriver('pulse').getDevices();
-      devices.forEach(device => {
-          homes.push({
-            name: device.getName(),
-            id: device.getData().id
-          })
-      });
-      return homes.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()));
-    });
-  }
   
-  // WIDGET API ============================================================================
+  // App API ============================================================================
   async apiTriggerRealtimeData(){
-    // let device = this.homey.drivers.getDriver('home').getDevices()[0] as HomeDevice;
+    // Trigger a realtime event for Home device to publish current data to listening apps
     this.homey.drivers.getDriver('home').getDevices().forEach( (device ) => {
       (device as HomeDevice).triggerRealtimeData();
     });
+    return { success: true };
   }
+
+  async apiGetHomeDevices(query: any){
+    // Return a list of Home devices matching the query string
+    let homes: { name: string; id: any; }[] = [];
+    let devices = this.homey.drivers.getDriver('home').getDevices();
+    devices.forEach(device => {
+        homes.push({
+          name: device.getName(),
+          id: device.getData().id
+        })
+    });
+    return homes.filter((item) => item.name.toLowerCase().includes(query.search.toLowerCase()));  
+  }
+
+  async apiGetPulseDevices(query: any){
+    // Return a list of Pulse devices matching the query string
+    let homes: { name: string; id: any; }[] = [];
+    let devices = this.homey.drivers.getDriver('pulse').getDevices();
+    devices.forEach(device => {
+        homes.push({
+          name: device.getName(),
+          id: device.getData().id
+        })
+    });
+    return homes.filter((item) => item.name.toLowerCase().includes(query.search.toLowerCase()));
+}
 
 }
 
