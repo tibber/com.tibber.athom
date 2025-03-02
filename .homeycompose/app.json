@@ -1,8 +1,11 @@
 {
   "id": "com.tibber",
-  "version": "1.9.18",
-  "compatibility": ">=12.1.0",
-  "platforms": ["local", "cloud"],
+  "version": "1.9.21",
+  "compatibility": ">=8.1.0",
+  "platforms": [
+    "local",
+    "cloud"
+  ],
   "sdk": 3,
   "author": {
     "name": "Tibber AS",
