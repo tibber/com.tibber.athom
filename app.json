@@ -33,9 +33,9 @@
   "source": "https://github.com/tibber/com.tibber.athom",
   "support": "mailto:hello@tibber.com",
   "api": {
-    "triggerRealtimeData": {
+    "getHomeDeviceData": {
       "method": "get",
-      "path": "/trigger_realtime_data/"
+      "path": "/home_device_data/"
     },
     "getHomeDevices": {
       "method": "get",

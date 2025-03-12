@@ -391,18 +391,18 @@ export class HomeDevice extends Device {
       return;
     }
 
-    // Realtime event - Widget update 
-    await this.homey.api.realtime("device_update", {
-      driver_id:'home', 
+    // Realtime event - Widget update
+    await this.homey.api.realtime('device_update', {
+      driver_id: 'home',
       device_id: this.getData().id,
-      now: now,
-      currentHour: currentHour,
-      currentPrice: currentPrice,
+      now,
+      currentHour,
+      currentPrice,
       lowestToday: this.#prices.lowestToday,
       highestToday: this.#prices.highestToday,
       pricesToday: this.#prices.today,
-      hourlyPrices: this.#api.hourlyPrices
-    } );
+      hourlyPrices: this.#api.hourlyPrices,
+    });
 
     const shouldUpdate =
       currentPrice.startsAt !== this.#prices.latest?.startsAt;
@@ -849,13 +849,37 @@ export class HomeDevice extends Device {
     }
   }
 
-  async triggerRealtimeData(){
+  getDeviceData() {
     const now = moment();
-    try {
-      await this.#handlePrice(now);
-    } catch (err) {
-      console.error(err);
-    }
+    const currentHour = now.clone().startOf('hour');
+    const currentPrice =
+      this.#prices.today.find((p) => currentHour.isSame(p.startsAt)) || 0;
+
+    return {
+      driver_id: 'home',
+      device_id: this.getData().id,
+      now,
+      currentHour,
+      currentPrice,
+      lowestToday: this.#prices.lowestToday,
+      highestToday: this.#prices.highestToday,
+      pricesToday: this.#prices.today,
+      hourlyPrices: this.#api.hourlyPrices,
+    };
+
+    //   // Realtime event - Widget update
+    // this.log('Triggering realtime data for Home device ', this.getName());
+    // await this.homey.api.realtime('device_update', {
+    //   driver_id: 'home',
+    //   device_id: this.getData().id,
+    //   now,
+    //   currentHour,
+    //   currentPrice,
+    //   lowestToday: this.#prices.lowestToday,
+    //   highestToday: this.#prices.highestToday,
+    //   pricesToday: this.#prices.today,
+    //   hourlyPrices: this.#api.hourlyPrices,
+    // });
   }
 }
 

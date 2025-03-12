@@ -55,6 +55,40 @@ Integration with Tibber, with Pulse and Watty support.
 
 &nbsp;
 
+### Tibber API access
+
+The app uses OAuth authentication with client ID and client secret.
+If you want to contribute, you can run the app locally on your Homey.
+In this case, create a personal access token at https://developer.tibber.com/.
+Then create an env.json file in the root of the app. Paste the following line:
+
+```
+  { "ACCESS_TOKEN": "..." }
+```
+
+Insert your access token.
+Now the app uses your personal token for API access.
+
+### Homey app API
+The app provides an API that can be used by other Homey apps.
+
+The apps can use the homey:app:com.tibber permission to request access to the Tibber app.
+The following API endpoints can then be used:
+
+- http GET /home_devices?name=...
+  Read Home device list optionally filtered by name
+- http GET /pulse_devices?name=...
+  Read Pulse/Watty device list optionally filtered by name
+- http GET /home_device_data
+  Read current device data
+
+In addition, the app offers realtime events. The events are triggered if a device is updated with changed data. Register the event 'realtime' this way to get all data updates:
+
+```
+  this.tibberAppApi = this.homey.api.getApiApp('com.tibber');
+  this.tibberAppApi.on('realtime', async (event, data) => { ... });
+```
+
 ### Release Notes
 
 ### 1.9.21

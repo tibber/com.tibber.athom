@@ -15,17 +15,16 @@ class WattyDriver extends Driver {
     this.#api = new TibberApi(this.log, this.homey.settings);
 
     session.setHandler('showView', async (view) => {
-      if (view == 'loading'){
-        if (env.ACCESS_TOKEN != undefined){
+      if (view === 'loading') {
+        if (env.ACCESS_TOKEN !== undefined) {
           // If access token is provided, don't show oAuth popup.
           await session.showView('list_devices');
-        }
-        else{
+        } else {
           await session.showView('login_oauth2');
         }
       }
     });
-    
+
     session.setHandler(
       'list_devices',
       createListDeviceHandler(

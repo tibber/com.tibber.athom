@@ -169,13 +169,13 @@ class PulseDevice extends Device {
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
 
-    // Realtime event - Widget update 
-    await this.homey.api.realtime("device_update", {
-      driver_id:'pulse', 
+    // Realtime event - Widget update
+    await this.homey.api.realtime('device_update', {
+      driver_id: 'pulse',
       device_id: this.getData().id,
-      liveMeasurement: result.data?.liveMeasurement
-    } );
-    
+      liveMeasurement: result.data?.liveMeasurement,
+    });
+
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
     if (powerProduction) this.#prevPowerProduction = powerProduction;
