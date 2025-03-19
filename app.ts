@@ -16,16 +16,18 @@ class TibberApp extends App {
     this.log('Tibber app is running...');
 
     // Init Debugger
-    if (process.env.DEBUG === '1') {
-      // @ts-expect-error - platform is not in the types
-      if (this.homey.platform === 'local') {
-        try {
-          require('inspector').waitForDebugger();
-        } catch (error) {
-          require('inspector').open(9291, '0.0.0.0', true);
-        }
-      }
-    }
+    // Uncomment  to enable debugger. Adjust the port if needed. Adjust the Homey settings in .vscode/lauch.json
+    // if (process.env.DEBUG === '1') {
+    //   // @ts-expect-error - platform is not in the types
+    //   if (this.homey.platform === 'local') {
+    //     try {
+    //       require('inspector').waitForDebugger();
+    //     } catch (error) {
+    //       require('inspector').open(9291, '0.0.0.0', true);
+    //     }
+    //   }
+    // }
+
     const { version: firmwareVersion, platformVersion } = this
       .homey as HomeyWithMissingTypings;
     const { version: appVersion } = appJson;
