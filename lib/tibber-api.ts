@@ -408,9 +408,8 @@ export class TibberApi {
   }
 
   getDefaultToken(): string {
-    if (env.ACCESS_TOKEN != undefined){
-      return env.ACCESS_TOKEN;
-    }
+    if (env.ACCESS_TOKEN !== undefined) return env.ACCESS_TOKEN;
+
     return this.#homeySettings.get('token');
   }
 }

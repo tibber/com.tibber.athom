@@ -6,7 +6,7 @@ import {
   ConsumptionNode,
   PriceData,
   TibberApi,
-} from '../../lib/api';
+} from '../../lib/tibber-api';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
@@ -391,8 +391,7 @@ export class HomeDevice extends Device {
       return;
     }
 
-    // Realtime event - Widget update
-    await this.homey.api.realtime('device_update', {
+    await this.homey.api.realtime('data-update-event', {
       driver_id: 'home',
       device_id: this.getData().id,
       now,
@@ -866,20 +865,6 @@ export class HomeDevice extends Device {
       pricesToday: this.#prices.today,
       hourlyPrices: this.#api.hourlyPrices,
     };
-
-    //   // Realtime event - Widget update
-    // this.log('Triggering realtime data for Home device ', this.getName());
-    // await this.homey.api.realtime('device_update', {
-    //   driver_id: 'home',
-    //   device_id: this.getData().id,
-    //   now,
-    //   currentHour,
-    //   currentPrice,
-    //   lowestToday: this.#prices.lowestToday,
-    //   highestToday: this.#prices.highestToday,
-    //   pricesToday: this.#prices.today,
-    //   hourlyPrices: this.#api.hourlyPrices,
-    // });
   }
 }
 

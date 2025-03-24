@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
 import _ from 'lodash';
-import { LiveMeasurement, TibberApi } from '../../lib/api';
+import { LiveMeasurement, TibberApi } from '../../lib/tibber-api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
 import { randomBetweenRange } from '../../lib/helpers';
@@ -169,10 +169,9 @@ class PulseDevice extends Device {
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
 
-    // Realtime event - Widget update
-    await this.homey.api.realtime('device_update', {
-      driver_id: 'pulse',
-      device_id: this.getData().id,
+    await this.homey.api.realtime('data-update-event', {
+      driverId: 'pulse',
+      deviceId: this.getData().id,
       liveMeasurement: result.data?.liveMeasurement,
     });
 

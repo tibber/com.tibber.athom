@@ -1,5 +1,11 @@
 import moment from 'moment-timezone';
 
+export const isSomeString = (value: unknown): boolean =>
+  typeof value === 'string' && value.trim().length > 0;
+
+export const nonNullable = <T>(value: T): value is NonNullable<T> =>
+  value !== null && value !== undefined;
+
 export const parseTimeString = (time: TimeString): moment.Moment => {
   const [h, m] = time.split(':');
   return moment
