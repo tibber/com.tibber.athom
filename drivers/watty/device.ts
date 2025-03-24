@@ -169,8 +169,8 @@ class WattyDevice extends Device {
     this.#resubscribeDebounce();
 
     await this.homey.api.realtime('data-update-event', {
-      driver_id: 'pulse',
-      device_id: this.getData().id,
+      driverId: 'pulse',
+      deviceId: this.getData().id,
       liveMeasurement: result.data?.liveMeasurement,
     });
 

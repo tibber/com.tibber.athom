@@ -392,8 +392,8 @@ export class HomeDevice extends Device {
     }
 
     await this.homey.api.realtime('data-update-event', {
-      driver_id: 'home',
-      device_id: this.getData().id,
+      driverId: 'home',
+      deviceId: this.getData().id,
       now,
       currentHour,
       currentPrice,
@@ -855,8 +855,8 @@ export class HomeDevice extends Device {
       this.#prices.today.find((p) => currentHour.isSame(p.startsAt)) || 0;
 
     return {
-      driver_id: 'home',
-      device_id: this.getData().id,
+      driverId: 'home',
+      deviceId: this.getData().id,
       now,
       currentHour,
       currentPrice,
