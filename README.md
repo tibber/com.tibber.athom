@@ -119,7 +119,7 @@ Note that `env.json` is in `.gitignore` so there should be no risk of mistakenly
 
 ### Debugging
 
-You can run the app in debug mode by setting the `DEBUG` environment variable to `tibber:*`.
+If you want to debug app startup you may want to set the environment variable `WAIT_FOR_DEBUGGER`; there are example VS Code launch configurations available in [launch.json](https://github.com/tibber/com.tibber.athom/blob/main/.vscode/launch.json)
 
 ### Running tests
 

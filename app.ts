@@ -18,14 +18,16 @@ class TibberApp extends App {
 
     // Init Debugger
     // Adjust the port if needed. If you are using VS Code, launch settings are in `.vscode/launch.json`
-    if (process.env.DEBUG === '1') {
-      if ((this.homey as HomeyWithMissingTypings).platform === 'local') {
+    if ((this.homey as HomeyWithMissingTypings).platform === 'local') {
+      if (process.env.WAIT_FOR_DEBUGGER === '1') {
+        // eslint-disable-next-line global-require,@typescript-eslint/no-var-requires
+        require('inspector').waitForDebugger();
+      } else if (process.env.DEBUG === '1') {
         try {
           // eslint-disable-next-line global-require,@typescript-eslint/no-var-requires
-          require('inspector').waitForDebugger();
-        } catch (error) {
-          // eslint-disable-next-line global-require,@typescript-eslint/no-var-requires
           require('inspector').open(9291, '0.0.0.0', true);
+        } catch (error) {
+          //
         }
       }
     }

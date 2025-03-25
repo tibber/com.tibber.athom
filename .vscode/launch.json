@@ -1,34 +1,55 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
+         {
+            "name": "Launch and debug in Docker",
             "type": "node",
-            "request": "attach",
-            "restart": true,
-            "name": "Attach Tibber to HomeyPro 19",
-            "address": "192.168.xxx.xxx",
-            "port": 9291,
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/"
-        }, 
-        {
-            "type": "node",
-            "request": "attach",
-            "restart": true,
-            "name": "Attach Tibber to HomeyPro 23",
-            "address": "192.168.xxx.xxx",
-            "port": 9291,
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/app/"
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "homey",
+            "args": ["app", "run"],
+            "outputCapture": "std",
+            "env": {
+               "WAIT_FOR_DEBUGGER": "1"
+           },
+            "serverReadyAction": {
+                "pattern": "Debugger listening on",
+                "action": "startDebugging",
+                "name": "Attach to Docker"
+            }
         },
         {
             "type": "node",
             "request": "attach",
             "restart": true,
-            "name": "Attach Tibber to HomeyPro 23 Docker",
-            "address": "192.168.xxx.xxx",
+            "name": "Attach to Docker",
+            "address": "127.0.0.1",
             "port": 9229,
-            "localRoot": "${workspaceFolder}",
+            "localRoot": "${workspaceFolder}/.homeybuild",
+            "remoteRoot": "/app/"
+        },
+        {
+            "name": "Launch and debug in Homey (remote)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "homey",
+            "args": ["app", "run", "--remote"],
+            "outputCapture": "std",            
+            "serverReadyAction": {
+                "pattern": "Debugger listening on",
+                "action": "startDebugging",
+                "name": "Attach to remote"
+            }
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "restart": true,
+            "name": "Attach to remote",
+            "address": "192.168.x.x",
+            "port": 9291,
+            "localRoot": "${workspaceFolder}", // source maps are not available remotely
             "remoteRoot": "/app/"
         }
     ]
