@@ -1,0 +1,60 @@
+name: Setup Atlantis Webhook
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-atlantis-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Add Atlantis webhook
+        run: |
+          
+          REPO_OWNER=$(echo "${{ github.repository }}" | cut -d'/' -f1)
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          WEBHOOK_URL="https://atlantis-mgmt.tibberworks.net/events"
+          
+          # Find the webhook with url: https://atlantis-mgmt.tibberworks.net/events
+          webhookId=$(curl -H "Accept: application/vnd.github.v3+json" \
+                           -H "Authorization: token ${{ secrets.WEBHOOKS_READ_WRITE }}" \
+                            https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/hooks |
+                           jq --arg url "$WEBHOOK_URL" '.[]|select(.config.url == $url) | .id'
+          )
+          if test -z "$webhookId"; then
+            echo "Creating new webhook for Atlantis"
+
+            curl -X POST -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.WEBHOOKS_READ_WRITE }}" \
+              https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/hooks \
+              -d '{
+                "name": "web",
+                "active": true,
+                "events": ["push", "pull_request", "pull_request_review", "issue_comment"],
+                "config": {
+                  "url": "'"$WEBHOOK_URL"'",
+                  "content_type": "json",
+                  "secret": "'"${{ secrets.ATLANTIS_WEBHOOK_TOKEN }}"'",
+                  "insecure_ssl": "0"
+                }
+              }'
+          else
+            echo "Updating existing webhook"
+            curl -X PATCH -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.WEBHOOKS_READ_WRITE }}" \
+              https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/hooks/$webhookId \
+              -d '{
+                "active": true,
+                "events": ["push", "pull_request", "pull_request_review", "issue_comment"],
+                "config": {
+                  "url": "'"$WEBHOOK_URL"'",
+                  "content_type": "json",
+                  "secret": "'"${{ secrets.ATLANTIS_WEBHOOK_TOKEN }}"'",
+                  "insecure_ssl": "0"
+                }
+              }'
+          fi
+          
