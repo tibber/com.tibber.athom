@@ -177,6 +177,32 @@
         ]
       },
       {
+        "id": "negative_energy_price",
+        "title": {
+          "en": "Energy Price become negative"
+        },
+        "tokens": [
+          {
+            "name": "duration",
+            "type": "number",
+            "title": {
+              "en": "duration in hours"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          }
+        ]
+      },
+      {
         "id": "price_below_avg",
         "title": {
           "en": "Current price is [x] percent below average of the next [y] hours"
@@ -900,6 +926,36 @@
         ]
       },
       {
+        "id": "current_energy_below",
+        "title": {
+          "en": "Current energy price !{{below|above}}"
+        },
+        "titleFormatted": {
+          "en": "Current energy price is !{{below|above}} [[energy_price]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "energy_price",
+            "type": "number",
+            "title": {
+              "en": "Energy Price"
+            },
+            "placeholder": {
+              "en": "0.002"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
         "id": "cond_price_below_avg",
         "title": {
           "en": "Current price !{{is|isn't}} [x] percent below average of the next [y] hours"
@@ -1248,7 +1304,11 @@
         "measure_price_info_level",
         "measure_price_lowest",
         "measure_price_highest",
-        "measure_price_average"
+        "measure_price_average",
+        "measure_energy_current",
+        "measure_energy_lowest",
+        "measure_energy_highest",
+        "measure_energy_average"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
@@ -1903,6 +1963,42 @@
         "no": "kr"
       },
       "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "measure_energy_average": {
+      "type": "number",
+      "title": {
+        "en": "Average energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_current": {
+      "type": "number",
+      "title": {
+        "en": "Current energy price"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_highest": {
+      "type": "number",
+      "title": {
+        "en": "Highest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_lowest": {
+      "type": "number",
+      "title": {
+        "en": "Lowest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
     },
     "measure_price_average": {
       "type": "number",
