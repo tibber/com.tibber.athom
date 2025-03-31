@@ -133,6 +133,10 @@ Run `npm run lint` to run ESLint.
 
 ## Release Notes
 
+### 1.10.0
+
+- Added app Web API to enable other apps to access device data; see README in source code on GitHub for details
+
 ### 1.9.21
 
 - Updated `cross-spawn` dependency

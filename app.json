@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.9.21",
+  "version": "1.10.0",
   "compatibility": ">=8.1.0",
   "platforms": [
     "local",
@@ -34,16 +34,16 @@
   "support": "mailto:hello@tibber.com",
   "api": {
     "getHomeDeviceData": {
-      "method": "get",
-      "path": "/home_device_data/"
+      "method": "GET",
+      "path": "/home-device-data"
     },
     "getHomeDevices": {
-      "method": "get",
-      "path": "/home_devices/"
+      "method": "GET",
+      "path": "/home-devices"
     },
     "getPulseDevices": {
-      "method": "get",
-      "path": "/pulse_devices/"
+      "method": "GET",
+      "path": "/pulse-devices"
     }
   },
   "flow": {
