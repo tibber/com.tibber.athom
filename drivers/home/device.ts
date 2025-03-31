@@ -275,6 +275,9 @@ export class HomeDevice extends Device {
         .catch(console.error);
     }
 
+    if (!this.hasCapability('measure_price_average'))
+      await this.addCapability('measure_price_average');
+
     if (!this.hasCapability('measure_price_lowest'))
       await this.addCapability('measure_price_lowest');
 
@@ -544,6 +547,13 @@ export class HomeDevice extends Device {
 
     this.#prices.lowestToday = min(this.#prices.today, (p) => p.total);
     this.#prices.highestToday = max(this.#prices.today, (p) => p.total);
+
+    const avgPrice = mean(this.#prices.today, (item) => item.total);
+    this.setCapabilityValue('measure_price_average', avgPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_average' capability to", avgPrice);
+      });
 
     const lowestPrice = this.#prices.lowestToday?.total ?? null;
     this.setCapabilityValue('measure_price_lowest', lowestPrice)

@@ -7,7 +7,10 @@
   "capabilities": [
     "measure_power",
     "meter_power",
+    "meter_power.production",
     "accumulatedCost",
+    "accumulatedReward",
+    "dayCost",
     "measure_current.L1",
     "measure_current.L2",
     "measure_current.L3",
@@ -23,9 +26,20 @@
     "accumulatedCost": {
       "decimals": 2
     },
+    "accumulatedReward": {
+      "decimals": 2
+    },
+    "dayCost": {
+      "decimals": 2
+    },
     "meter_power": {
       "title": {
         "en": "Consumption since midnight"
+      }
+    },
+    "meter_power.production": {
+      "title": {
+        "en": "Production since midnight"
       }
     },
     "measure_current.L1": {

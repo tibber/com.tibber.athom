@@ -22,17 +22,21 @@ class PulseDevice extends Device {
   #prevCurrentL2?: number;
   #prevCurrentL3?: number;
   #prevConsumption?: number;
+  #prevProduction?: number;
   #prevCost?: number;
+  #prevReward?: number;
   #wsSubscription!: Subscription;
   #resubscribeDebounce!: _.DebouncedFunc<() => void>;
   #resubscribeMaxWaitMilliseconds!: number;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
+  #productionChangedTrigger!: FlowCardTriggerDevice;
   #costChangedTrigger!: FlowCardTriggerDevice;
+  #rewardChangedTrigger!: FlowCardTriggerDevice;
   #currentL1ChangedTrigger!: FlowCardTriggerDevice;
   #currentL2ChangedTrigger!: FlowCardTriggerDevice;
   #currentL3ChangedTrigger!: FlowCardTriggerDevice;
-  #dailyConsumptionReportTrigger!: FlowCardTriggerDevice;
+  #dailyReportTrigger!: FlowCardTriggerDevice;
 
   async onInit() {
     const { id, t: token } = this.getData();
@@ -48,8 +52,14 @@ class PulseDevice extends Device {
       'consumption_changed',
     );
 
+    this.#productionChangedTrigger =
+      this.homey.flow.getDeviceTriggerCard('production_changed');
+
     this.#costChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('cost_changed');
+
+    this.#rewardChangedTrigger =
+      this.homey.flow.getDeviceTriggerCard('reward_changed');
 
     this.#currentL1ChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('current.L1_changed');
@@ -60,9 +70,36 @@ class PulseDevice extends Device {
     this.#currentL3ChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('current.L3_changed');
 
-    this.#dailyConsumptionReportTrigger = this.homey.flow.getDeviceTriggerCard(
+    this.#dailyReportTrigger = this.homey.flow.getDeviceTriggerCard(
       'daily_consumption_report',
     );
+
+    if (this.hasCapability('meter_power.production') === false)
+      await this.addCapability('meter_power.production');
+
+    if (this.hasCapability('accumulatedCost') === false)
+      await this.addCapability('accumulatedCost');
+
+    if (this.hasCapability('accumulatedReward') === false)
+      await this.addCapability('accumulatedReward');
+
+    if (this.hasCapability('dayCost') === false)
+      await this.addCapability('dayCost');
+
+    if (this.hasCapability('measure_current.L1') === false)
+      await this.addCapability('measure_current.L1');
+
+    if (this.hasCapability('measure_current.L2') === false)
+      await this.addCapability('measure_current.L2');
+
+    if (this.hasCapability('measure_current.L3') === false)
+      await this.addCapability('measure_current.L3');
+
+    if (this.hasCapability('meter_power.imported') === false)
+      await this.addCapability('meter_power.imported');
+
+    if (this.hasCapability('meter_power.exported') === false)
+      await this.addCapability('meter_power.exported');
 
     this.log(
       `Tibber pulse device ${this.getName()} has been initialized (throttle: ${
@@ -195,7 +232,7 @@ class PulseDevice extends Device {
       .finally(() => {
         if (measurePower !== this.#prevPower) {
           this.#prevPower = measurePower;
-          this.log(`Trigger power changed`, measurePower);
+          this.log('Trigger power changed', measurePower);
           this.#powerChangedTrigger
             .trigger(this, { power: measurePower })
             .catch(console.error);
@@ -217,7 +254,7 @@ class PulseDevice extends Device {
           this.log("Set 'measure_current.L1' capability to", currentL1);
           if (currentL1 !== this.#prevCurrentL1) {
             this.#prevCurrentL1 = currentL1!;
-            this.log(`Trigger current L1 changed`, currentL1);
+            this.log('Trigger current L1 changed', currentL1);
             this.#currentL1ChangedTrigger
               .trigger(this, { currentL1 })
               .catch(console.error);
@@ -232,7 +269,7 @@ class PulseDevice extends Device {
           this.log("Set 'measure_current.L2' capability to", currentL2);
           if (currentL2 !== this.#prevCurrentL2) {
             this.#prevCurrentL2 = currentL2!;
-            this.log(`Trigger current L2 changed`, currentL2);
+            this.log('Trigger current L2 changed', currentL2);
             this.#currentL2ChangedTrigger
               .trigger(this, { currentL2 })
               .catch(console.error);
@@ -247,7 +284,7 @@ class PulseDevice extends Device {
           this.log("Set 'measure_current.L3' capability to", currentL3);
           if (currentL3 !== this.#prevCurrentL3) {
             this.#prevCurrentL3 = currentL3!;
-            this.log(`Trigger current L3 changed`, currentL3);
+            this.log('Trigger current L3 changed', currentL3);
             this.#currentL3ChangedTrigger
               .trigger(this, { currentL3 })
               .catch(console.error);
@@ -261,21 +298,61 @@ class PulseDevice extends Device {
       if (fixedConsumption !== this.#prevConsumption) {
         if (fixedConsumption < this.#prevConsumption!) {
           // Consumption has been reset
-          this.log('Triggering daily consumption report');
-          this.#dailyConsumptionReportTrigger
+          this.log('Triggering daily report');
+          this.#dailyReportTrigger
             .trigger(this, {
               consumption: this.#prevConsumption,
               cost: this.#prevCost,
+              production: this.#prevProduction,
+              reward: this.#prevReward,
+              total: Number(
+                ((this.#prevCost ?? 0) - (this.#prevReward ?? 0)).toFixed(2),
+              ),
             })
             .catch(console.error);
+          this.#prevProduction = 0;
         }
 
+        this.log("Set 'meter_power' capability to", fixedConsumption);
         this.#prevConsumption = fixedConsumption;
         this.setCapabilityValue('meter_power', fixedConsumption).catch(
           console.error,
         );
         this.#consumptionChangedTrigger
           .trigger(this, { consumption: fixedConsumption })
+          .catch(console.error);
+      }
+    }
+
+    const production = result.data?.liveMeasurement?.accumulatedProduction;
+    if (production !== undefined) {
+      const fixedProduction = Number(production.toFixed(2));
+      if (fixedProduction !== this.#prevProduction) {
+        if (fixedProduction < this.#prevProduction!) {
+          // Production has been reset
+          this.log('Triggering daily report');
+          this.#dailyReportTrigger
+            .trigger(this, {
+              consumption: this.#prevConsumption,
+              cost: this.#prevCost,
+              production: this.#prevProduction,
+              reward: this.#prevReward,
+              total: Number(
+                ((this.#prevCost ?? 0) - (this.#prevReward ?? 0)).toFixed(2),
+              ),
+            })
+            .catch(console.error);
+          this.#prevConsumption = 0;
+        }
+
+        this.log("Set 'meter_power.production' capability to", fixedProduction);
+        this.#prevProduction = fixedProduction;
+        this.setCapabilityValue(
+          'meter_power.production',
+          fixedProduction,
+        ).catch(console.error);
+        this.#productionChangedTrigger
+          .trigger(this, { production: fixedProduction })
           .catch(console.error);
       }
     }
@@ -343,16 +420,39 @@ class PulseDevice extends Device {
 
     if (cost !== undefined && cost !== null) {
       const fixedCost = Number(cost.toFixed(2));
-      if (fixedCost === this.#prevCost) return;
+      if (fixedCost !== this.#prevCost) {
+        this.#prevCost = fixedCost;
+        const total = Number((fixedCost - (this.#prevReward ?? 0)).toFixed(2));
+        this.log("Set 'accumulatedCost' capability to", fixedCost);
+        this.setCapabilityValue('accumulatedCost', fixedCost)
+          .catch(console.error)
+          .finally(() => {
+            this.#costChangedTrigger
+              .trigger(this, { cost: fixedCost, total })
+              .catch(console.error);
+          });
+        this.log("Set 'dayCost' capability to", total);
+        this.setCapabilityValue('dayCost', total).catch(console.error);
+      }
+    }
 
-      this.#prevCost = fixedCost;
-      this.setCapabilityValue('accumulatedCost', fixedCost)
-        .catch(console.error)
-        .finally(() => {
-          this.#costChangedTrigger
-            .trigger(this, { cost: fixedCost })
-            .catch(console.error);
-        });
+    const reward = result.data?.liveMeasurement?.accumulatedReward;
+    if (reward !== undefined && reward !== null) {
+      const fixedReward = Number(reward.toFixed(2));
+      if (fixedReward !== this.#prevReward) {
+        this.#prevReward = fixedReward;
+        const total = Number(((this.#prevCost ?? 0) - fixedReward).toFixed(2));
+        this.log("Set 'accumulatedReward' capability to", fixedReward);
+        this.setCapabilityValue('accumulatedReward', fixedReward)
+          .catch(console.error)
+          .finally(() => {
+            this.#rewardChangedTrigger
+              .trigger(this, { reward: fixedReward, total })
+              .catch(console.error);
+          });
+        this.log("Set 'dayCost' capability to", total);
+        this.setCapabilityValue('dayCost', total).catch(console.error);
+      }
     }
 
     const lastMeterConsumption =
@@ -362,10 +462,19 @@ class PulseDevice extends Device {
         await this.addCapability('meter_power.imported').catch(console.error);
 
       const fixedLastMeterConsumption = Number(lastMeterConsumption.toFixed(2));
-      this.setCapabilityValue(
-        'meter_power.imported',
-        fixedLastMeterConsumption,
-      ).catch(console.error);
+      const currentImportedValue = Number(
+        this.getCapabilityValue('meter_power.imported'),
+      );
+      if (currentImportedValue !== fixedLastMeterConsumption) {
+        this.log(
+          "Set 'meter_power.imported' capability to",
+          fixedLastMeterConsumption,
+        );
+        this.setCapabilityValue(
+          'meter_power.imported',
+          fixedLastMeterConsumption,
+        ).catch(console.error);
+      }
     }
 
     const lastMeterProduction =
@@ -375,10 +484,19 @@ class PulseDevice extends Device {
         await this.addCapability('meter_power.exported').catch(console.error);
 
       const fixedLastMeterProduction = Number(lastMeterProduction.toFixed(2));
-      this.setCapabilityValue(
-        'meter_power.exported',
-        fixedLastMeterProduction,
-      ).catch(console.error);
+      const currentExportedValue = Number(
+        this.getCapabilityValue('meter_power.exported'),
+      );
+      if (currentExportedValue !== fixedLastMeterProduction) {
+        this.log(
+          "Set 'meter_power.exported' capability to",
+          fixedLastMeterProduction,
+        );
+        this.setCapabilityValue(
+          'meter_power.exported',
+          fixedLastMeterProduction,
+        ).catch(console.error);
+      }
     }
   }
 
