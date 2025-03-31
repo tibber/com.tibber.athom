@@ -1,7 +1,7 @@
 import each from 'jest-each';
 import moment from 'moment-timezone';
 import { priceExtremes } from './comparators';
-import { PriceData, TransformedPriceEntry } from './api';
+import { PriceData, TransformedPriceEntry } from './tibber-api';
 
 const logger = () => {};
 

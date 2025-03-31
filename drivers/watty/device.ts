@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 import http from 'http.min';
 import { Subscription } from 'zen-observable-ts';
 import _ from 'lodash';
-import { LiveMeasurement, TibberApi } from '../../lib/api';
+import { LiveMeasurement, TibberApi } from '../../lib/tibber-api';
 import { NordPoolPriceResult } from '../../lib/types';
 import { startTransaction, noticeError } from '../../lib/newrelic-transaction';
 import { randomBetweenRange } from '../../lib/helpers';
@@ -167,6 +167,12 @@ class WattyDevice extends Device {
 
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
+
+    await this.homey.api.realtime('data-update-event', {
+      driverId: 'pulse',
+      deviceId: this.getData().id,
+      liveMeasurement: result.data?.liveMeasurement,
+    });
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;

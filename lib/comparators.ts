@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import { sort } from 'fast-sort';
-import { PriceData, TransformedPriceEntry } from './api';
+import { PriceData, TransformedPriceEntry } from './tibber-api';
 import {
   max,
   mean,

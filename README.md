@@ -42,7 +42,6 @@ Integration with Tibber, with Pulse and Watty support.
 
 - Send push notification (through Tibber app)
 
-&nbsp;
 
 ### Device: _**Pulse**_ / _**Watty**_
 
@@ -53,9 +52,86 @@ Integration with Tibber, with Pulse and Watty support.
 - Cost since midnight changed
 - Daily consumption is reported
 
-&nbsp;
+---
 
-### Release Notes
+## Homey app API
+
+The app provides an API that can be used by other Homey apps.
+
+Your app can use the permission `homey:app:com.tibber` to request access to the Tibber app.
+The following API endpoints can then be used:
+
+- HTTP `GET /home-devices[?name=<string>]`
+
+  List Home devices, optionally filtered by `name`
+- HTTP `GET /pulse-devices[?name=<string>]`
+
+  List Pulse/Watty devices, optionally filtered by `deviceId`
+- HTTP `GET /home-device-data[?deviceId=<string>]`
+
+  Read current device data
+
+In addition, the app can publish real-time events for price and Pulse/Watty live measurement updates. Register the event with name `data-update-event` the following way to receive data updates:
+
+```ts
+  this.tibberAppApi = this.homey.api.getApiApp('com.tibber');
+  this.tibberAppApi.on(
+    'data-update-event',
+    async (event, data) => {
+      // ...
+    });
+```
+
+---
+
+## Contributing
+
+Contributions are very welcome in the form of a pull request.
+We cannot guarantee that all pull requests will be accepted (we have to balance individual users' needs and wants with the user base as a whole),
+but we will do our best to review and work with you to get them in a good state and merge them.
+
+Currently, our focus is very divided, and we may not be actively monitoring the repository activity on a daily basis, so please be patient if we don't respond immediately.
+
+### Running the app locally
+
+The app uses OAuth authentication with client ID and client secret. Since these are sensitive data,
+it is not possible to run the app locally with the same authentication as the production app.
+
+If you want to contribute, or just run your own fork of the app, you need to use your own personal access token
+to be able to run the app on your Homey (either connected to a local computer, or over your LAN) while talking
+to the Tibber API.
+
+The process is as follows:
+
+1. Create a personal access token at https://developer.tibber.com/
+2. Create an `env.json` file in the root of the app
+3. Paste the following:
+
+   ```
+     { "ACCESS_TOKEN": "..." }
+   ```
+
+   Where `...` is your personal access token.
+
+Now the app uses your personal token for API access.
+
+Note that `env.json` is in `.gitignore` so there should be no risk of mistakenly committing the file to the repository.
+
+### Debugging
+
+If you want to debug app startup you may want to set the environment variable `WAIT_FOR_DEBUGGER`; there are example VS Code launch configurations available in [launch.json](https://github.com/tibber/com.tibber.athom/blob/main/.vscode/launch.json)
+
+### Running tests
+
+Run `npm test` to run the test suite.
+
+### ESLint
+
+The project uses both ESLint and Prettier (as an ESLint plugin) for code formatting and linting. If you are making a PR, ensure to run this before requesting a review.
+
+Run `npm run lint` to run ESLint.
+
+## Release Notes
 
 ### 1.9.21
 
@@ -75,7 +151,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 #### 1.9.7
 
-- Rollback non functional changes
+- Rollback nonfunctional changes
 
 #### 1.9.6
 
@@ -88,7 +164,7 @@ Integration with Tibber, with Pulse and Watty support.
 #### 1.9.0
 
 - Updated dependencies
-- Added caching of yesterdays prices
+- Added caching of yesterday's prices
 - Added a new condition card: current price is one of the [x] lowest prices between [y] and [z]
 - Added new icons
 - Added source link to manifest
@@ -304,7 +380,7 @@ Integration with Tibber, with Pulse and Watty support.
 
 #### 1.2.2
 
-- Bug fix for missing flowcard id
+- Bug fix for missing flow card id
 
 #### 1.2.1
 

@@ -2,7 +2,7 @@ import { App, env } from 'homey';
 import ManagerCloud from 'homey/manager/cloud';
 import http from 'http.min';
 import PairSession from 'homey/lib/PairSession';
-import { TibberApi } from './api';
+import { TibberApi } from './tibber-api';
 import { noticeError, startTransaction } from './newrelic-transaction';
 
 export const initiateOauth = async (

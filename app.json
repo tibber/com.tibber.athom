@@ -32,6 +32,20 @@
   },
   "source": "https://github.com/tibber/com.tibber.athom",
   "support": "mailto:hello@tibber.com",
+  "api": {
+    "getHomeDeviceData": {
+      "method": "get",
+      "path": "/home_device_data/"
+    },
+    "getHomeDevices": {
+      "method": "get",
+      "path": "/home_devices/"
+    },
+    "getPulseDevices": {
+      "method": "get",
+      "path": "/pulse_devices/"
+    }
+  },
   "flow": {
     "triggers": [
       {
@@ -1157,6 +1171,13 @@
       "class": "other",
       "pair": [
         {
+          "id": "loading",
+          "template": "loading",
+          "navigation": {
+            "next": "login_oauth2"
+          }
+        },
+        {
           "id": "login_oauth2",
           "template": "login_oauth2"
         },
@@ -1254,6 +1275,13 @@
       },
       "class": "other",
       "pair": [
+        {
+          "id": "loading",
+          "template": "loading",
+          "navigation": {
+            "next": "login_oauth2"
+          }
+        },
         {
           "id": "login_oauth2",
           "template": "login_oauth2"
@@ -1511,6 +1539,13 @@
       },
       "class": "other",
       "pair": [
+        {
+          "id": "loading",
+          "template": "loading",
+          "navigation": {
+            "next": "login_oauth2"
+          }
+        },
         {
           "id": "login_oauth2",
           "template": "login_oauth2"

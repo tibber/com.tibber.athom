@@ -1,8 +1,8 @@
-import { Driver } from 'homey';
+import { Driver, env } from 'homey';
 import PairSession from 'homey/lib/PairSession';
 import { createListDeviceHandler } from '../../lib/device-helpers';
 import { initiateOauth } from '../../lib/oauth';
-import { TibberApi } from '../../lib/api';
+import { TibberApi } from '../../lib/tibber-api';
 
 class PulseDriver extends Driver {
   #api!: TibberApi;
@@ -13,6 +13,17 @@ class PulseDriver extends Driver {
 
   onPair(session: PairSession) {
     this.#api = new TibberApi(this.log, this.homey.settings);
+
+    session.setHandler('showView', async (view) => {
+      if (view === 'loading') {
+        if (env.ACCESS_TOKEN !== undefined) {
+          // If access token is provided, don't show oAuth popup.
+          await session.showView('list_devices');
+        } else {
+          await session.showView('login_oauth2');
+        }
+      }
+    });
 
     session.setHandler(
       'list_devices',

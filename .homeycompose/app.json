@@ -30,5 +30,19 @@
     "url": "https://github.com/tibber/com.tibber.athom/issues"
   },
   "source": "https://github.com/tibber/com.tibber.athom",
-  "support": "mailto:hello@tibber.com"
+  "support": "mailto:hello@tibber.com",
+  "api": {
+    "getHomeDeviceData": {
+      "method": "GET",
+      "path": "/home-device-data"
+    },
+    "getHomeDevices": {
+      "method": "GET",
+      "path": "/home-devices"
+    },
+    "getPulseDevices": {
+      "method": "GET",
+      "path": "/pulse-devices"
+    }
+  }
 }
