@@ -1308,7 +1308,8 @@
         "measure_energy_current",
         "measure_energy_lowest",
         "measure_energy_highest",
-        "measure_energy_average"
+        "measure_energy_average",
+        "negative_energy_price_time_left"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
@@ -2134,6 +2135,19 @@
         "no": "kr"
       },
       "icon": "/drivers/home/assets/coin.svg"
+    },
+    "negative_energy_price_time_left": {
+      "type": "number",
+      "title": {
+        "en": "Negative Price Time Left"
+      },
+      "units": {
+        "en": "minutes"
+      },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "uiComponent": null
     },
     "price_level": {
       "type": "enum",

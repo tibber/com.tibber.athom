@@ -1,0 +1,13 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Negative Price Time Left"
+  },
+  "units": {
+    "en": "minutes"
+  },
+  "getable": true,
+  "setable": false,
+  "decimals": 0,
+  "uiComponent": null
+}
