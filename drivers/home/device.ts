@@ -652,7 +652,7 @@ export class HomeDevice extends Device {
 
   #updateLowestAndHighestPrice(now: moment.Moment) {
     this.log(
-      `The current lowest pri\ce is ${this.#prices.lowestToday?.total} at ${
+      `The current lowest price is ${this.#prices.lowestToday?.total} at ${
         this.#prices.lowestToday?.startsAt
       }`,
     );
