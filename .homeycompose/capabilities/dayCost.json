@@ -1,7 +1,7 @@
 {
   "type": "number",
   "title": {
-    "en": "Cost since midnight"
+    "en": "Total since midnight"
   },
   "getable": true,
   "setable": false,

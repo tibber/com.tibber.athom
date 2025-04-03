@@ -20,6 +20,25 @@
       ]
     },
     {
+      "id": "production_changed",
+      "title": {
+        "en": "Production since midnight changed"
+      },
+      "tokens": [
+        {
+          "name": "production",
+          "type": "number",
+          "title": {
+            "en": "Production"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    },
+    {
       "id": "cost_changed",
       "title": {
         "en": "Cost since midnight changed"
@@ -31,6 +50,39 @@
           "title": {
             "en": "Cost"
           }
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "title": {
+            "en": "Day Total"
+          }
+        }
+      ],
+      "platforms": [
+        "local",
+        "cloud"
+      ]
+    },
+    {
+      "id": "reward_changed",
+      "title": {
+        "en": "Reward since midnight changed"
+      },
+      "tokens": [
+        {
+          "name": "reward",
+          "type": "number",
+          "title": {
+            "en": "Reward"
+          }
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "title": {
+            "en": "Day Total"
+          }
         }
       ],
       "platforms": [
@@ -41,7 +93,7 @@
     {
       "id": "daily_consumption_report",
       "title": {
-        "en": "Daily consumption is reported"
+        "en": "Daily result is reported"
       },
       "tokens": [
         {
@@ -56,6 +108,27 @@
           "type": "number",
           "title": {
             "en": "cost"
+          }
+        },
+        {
+          "name": "production",
+          "type": "number",
+          "title": {
+            "en": "production"
+          }
+        },
+        {
+          "name": "reward",
+          "type": "number",
+          "title": {
+            "en": "reward"
+          }
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "title": {
+            "en": "total"
           }
         }
       ],

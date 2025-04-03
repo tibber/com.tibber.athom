@@ -41,6 +41,22 @@
       "platforms": ["local", "cloud"]
     },
     {
+      "id": "negative_price",
+      "title": {
+        "en": "Energy Price become negative"
+      },
+      "tokens": [
+        {
+          "name": "duration",
+          "type": "number",
+          "title": {
+            "en": "duration in hours"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
+    {
       "id": "price_below_avg",
       "title": {
         "en": "Current price is [x] percent below average of the next [y] hours"
@@ -339,6 +355,28 @@
           },
           "placeholder": {
             "en": "0.2"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
+    {
+      "id": "current_energy_below",
+      "title": {
+        "en": "Current energy price !{{below|above}}"
+      },
+      "titleFormatted": {
+        "en": "Current energy price is !{{below|above}} [[energy_price]]"
+      },
+      "args": [
+        {
+          "name": "energy_price",
+          "type": "number",
+          "title": {
+            "en": "Energy Price"
+          },
+          "placeholder": {
+            "en": "0.002"
           }
         }
       ],

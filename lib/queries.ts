@@ -106,6 +106,8 @@ export const queries = {
         power
         accumulatedConsumption
         accumulatedCost
+        accumulatedProduction
+        accumulatedReward
         lastMeterConsumption
         lastMeterProduction
         currency

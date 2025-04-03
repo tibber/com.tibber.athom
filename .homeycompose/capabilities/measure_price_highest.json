@@ -5,7 +5,6 @@
   },
   "getable": true,
   "setable": false,
-  "uiComponent": null,
   "units": {
     "en": "¤",
     "nl": "€",
@@ -13,5 +12,5 @@
     "sv": "kr",
     "no": "kr"
   },
-  "icon": "/drivers/pulse/assets/dollar.svg"
+  "icon": "/drivers/home/assets/coin.svg"
 }

@@ -1,0 +1,9 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Highest energy price today"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": null
+}
