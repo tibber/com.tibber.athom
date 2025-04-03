@@ -308,8 +308,12 @@ class WattyDevice extends Device {
             .filter(
               (row) =>
                 !row.IsExtraRow &&
-                moment.tz(row.StartTime, this.homey.clock.getTimezone()).isBefore(now) &&
-                moment.tz(row.EndTime, this.homey.clock.getTimezone()).isAfter(now),
+                moment
+                  .tz(row.StartTime, this.homey.clock.getTimezone())
+                  .isBefore(now) &&
+                moment
+                  .tz(row.EndTime, this.homey.clock.getTimezone())
+                  .isAfter(now),
             )
             .map((row) => row.Columns);
 

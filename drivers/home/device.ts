@@ -8,12 +8,6 @@ import {
   TibberApi,
 } from '../../lib/tibber-api';
 
-type TransformedPriceEntry = {
-  total: number;
-  energy: number;
-  startsAt: moment.Moment;
-  level: string;
-};
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
@@ -33,6 +27,13 @@ import {
   lowestPricesWithinTimeFrame,
   priceExtremes,
 } from '../../lib/comparators';
+
+type TransformedPriceEntry = {
+  total: number;
+  energy: number;
+  startsAt: moment.Moment;
+  level: string;
+};
 
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
@@ -111,9 +112,8 @@ export class HomeDevice extends Device {
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
 
-    this.#negativePriceTrigger = this.homey.flow.getDeviceTriggerCard(
-      'negative_price',
-    );
+    this.#negativePriceTrigger =
+      this.homey.flow.getDeviceTriggerCard('negative_price');
 
     this.#consumptionReportTrigger =
       this.homey.flow.getDeviceTriggerCard('consumption_report');
@@ -545,10 +545,7 @@ export class HomeDevice extends Device {
               duration: diffHoursRounded,
             })
             .catch(console.error);
-          this.log(
-            'Triggering negative_price, duration: ',
-            diffHoursRounded,
-          );
+          this.log('Triggering negative_price, duration: ', diffHoursRounded);
         }
 
         this.#priceBelowAvgTrigger
@@ -644,9 +641,8 @@ export class HomeDevice extends Device {
   // Call updateNegativeEnergyTime every minute using the latest price info
   #negativeEnergyTimeUpdater() {
     setInterval(() => {
-      if (this.#prices.latest) {
+      if (this.#prices.latest)
         this.#updateNegativeEnergyTime(moment(), this.#prices.latest);
-      }
     }, 60000); // 60000ms = 1 minute
   }
 
