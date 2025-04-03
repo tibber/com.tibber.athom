@@ -177,7 +177,7 @@
         ]
       },
       {
-        "id": "negative_energy_price",
+        "id": "negative_price",
         "title": {
           "en": "Energy Price become negative"
         },
@@ -1309,7 +1309,7 @@
         "measure_energy_lowest",
         "measure_energy_highest",
         "measure_energy_average",
-        "negative_energy_price_time_left"
+        "measure_negative_price_time_remaining"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
@@ -2001,6 +2001,19 @@
       "setable": false,
       "uiComponent": null
     },
+    "measure_negative_price_time_remaining": {
+      "type": "number",
+      "title": {
+        "en": "Negative Price Remaining Time"
+      },
+      "units": {
+        "en": "minutes"
+      },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "uiComponent": null
+    },
     "measure_price_average": {
       "type": "number",
       "title": {
@@ -2135,19 +2148,6 @@
         "no": "kr"
       },
       "icon": "/drivers/home/assets/coin.svg"
-    },
-    "negative_energy_price_time_left": {
-      "type": "number",
-      "title": {
-        "en": "Negative Price Time Left"
-      },
-      "units": {
-        "en": "minutes"
-      },
-      "getable": true,
-      "setable": false,
-      "decimals": 0,
-      "uiComponent": null
     },
     "price_level": {
       "type": "enum",

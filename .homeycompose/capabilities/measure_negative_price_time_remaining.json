@@ -1,7 +1,7 @@
 {
   "type": "number",
   "title": {
-    "en": "Negative Price Time Left"
+    "en": "Negative Price Remaining Time"
   },
   "units": {
     "en": "minutes"

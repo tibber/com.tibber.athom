@@ -74,31 +74,30 @@ class PulseDevice extends Device {
       'daily_consumption_report',
     );
 
-    if (this.hasCapability('meter_power.production') === false)
+    if (!this.hasCapability('meter_power.production'))
       await this.addCapability('meter_power.production');
 
-    if (this.hasCapability('accumulatedCost') === false)
+    if (!this.hasCapability('accumulatedCost'))
       await this.addCapability('accumulatedCost');
 
-    if (this.hasCapability('accumulatedReward') === false)
+    if (!this.hasCapability('accumulatedReward'))
       await this.addCapability('accumulatedReward');
 
-    if (this.hasCapability('dayCost') === false)
-      await this.addCapability('dayCost');
+    if (!this.hasCapability('dayCost')) await this.addCapability('dayCost');
 
-    if (this.hasCapability('measure_current.L1') === false)
+    if (!this.hasCapability('measure_current.L1'))
       await this.addCapability('measure_current.L1');
 
-    if (this.hasCapability('measure_current.L2') === false)
+    if (!this.hasCapability('measure_current.L2'))
       await this.addCapability('measure_current.L2');
 
-    if (this.hasCapability('measure_current.L3') === false)
+    if (!this.hasCapability('measure_current.L3'))
       await this.addCapability('measure_current.L3');
 
-    if (this.hasCapability('meter_power.imported') === false)
+    if (!this.hasCapability('meter_power.imported'))
       await this.addCapability('meter_power.imported');
 
-    if (this.hasCapability('meter_power.exported') === false)
+    if (!this.hasCapability('meter_power.exported'))
       await this.addCapability('meter_power.exported');
 
     this.log(
@@ -384,8 +383,12 @@ class PulseDevice extends Device {
             .filter(
               (row) =>
                 !row.IsExtraRow &&
-                moment.tz(row.StartTime, this.homey.clock.getTimezone()).isBefore(now) &&
-                moment.tz(row.EndTime, this.homey.clock.getTimezone()).isAfter(now),
+                moment
+                  .tz(row.StartTime, this.homey.clock.getTimezone())
+                  .isBefore(now) &&
+                moment
+                  .tz(row.EndTime, this.homey.clock.getTimezone())
+                  .isAfter(now),
             )
             .map((row) => row.Columns);
 

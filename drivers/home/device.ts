@@ -49,7 +49,7 @@ export class HomeDevice extends Device {
   #prices: PriceData = { today: [] };
   #negativePriceEndsAt!: moment.Moment;
   #priceChangedTrigger!: FlowCardTriggerDevice;
-  #energyNegativeTrigger!: FlowCardTriggerDevice;
+  #negativePriceTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
   #priceAboveAvgTrigger!: FlowCardTriggerDevice;
@@ -111,8 +111,8 @@ export class HomeDevice extends Device {
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
 
-    this.#energyNegativeTrigger = this.homey.flow.getDeviceTriggerCard(
-      'negative_energy_price',
+    this.#negativePriceTrigger = this.homey.flow.getDeviceTriggerCard(
+      'negative_price',
     );
 
     this.#consumptionReportTrigger =
@@ -318,8 +318,8 @@ export class HomeDevice extends Device {
     if (!this.hasCapability('measure_energy_highest'))
       await this.addCapability('measure_energy_highest');
 
-    if (!this.hasCapability('negative_energy_price_time_left'))
-      await this.addCapability('negative_energy_price_time_left');
+    if (!this.hasCapability('measure_negative_price_time_remaining'))
+      await this.addCapability('measure_negative_price_time_remaining');
 
     this.log(`Tibber home device ${this.getName()} has been initialized`);
     await this.#updateData();
@@ -540,13 +540,13 @@ export class HomeDevice extends Device {
               )} hour(s).`,
             );
           }
-          this.#energyNegativeTrigger
+          this.#negativePriceTrigger
             .trigger(this, {
               duration: diffHoursRounded,
             })
             .catch(console.error);
           this.log(
-            'Triggering negative_energy_price, duration: ',
+            'Triggering negative_price, duration: ',
             diffHoursRounded,
           );
         }
@@ -632,11 +632,11 @@ export class HomeDevice extends Device {
           )
         : 0;
     this.setCapabilityValue(
-      'negative_energy_price_time_left',
+      'measure_negative_price_time_remaining',
       negativeTimeLeft,
     ).catch(console.error);
     this.log(
-      'Set negative_energy_price_time_left capability to ',
+      'Set measure_negative_price_time_remaining capability to ',
       negativeTimeLeft,
     );
   }

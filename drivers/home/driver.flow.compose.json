@@ -41,7 +41,7 @@
       "platforms": ["local", "cloud"]
     },
     {
-      "id": "negative_energy_price",
+      "id": "negative_price",
       "title": {
         "en": "Energy Price become negative"
       },
