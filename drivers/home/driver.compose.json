@@ -8,10 +8,28 @@
     "measure_price_total",
     "measure_price_info_level",
     "measure_price_lowest",
-    "measure_price_highest"
+    "measure_price_highest",
+    "measure_price_average",
+    "measure_energy_current",
+    "measure_energy_lowest",
+    "measure_energy_highest",
+    "measure_energy_average",
+    "measure_negative_price_time_remaining"
   ],
   "capabilitiesOptions": {
     "measure_price_total": {
+      "decimals": 2,
+      "preventInsights": true
+    },
+    "measure_price_lowest": {
+      "decimals": 2,
+      "preventInsights": true
+    },
+    "measure_price_highest": {
+      "decimals": 2,
+      "preventInsights": true
+    },
+    "measure_price_average": {
       "decimals": 2,
       "preventInsights": true
     }

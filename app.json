@@ -177,6 +177,32 @@
         ]
       },
       {
+        "id": "negative_price",
+        "title": {
+          "en": "Energy Price become negative"
+        },
+        "tokens": [
+          {
+            "name": "duration",
+            "type": "number",
+            "title": {
+              "en": "duration in hours"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          }
+        ]
+      },
+      {
         "id": "price_below_avg",
         "title": {
           "en": "Current price is [x] percent below average of the next [y] hours"
@@ -532,6 +558,32 @@
         ]
       },
       {
+        "id": "production_changed",
+        "title": {
+          "en": "Production since midnight changed"
+        },
+        "tokens": [
+          {
+            "name": "production",
+            "type": "number",
+            "title": {
+              "en": "Production"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
         "id": "cost_changed",
         "title": {
           "en": "Cost since midnight changed"
@@ -542,6 +594,46 @@
             "type": "number",
             "title": {
               "en": "Cost"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "Day Total"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
+        "id": "reward_changed",
+        "title": {
+          "en": "Reward since midnight changed"
+        },
+        "tokens": [
+          {
+            "name": "reward",
+            "type": "number",
+            "title": {
+              "en": "Reward"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "Day Total"
             }
           }
         ],
@@ -560,7 +652,7 @@
       {
         "id": "daily_consumption_report",
         "title": {
-          "en": "Daily consumption is reported"
+          "en": "Daily result is reported"
         },
         "tokens": [
           {
@@ -575,6 +667,27 @@
             "type": "number",
             "title": {
               "en": "cost"
+            }
+          },
+          {
+            "name": "production",
+            "type": "number",
+            "title": {
+              "en": "production"
+            }
+          },
+          {
+            "name": "reward",
+            "type": "number",
+            "title": {
+              "en": "reward"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "total"
             }
           }
         ],
@@ -804,6 +917,36 @@
             },
             "placeholder": {
               "en": "0.2"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
+        "id": "current_energy_below",
+        "title": {
+          "en": "Current energy price !{{below|above}}"
+        },
+        "titleFormatted": {
+          "en": "Current energy price is !{{below|above}} [[energy_price]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "energy_price",
+            "type": "number",
+            "title": {
+              "en": "Energy Price"
+            },
+            "placeholder": {
+              "en": "0.002"
             }
           }
         ],
@@ -1160,10 +1303,28 @@
         "measure_price_total",
         "measure_price_info_level",
         "measure_price_lowest",
-        "measure_price_highest"
+        "measure_price_highest",
+        "measure_price_average",
+        "measure_energy_current",
+        "measure_energy_lowest",
+        "measure_energy_highest",
+        "measure_energy_average",
+        "measure_negative_price_time_remaining"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_lowest": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_highest": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_average": {
           "decimals": 2,
           "preventInsights": true
         }
@@ -1226,7 +1387,10 @@
       "capabilities": [
         "measure_power",
         "meter_power",
+        "meter_power.production",
         "accumulatedCost",
+        "accumulatedReward",
+        "dayCost",
         "measure_current.L1",
         "measure_current.L2",
         "measure_current.L3",
@@ -1242,9 +1406,20 @@
         "accumulatedCost": {
           "decimals": 2
         },
+        "accumulatedReward": {
+          "decimals": 2
+        },
+        "dayCost": {
+          "decimals": 2
+        },
         "meter_power": {
           "title": {
             "en": "Consumption since midnight"
+          }
+        },
+        "meter_power.production": {
+          "title": {
+            "en": "Production since midnight"
           }
         },
         "measure_current.L1": {
@@ -1756,7 +1931,104 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "accumulatedReward": {
+      "type": "number",
+      "title": {
+        "en": "Earned since midnight"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "dayCost": {
+      "type": "number",
+      "title": {
+        "en": "Total since midnight"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "measure_energy_average": {
+      "type": "number",
+      "title": {
+        "en": "Average energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_current": {
+      "type": "number",
+      "title": {
+        "en": "Current energy price"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_highest": {
+      "type": "number",
+      "title": {
+        "en": "Highest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_lowest": {
+      "type": "number",
+      "title": {
+        "en": "Lowest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_negative_price_time_remaining": {
+      "type": "number",
+      "title": {
+        "en": "Negative Price Remaining Time"
+      },
+      "units": {
+        "en": "minutes"
+      },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "uiComponent": null
+    },
+    "measure_price_average": {
+      "type": "number",
+      "title": {
+        "en": "Average price today"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_highest": {
       "type": "number",
@@ -1765,7 +2037,6 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null,
       "units": {
         "en": "¤",
         "nl": "€",
@@ -1773,7 +2044,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_info_level": {
       "type": "enum",
@@ -1814,7 +2085,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_level": {
       "type": "enum",
@@ -1843,7 +2114,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
     },
     "measure_price_lowest": {
@@ -1853,7 +2124,6 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null,
       "units": {
         "en": "¤",
         "nl": "€",
@@ -1861,7 +2131,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_total": {
       "type": "number",
@@ -1877,7 +2147,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "price_level": {
       "type": "enum",
@@ -1918,7 +2188,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
     },
     "price_total": {
@@ -1935,7 +2205,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
     }
   }
