@@ -129,7 +129,7 @@ class WattyDevice extends Device {
       const { viewer } = await this.#api.getHomeFeatures(this);
       websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
-      if (!viewer?.home?.features?.realTimeConsumptionEnabled) {
+      if (viewer?.home?.features?.realTimeConsumptionEnabled === false) {
         this.log(
           `Home with id ${
             this.#deviceId
