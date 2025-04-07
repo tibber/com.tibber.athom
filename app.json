@@ -1472,6 +1472,19 @@
               ]
             }
           ]
+        },
+        {
+          "id": "phase_mode",
+          "type": "checkbox",
+          "label": {
+            "en": "Show 3 phases",
+            "no": "Vis 3 faser"
+          },
+          "hint": {
+            "en": "Enables 3 phase mode\nDefault: true\n\nWill show current on separate phases 1, 2 and 3/nTurn off to show only one phase",
+            "no": "Aktiverer 3-fase modus\nDefault: true\n\nViser strøm på fase 1, 2 og 3 separat/nSlå av for å vise kun én fase."
+          },
+          "value": true
         }
       ],
       "id": "pulse"
@@ -1736,6 +1749,19 @@
               ]
             }
           ]
+        },
+        {
+          "id": "phase_mode",
+          "type": "checkbox",
+          "label": {
+            "en": "Show 3 phases",
+            "no": "Vis 3 faser"
+          },
+          "hint": {
+            "en": "Enables 3 phase mode\nDefault: true\n\nWill show current on separate phases 1, 2 and 3/nTurn off to show only one phase",
+            "no": "Aktiverer 3-fase modus\nDefault: true\n\nViser strøm på fase 1, 2 og 3 separat/nSlå av for å vise kun én fase."
+          },
+          "value": true
         }
       ],
       "id": "watty"
