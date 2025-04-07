@@ -168,11 +168,13 @@ class WattyDevice extends Device {
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
 
-    await this.homey.api.realtime('data-update-event', {
-      driverId: 'pulse',
-      deviceId: this.getData().id,
-      liveMeasurement: result.data?.liveMeasurement,
-    });
+    this.homey.api
+      .realtime('data-update-event', {
+        driverId: 'pulse',
+        deviceId: this.getData().id,
+        liveMeasurement: result.data?.liveMeasurement,
+      })
+      .catch(console.error);
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
