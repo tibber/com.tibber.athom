@@ -15,7 +15,6 @@ class WattyDevice extends Device {
   #currency?: string;
   #cachedNordPoolPrice: { hour: number; price: number } | null = null;
   #area?: string;
-  #phaseMode!: boolean;
   #prevPowerProduction?: number;
   #prevUpdate?: moment.Moment;
   #prevPower?: number;
@@ -41,7 +40,6 @@ class WattyDevice extends Device {
     this.#api = new TibberApi(this.log, this.homey.settings, id, token);
     this.#deviceId = id;
     this.#throttle = this.getSetting('pulse_throttle') || 30;
-    this.#phaseMode = this.getSetting('phase_mode') || true;
 
     this.#powerChangedTrigger = this.homey.flow.getDeviceTriggerCard(
       'watty_power_changed',
@@ -108,17 +106,26 @@ class WattyDevice extends Device {
       this.#area = newSettings.pulse_area;
       this.#cachedNordPoolPrice = null;
     }
-    if (changedKeys.includes('phase_mode')) {
-      this.log('Updated 3-phase mode value: ', Boolean(newSettings.phase_mode));
-      this.#phaseMode = Boolean(newSettings.phase_mode);
-      if (this.#phaseMode) {
-        this.log('3-phase mode enabled');
-        await this.addCapability('measure_current.L2');
-        await this.addCapability('measure_current.L3');
-      } else {
-        this.log('3-phase mode disabled');
-        await this.removeCapability('measure_current.L2');
-        await this.removeCapability('measure_current.L3');
+    // Handle phase current visibility settings
+    const phases = ['L1', 'L2', 'L3'];
+    for (const phase of phases) {
+      const settingKey = `show_phase_current_${phase}`;
+      if (changedKeys.includes(settingKey)) {
+        this.log(`Updated show phase current ${phase} value: `, Boolean(newSettings[settingKey]));
+        const showPhase = Boolean(newSettings[settingKey]);
+        
+        if (showPhase) {
+          this.log(`Adding measure_current.${phase} capability to dashboard`);
+          await this.setCapabilityOptions(`measure_current.${phase}`, {
+            uiComponent: 'sensor'
+          });
+        } else {
+          this.log(`Removing measure_current.${phase} capability from dashboard`);
+          await this.setCapabilityOptions(`measure_current.${phase}`, {
+            uiComponent: 'none'
+          });
+        }
+        
       }
     }
   }
