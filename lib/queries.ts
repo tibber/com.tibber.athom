@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { ResolutionType, resolutionTypes } from './resolution-types';
 
 export const queries = {
   getHomesQuery: () => `{
@@ -33,11 +34,14 @@ export const queries = {
       }
     }`,
 
-  getPriceQuery: (homeId: string) => `{
+  getPriceQuery: (
+    homeId: string,
+    resolution: ResolutionType = resolutionTypes.hourly,
+  ) => `{
       viewer {
         home(id:"${homeId}") {
           currentSubscription {
-            priceInfo {
+            priceInfo(resolution: ${resolution}) {
               today {
                 total
                 energy
