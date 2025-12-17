@@ -30,6 +30,7 @@ module.exports = {
     // import (part of airbnb) overrides ------------------
     'import/no-import-module-exports': 'off',
     'import/prefer-default-export': 'off',
+    'import/no-unused-modules': ['error', { unusedExports: true }],
 
     // @typescript-eslint/recommended overrides -----------
     '@typescript-eslint/lines-between-class-members': 'off',

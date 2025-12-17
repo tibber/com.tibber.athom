@@ -85,7 +85,6 @@ export class HomeDevice extends Device {
     const data = this.getData();
     const { id: homeId, t: token } = data;
 
-    // Get resolution from settings, default to hourly for backwards compatibility
     const resolution = this.getSetting('price_resolution') || 'HOURLY';
     this.#api = new TibberApi(
       this.log,
@@ -325,7 +324,6 @@ export class HomeDevice extends Device {
         newSettings.price_resolution as ResolutionType,
       );
 
-      // Clear cached prices and fetch new ones
       this.#api.priceEntries = [];
       await this.#updateData();
 
@@ -429,7 +427,6 @@ export class HomeDevice extends Device {
     const resolution = this.getSetting('price_resolution') || 'HOURLY';
     const intervalMinutes = getIntervalMinutes(resolution);
 
-    // Round current time down to the nearest interval
     const currentMinute = now.minute();
     const roundedMinute = Math.floor(currentMinute / intervalMinutes) * intervalMinutes;
     const currentPriceTime = now

@@ -142,7 +142,7 @@ export class TibberApi {
   #client?: GraphQLClient;
   #resolution: ResolutionType;
   priceEntries: TransformedPriceEntry[] = [];
-  
+
   /**
    * @deprecated Use priceEntries instead. Kept for backwards compatibility.
    */

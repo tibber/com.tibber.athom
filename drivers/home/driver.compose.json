@@ -53,7 +53,7 @@
         "en": "Price data resolution"
       },
       "hint": {
-        "en": "Choose between hourly (60-minute) or quarter-hourly (15-minute) price intervals. Quarter-hourly provides more granular pricing data but may not be available in all regions. Changing this setting might require restarting the device."
+        "en": "Choose between hourly (60-minute) or quarter-hourly (15-minute) price intervals. Changing this setting might require restarting the device."
       },
       "value": "HOURLY",
       "values": [

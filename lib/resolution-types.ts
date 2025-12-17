@@ -16,14 +16,3 @@ export const getIntervalMinutes = (resolution: ResolutionType): number => {
       return 60;
   }
 };
-
-export const getTimeUnit = (resolution: ResolutionType): 'hour' | 'minute' => {
-  switch (resolution) {
-    case resolutionTypes.hourly:
-      return 'hour';
-    case resolutionTypes.quarterHourly:
-      return 'minute';
-    default:
-      return 'hour';
-  }
-};
