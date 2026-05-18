@@ -47,6 +47,31 @@
   },
   "settings": [
     {
+      "id": "price_resolution",
+      "type": "dropdown",
+      "label": {
+        "en": "Price data resolution"
+      },
+      "hint": {
+        "en": "Choose between hourly (60-minute) or quarter-hourly (15-minute) price intervals. Changing this setting might require restarting the device."
+      },
+      "value": "HOURLY",
+      "values": [
+        {
+          "id": "HOURLY",
+          "label": {
+            "en": "Hourly (60 minutes)"
+          }
+        },
+        {
+          "id": "QUARTER_HOURLY",
+          "label": {
+            "en": "Quarter-hourly (15 minutes)"
+          }
+        }
+      ]
+    },
+    {
       "id": "enable_consumption_report",
       "type": "checkbox",
       "label": {

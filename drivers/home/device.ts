@@ -7,6 +7,7 @@ import {
   PriceData,
   TibberApi,
 } from '../../lib/tibber-api';
+import { getIntervalMinutes, ResolutionType } from '../../lib/resolution-types';
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
@@ -84,7 +85,14 @@ export class HomeDevice extends Device {
     const data = this.getData();
     const { id: homeId, t: token } = data;
 
-    this.#api = new TibberApi(this.log, this.homey.settings, homeId, token);
+    const resolution = this.getSetting('price_resolution') || 'HOURLY';
+    this.#api = new TibberApi(
+      this.log,
+      this.homey.settings,
+      homeId,
+      token,
+      resolution,
+    );
 
     if (data.address === undefined) {
       return this.setUnavailable(
@@ -286,6 +294,43 @@ export class HomeDevice extends Device {
     return undefined;
   }
 
+  /**
+   * Called when device settings are changed
+   */
+  async onSettings({
+    oldSettings,
+    newSettings,
+    changedKeys,
+  }: {
+    oldSettings: { price_resolution?: string; [key: string]: any };
+    newSettings: { price_resolution?: string; [key: string]: any };
+    changedKeys: string[];
+  }): Promise<string | void> {
+    this.log('Settings changed:', changedKeys);
+
+    if (changedKeys.includes('price_resolution')) {
+      this.log(
+        `Price resolution changed from ${oldSettings.price_resolution} to ${newSettings.price_resolution}`,
+      );
+
+      // Reinitialize API client with new resolution
+      const data = this.getData();
+      const { id: homeId, t: token } = data;
+      this.#api = new TibberApi(
+        this.log,
+        this.homey.settings,
+        homeId,
+        token,
+        newSettings.price_resolution as ResolutionType,
+      );
+
+      this.#api.priceEntries = [];
+      await this.#updateData();
+
+      this.log('API reinitialized with new resolution');
+    }
+  }
+
   onDeleted() {
     this.log('Device deleted:', this.#deviceLabel);
 
@@ -371,21 +416,30 @@ export class HomeDevice extends Device {
   }
 
   async #handlePrice(now: moment.Moment) {
-    this.#prices.today = this.#api.hourlyPrices.filter((p) =>
+    this.#prices.today = this.#api.priceEntries.filter((p) =>
       p.startsAt.tz('Europe/Oslo').isSame(now, 'day'),
     );
 
     // NOTE: this also updates capability values
     this.#updateLowestAndHighestPrice(now);
 
-    const currentHour = now.clone().startOf('hour');
+    // Get resolution interval (15 or 60 minutes)
+    const resolution = this.getSetting('price_resolution') || 'HOURLY';
+    const intervalMinutes = getIntervalMinutes(resolution);
+
+    const currentMinute = now.minute();
+    const roundedMinute = Math.floor(currentMinute / intervalMinutes) * intervalMinutes;
+    const currentPriceTime = now
+      .clone()
+      .startOf('hour')
+      .add(roundedMinute, 'minutes');
 
     const currentPrice = this.#prices.today.find((p) =>
-      currentHour.isSame(p.startsAt),
+      p.startsAt.isSame(currentPriceTime, 'minute'),
     );
     if (currentPrice === undefined) {
       this.log(
-        `Error finding current price info for system time ${currentHour.format()}. Abort.`,
+        `Error finding current price info for system time ${currentPriceTime.format()}. Abort.`,
         this.#prices.today,
       );
       return;
@@ -395,7 +449,7 @@ export class HomeDevice extends Device {
       driverId: 'home',
       deviceId: this.getData().id,
       now,
-      currentHour,
+      currentPriceTime,
       currentPrice,
       lowestToday: this.#prices.lowestToday,
       highestToday: this.#prices.highestToday,

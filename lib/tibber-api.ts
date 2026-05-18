@@ -19,6 +19,7 @@ import {
   ERROR_CODE_UNAUTHENTICATED,
 } from './constants';
 import { randomBetweenRange, takeFromStartOrEnd } from './helpers';
+import { ResolutionType, resolutionTypes } from './resolution-types';
 
 export interface Logger {
   (message: string, data?: unknown): void;
@@ -139,20 +140,30 @@ export class TibberApi {
   #homeySettings: ManagerSettings;
   #token?: string;
   #client?: GraphQLClient;
-  hourlyPrices: TransformedPriceEntry[] = [];
+  #resolution: ResolutionType;
+  priceEntries: TransformedPriceEntry[] = [];
+
+  /**
+   * @deprecated Use priceEntries instead. Kept for backwards compatibility.
+   */
+  get hourlyPrices(): TransformedPriceEntry[] {
+    return this.priceEntries;
+  }
 
   constructor(
     log: Logger,
     homeySettings: ManagerSettings,
     homeId?: string,
     token?: string,
+    resolution: ResolutionType = resolutionTypes.hourly,
   ) {
     this.#log = log;
     this.#homeySettings = homeySettings;
     this.#token = token;
     this.#homeId = homeId;
+    this.#resolution = resolution;
     this.#log(
-      `Initialize Tibber client for home ${homeId} using token ${token}`,
+      `Initialize Tibber client for home ${homeId} using token ${token} with resolution ${resolution}`,
     );
   }
 
@@ -236,22 +247,22 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<void> {
-    if (this.hourlyPrices.length === 0) {
+    if (this.priceEntries.length === 0) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
-      this.hourlyPrices = await startSegment(
+      this.priceEntries = await startSegment(
         'GetPriceInfo.CacheEmpty',
         true,
         () => this.#getPriceInfo(),
       );
     }
 
-    if (this.hourlyPrices.length === 0) {
+    if (this.priceEntries.length === 0) {
       this.#log(`No prices available. Retry later.`);
       return;
     }
 
-    const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
+    const [last] = takeFromStartOrEnd(this.priceEntries, -1)!;
     const lastPriceForDayLocal = last.startsAt.clone().startOf('day');
     this.#log(
       `Last price info entry is for day at local time ${lastPriceForDayLocal.format()}`,
@@ -293,7 +304,7 @@ export class TibberApi {
             return;
           }
 
-          this.hourlyPrices = data;
+          this.priceEntries = data;
         }, delay * 1000);
       });
     }
@@ -304,10 +315,12 @@ export class TibberApi {
   async #getPriceInfo(): Promise<TransformedPriceEntry[]> {
     const client = this.#getClient();
 
-    this.#log('Get prices');
+    this.#log(`Get prices with resolution ${this.#resolution}`);
     const data = await startSegment('GetPriceInfo.Fetch', true, () =>
       client
-        .request<PriceRatingResponse>(queries.getPriceQuery(this.#homeId!))
+        .request<PriceRatingResponse>(
+          queries.getPriceQuery(this.#homeId!, this.#resolution),
+        )
         .catch((e) => {
           noticeError(e);
           console.error('Error while fetching price data', e);
@@ -317,7 +330,7 @@ export class TibberApi {
 
     const startOfToday = moment().tz('Europe/Oslo').startOf('day');
     const startOfYesterday = startOfToday.clone().subtract(1, 'day');
-    const pricesYesterday = this.hourlyPrices?.filter(
+    const pricesYesterday = this.priceEntries?.filter(
       (p) =>
         p.startsAt.isBefore(startOfToday) &&
         p.startsAt.isSameOrAfter(startOfYesterday),
