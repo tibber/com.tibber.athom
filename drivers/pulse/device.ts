@@ -107,6 +107,28 @@ class PulseDevice extends Device {
       this.#area = newSettings.pulse_area;
       this.#cachedNordPoolPrice = null;
     }
+    // Handle phase current visibility settings
+    const phases = ['L1', 'L2', 'L3'];
+    for (const phase of phases) {
+      const settingKey = `show_phase_current_${phase}`;
+      if (changedKeys.includes(settingKey)) {
+        this.log(`Updated show phase current ${phase} value: `, Boolean(newSettings[settingKey]));
+        const showPhase = Boolean(newSettings[settingKey]);
+        
+        if (showPhase) {
+          this.log(`Adding measure_current.${phase} capability to dashboard`);
+          await this.setCapabilityOptions(`measure_current.${phase}`, {
+            uiComponent: 'sensor'
+          });
+        } else {
+          this.log(`Removing measure_current.${phase} capability from dashboard`);
+          await this.setCapabilityOptions(`measure_current.${phase}`, {
+            uiComponent: 'none'
+          });
+        }
+        
+      }
+    }
   }
 
   async #subscribeToLive() {
