@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.tibber",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "compatibility": ">=8.1.0",
   "platforms": [
     "local",
@@ -161,6 +161,32 @@
             },
             "example": {
               "en": "VERY_EXPENSIVE"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          }
+        ]
+      },
+      {
+        "id": "negative_price",
+        "title": {
+          "en": "Energy Price become negative"
+        },
+        "tokens": [
+          {
+            "name": "duration",
+            "type": "number",
+            "title": {
+              "en": "duration in hours"
             }
           }
         ],
@@ -418,7 +444,7 @@
           "en": "Current price is one of today's lowest [x] prices"
         },
         "titleFormatted": {
-          "en": "Current price is one of today's lowest [[ranked_hours]] prices"
+          "en": "Current price is one of today's lowest [[ranked_slots]] prices"
         },
         "args": [
           {
@@ -427,10 +453,10 @@
             "filter": "driver_id=home"
           },
           {
-            "name": "ranked_hours",
+            "name": "ranked_slots",
             "type": "number",
             "title": {
-              "en": "Hours"
+              "en": "Slots"
             },
             "placeholder": {
               "en": "1"
@@ -448,7 +474,7 @@
           "en": "Current price is one of today's highest [x] prices"
         },
         "titleFormatted": {
-          "en": "Current price is one of today's highest [[ranked_hours]] prices"
+          "en": "Current price is one of today's highest [[ranked_slots]] prices"
         },
         "args": [
           {
@@ -457,10 +483,10 @@
             "filter": "driver_id=home"
           },
           {
-            "name": "ranked_hours",
+            "name": "ranked_slots",
             "type": "number",
             "title": {
-              "en": "Hours"
+              "en": "Slots"
             },
             "placeholder": {
               "en": "1"
@@ -532,6 +558,32 @@
         ]
       },
       {
+        "id": "production_changed",
+        "title": {
+          "en": "Production since midnight changed"
+        },
+        "tokens": [
+          {
+            "name": "production",
+            "type": "number",
+            "title": {
+              "en": "Production"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
         "id": "cost_changed",
         "title": {
           "en": "Cost since midnight changed"
@@ -542,6 +594,46 @@
             "type": "number",
             "title": {
               "en": "Cost"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "Day Total"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=pulse"
+          }
+        ]
+      },
+      {
+        "id": "reward_changed",
+        "title": {
+          "en": "Reward since midnight changed"
+        },
+        "tokens": [
+          {
+            "name": "reward",
+            "type": "number",
+            "title": {
+              "en": "Reward"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "Day Total"
             }
           }
         ],
@@ -560,7 +652,7 @@
       {
         "id": "daily_consumption_report",
         "title": {
-          "en": "Daily consumption is reported"
+          "en": "Daily result is reported"
         },
         "tokens": [
           {
@@ -575,6 +667,27 @@
             "type": "number",
             "title": {
               "en": "cost"
+            }
+          },
+          {
+            "name": "production",
+            "type": "number",
+            "title": {
+              "en": "production"
+            }
+          },
+          {
+            "name": "reward",
+            "type": "number",
+            "title": {
+              "en": "reward"
+            }
+          },
+          {
+            "name": "total",
+            "type": "number",
+            "title": {
+              "en": "total"
             }
           }
         ],
@@ -735,7 +848,7 @@
           "en": "Current price is one of the [x] lowest prices between [y] and [z]"
         },
         "titleFormatted": {
-          "en": "Current price is one of the [[ranked_hours]] lowest prices between [[start_time]] and [[end_time]]"
+          "en": "Current price is one of the [[ranked_slots]] lowest prices between [[start_time]] and [[end_time]]"
         },
         "args": [
           {
@@ -744,16 +857,16 @@
             "filter": "driver_id=home"
           },
           {
-            "name": "ranked_hours",
+            "name": "ranked_slots",
             "type": "number",
             "title": {
-              "en": "Amount of lowest hours"
+              "en": "Amount of lowest slots"
             },
             "placeholder": {
               "en": "1"
             },
             "min": 1,
-            "max": 24,
+            "max": 96,
             "step": 1
           },
           {
@@ -774,6 +887,49 @@
             },
             "placeholder": {
               "en": "14:00"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
+        "id": "price_among_lowest_during_hours",
+        "title": {
+          "en": "Current price is one of the [x] lowest prices next [y] hours"
+        },
+        "titleFormatted": {
+          "en": "Current price is one of the [[ranked_slots]] lowest prices next [[hours]] hours"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "ranked_slots",
+            "type": "number",
+            "title": {
+              "en": "Amount of lowest slots"
+            },
+            "placeholder": {
+              "en": "1"
+            },
+            "min": 1,
+            "max": 96,
+            "step": 1
+          },
+          {
+            "name": "hours",
+            "type": "number",
+            "title": {
+              "en": "Hours"
+            },
+            "placeholder": {
+              "en": "1"
             }
           }
         ],
@@ -804,6 +960,36 @@
             },
             "placeholder": {
               "en": "0.2"
+            }
+          }
+        ],
+        "platforms": [
+          "local",
+          "cloud"
+        ]
+      },
+      {
+        "id": "current_energy_below",
+        "title": {
+          "en": "Current energy price !{{below|above}}"
+        },
+        "titleFormatted": {
+          "en": "Current energy price is !{{below|above}} [[energy_price]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=home"
+          },
+          {
+            "name": "energy_price",
+            "type": "number",
+            "title": {
+              "en": "Energy Price"
+            },
+            "placeholder": {
+              "en": "0.002"
             }
           }
         ],
@@ -1052,7 +1238,7 @@
           "en": "Current price !{{is|isn't}} one of today's lowest [x] prices"
         },
         "titleFormatted": {
-          "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_hours]] prices"
+          "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_slots]] prices"
         },
         "args": [
           {
@@ -1061,10 +1247,10 @@
             "filter": "driver_id=home"
           },
           {
-            "name": "ranked_hours",
+            "name": "ranked_slots",
             "type": "number",
             "title": {
-              "en": "Hours"
+              "en": "Slots"
             },
             "placeholder": {
               "en": "3"
@@ -1082,7 +1268,7 @@
           "en": "Current price !{{is|isn't}} one of today's highest [x] prices"
         },
         "titleFormatted": {
-          "en": "Current price !{{is|isn't}} one of today's highest [[ranked_hours]] prices"
+          "en": "Current price !{{is|isn't}} one of today's highest [[ranked_slots]] prices"
         },
         "args": [
           {
@@ -1091,10 +1277,10 @@
             "filter": "driver_id=home"
           },
           {
-            "name": "ranked_hours",
+            "name": "ranked_slots",
             "type": "number",
             "title": {
-              "en": "Hours"
+              "en": "Slots"
             },
             "placeholder": {
               "en": "3"
@@ -1160,10 +1346,30 @@
         "measure_price_total",
         "measure_price_info_level",
         "measure_price_lowest",
-        "measure_price_highest"
+        "measure_price_highest",
+        "measure_price_average",
+        "measure_energy_current",
+        "measure_energy_lowest",
+        "measure_energy_highest",
+        "measure_energy_average",
+        "measure_negative_price_time_remaining",
+        "time_price_lowest",
+        "time_price_highest"
       ],
       "capabilitiesOptions": {
         "measure_price_total": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_lowest": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_highest": {
+          "decimals": 2,
+          "preventInsights": true
+        },
+        "measure_price_average": {
           "decimals": 2,
           "preventInsights": true
         }
@@ -1226,7 +1432,10 @@
       "capabilities": [
         "measure_power",
         "meter_power",
+        "meter_power.production",
         "accumulatedCost",
+        "accumulatedReward",
+        "measure_day_cost",
         "measure_current.L1",
         "measure_current.L2",
         "measure_current.L3",
@@ -1242,9 +1451,20 @@
         "accumulatedCost": {
           "decimals": 2
         },
+        "accumulatedReward": {
+          "decimals": 2
+        },
+        "measure_day_cost": {
+          "decimals": 2
+        },
         "meter_power": {
           "title": {
             "en": "Consumption since midnight"
+          }
+        },
+        "meter_power.production": {
+          "title": {
+            "en": "Production since midnight"
           }
         },
         "measure_current.L1": {
@@ -1756,7 +1976,104 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "accumulatedReward": {
+      "type": "number",
+      "title": {
+        "en": "Earned since midnight"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "measure_day_cost": {
+      "type": "number",
+      "title": {
+        "en": "Total since midnight"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/pulse/assets/coin.svg"
+    },
+    "measure_energy_average": {
+      "type": "number",
+      "title": {
+        "en": "Average energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_current": {
+      "type": "number",
+      "title": {
+        "en": "Current energy price"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_highest": {
+      "type": "number",
+      "title": {
+        "en": "Highest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_energy_lowest": {
+      "type": "number",
+      "title": {
+        "en": "Lowest energy price today"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": null
+    },
+    "measure_negative_price_time_remaining": {
+      "type": "number",
+      "title": {
+        "en": "Negative Price Remaining Time"
+      },
+      "units": {
+        "en": "minutes"
+      },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "uiComponent": null
+    },
+    "measure_price_average": {
+      "type": "number",
+      "title": {
+        "en": "Average price today"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "¤",
+        "nl": "€",
+        "de": "€",
+        "sv": "kr",
+        "no": "kr"
+      },
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_highest": {
       "type": "number",
@@ -1765,7 +2082,6 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null,
       "units": {
         "en": "¤",
         "nl": "€",
@@ -1773,7 +2089,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_info_level": {
       "type": "enum",
@@ -1814,7 +2130,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_level": {
       "type": "enum",
@@ -1843,7 +2159,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
     },
     "measure_price_lowest": {
@@ -1853,7 +2169,6 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null,
       "units": {
         "en": "¤",
         "nl": "€",
@@ -1861,7 +2176,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/pulse/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "measure_price_total": {
       "type": "number",
@@ -1877,7 +2192,7 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg"
+      "icon": "/drivers/home/assets/coin.svg"
     },
     "price_level": {
       "type": "enum",
@@ -1918,7 +2233,7 @@
           }
         }
       ],
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
     },
     "price_total": {
@@ -1935,8 +2250,32 @@
         "sv": "kr",
         "no": "kr"
       },
-      "icon": "/drivers/home/assets/dollar.svg",
+      "icon": "/drivers/home/assets/coin.svg",
       "uiComponent": null
+    },
+    "time_price_highest": {
+      "type": "string",
+      "title": {
+        "en": "Highest Price Time"
+      },
+      "description": {
+        "en": "The time when the highest electricity price occurs."
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/drivers/home/assets/clock.svg"
+    },
+    "time_price_lowest": {
+      "type": "string",
+      "title": {
+        "en": "Lowest Price Time"
+      },
+      "description": {
+        "en": "The time when the lowest electricity price occurs."
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/drivers/home/assets/clock.svg"
     }
   }
 }

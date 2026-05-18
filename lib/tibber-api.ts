@@ -31,6 +31,8 @@ export interface LiveMeasurement {
       power: number;
       accumulatedConsumption: number;
       accumulatedCost: number | null;
+      accumulatedProduction: number;
+      accumulatedReward: number | null;
       lastMeterConsumption: number | null;
       lastMeterProduction: number | null;
       currency: string | null;
@@ -139,7 +141,8 @@ export class TibberApi {
   #homeySettings: ManagerSettings;
   #token?: string;
   #client?: GraphQLClient;
-  hourlyPrices: TransformedPriceEntry[] = [];
+  #timeZone?: string;
+  quarterPrices: TransformedPriceEntry[] = [];
 
   constructor(
     log: Logger,
@@ -198,6 +201,13 @@ export class TibberApi {
         .request<HomeResponse>(queries.getHomeFeaturesByIdQuery(this.#homeId!))
         .then((home) => {
           this.#log('Home features', home);
+
+          const tz = home.viewer.home?.timeZone;
+          if (tz) {
+            this.#log('Detected Tibber home timezone', tz);
+            this.#timeZone = tz;
+          }
+
           return home;
         })
         .catch(async (e) => {
@@ -236,22 +246,22 @@ export class TibberApi {
       ...args: unknown[]
     ) => NodeJS.Timeout,
   ): Promise<void> {
-    if (this.hourlyPrices.length === 0) {
+    if (this.quarterPrices.length === 0) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
 
-      this.hourlyPrices = await startSegment(
+      this.quarterPrices = await startSegment(
         'GetPriceInfo.CacheEmpty',
         true,
         () => this.#getPriceInfo(),
       );
     }
 
-    if (this.hourlyPrices.length === 0) {
+    if (this.quarterPrices.length === 0) {
       this.#log(`No prices available. Retry later.`);
       return;
     }
 
-    const [last] = takeFromStartOrEnd(this.hourlyPrices, -1)!;
+    const [last] = takeFromStartOrEnd(this.quarterPrices, -1)!;
     const lastPriceForDayLocal = last.startsAt.clone().startOf('day');
     this.#log(
       `Last price info entry is for day at local time ${lastPriceForDayLocal.format()}`,
@@ -259,7 +269,7 @@ export class TibberApi {
 
     // Last cache entry is OK but there might be new prices available
     const expectedPricePublishTime = moment
-      .tz('Europe/Oslo')
+      .tz(this.#getTimeZone())
       .startOf('day')
       .add(13, 'hours');
 
@@ -293,12 +303,16 @@ export class TibberApi {
             return;
           }
 
-          this.hourlyPrices = data;
+          this.quarterPrices = data;
         }, delay * 1000);
       });
     }
 
     this.#log(`Last price info entry is up-to-date`);
+  }
+
+  #getTimeZone(): string {
+    return this.#timeZone ?? 'Europe/Oslo'; // fallback default
   }
 
   async #getPriceInfo(): Promise<TransformedPriceEntry[]> {
@@ -315,9 +329,9 @@ export class TibberApi {
         }),
     );
 
-    const startOfToday = moment().tz('Europe/Oslo').startOf('day');
+    const startOfToday = moment().tz(this.#getTimeZone()).startOf('day');
     const startOfYesterday = startOfToday.clone().subtract(1, 'day');
-    const pricesYesterday = this.hourlyPrices?.filter(
+    const pricesYesterday = this.quarterPrices?.filter(
       (p) =>
         p.startsAt.isBefore(startOfToday) &&
         p.startsAt.isSameOrAfter(startOfYesterday),

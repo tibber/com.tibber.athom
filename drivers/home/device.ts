@@ -7,12 +7,14 @@ import {
   PriceData,
   TibberApi,
 } from '../../lib/tibber-api';
+
 import { startTransaction } from '../../lib/newrelic-transaction';
 import {
   randomBetweenRange,
   mean,
   sum,
   TimeString,
+  getCurrentSlot,
   min,
   max,
 } from '../../lib/helpers';
@@ -27,6 +29,13 @@ import {
   priceExtremes,
 } from '../../lib/comparators';
 
+type TransformedPriceEntry = {
+  total: number;
+  energy: number;
+  startsAt: moment.Moment;
+  level: string;
+};
+
 const deprecatedPriceLevelMap = {
   VERY_CHEAP: 'LOW',
   CHEAP: 'LOW',
@@ -38,9 +47,12 @@ const deprecatedPriceLevelMap = {
 export class HomeDevice extends Device {
   #api!: TibberApi;
   #deviceLabel!: string;
+  #timeZone!: string;
   #insightId!: string;
   #prices: PriceData = { today: [] };
+  #negativePriceEndsAt!: moment.Moment;
   #priceChangedTrigger!: FlowCardTriggerDevice;
+  #negativePriceTrigger!: FlowCardTriggerDevice;
   #consumptionReportTrigger!: FlowCardTriggerDevice;
   #priceBelowAvgTrigger!: FlowCardTriggerDevice;
   #priceAboveAvgTrigger!: FlowCardTriggerDevice;
@@ -53,6 +65,7 @@ export class HomeDevice extends Device {
   #priceAmongLowestTrigger!: FlowCardTriggerDevice;
   #priceAmongHighestTrigger!: FlowCardTriggerDevice;
   #currentPriceBelowCondition!: FlowCard;
+  #currentEnergyBelowCondition!: FlowCard;
   #currentPriceBelowAvgCondition!: FlowCard;
   #currentPriceAboveAvgCondition!: FlowCard;
   #currentPriceBelowAvgTodayCondition!: FlowCard;
@@ -63,6 +76,7 @@ export class HomeDevice extends Device {
   #currentPriceAtHighestTodayCondition!: FlowCard;
   #currentPriceAmongLowestTodayCondition!: FlowCard;
   #currentPriceAmongHighestTodayCondition!: FlowCard;
+  #currentPriceAmongLowestWithinHoursCondition!: FlowCard;
   #currentPriceAmongLowestWithinTimeFrameCondition!: FlowCard;
   #sendPushNotificationAction!: FlowCard;
   #hasDeprecatedTotalPriceCapability = false;
@@ -92,6 +106,7 @@ export class HomeDevice extends Device {
       );
     }
 
+    this.#timeZone = this.homey.clock.getTimezone();
     this.#deviceLabel = this.getName();
     this.#insightId = this.#deviceLabel
       .replace(/[^a-z0-9]/gi, '_')
@@ -100,6 +115,9 @@ export class HomeDevice extends Device {
 
     this.#priceChangedTrigger =
       this.homey.flow.getDeviceTriggerCard('price_changed');
+
+    this.#negativePriceTrigger =
+      this.homey.flow.getDeviceTriggerCard('negative_price');
 
     this.#consumptionReportTrigger =
       this.homey.flow.getDeviceTriggerCard('consumption_report');
@@ -172,6 +190,14 @@ export class HomeDevice extends Device {
       return args.price > Number(this.#prices.latest.total);
     });
 
+    this.#currentEnergyBelowCondition = this.homey.flow.getConditionCard(
+      'current_energy_below',
+    );
+    this.#currentEnergyBelowCondition.registerRunListener((args, _state) => {
+      if (this.#prices.latest === undefined) return false;
+      return args.energy_price > Number(this.#prices.latest.energy);
+    });
+
     this.#currentPriceBelowAvgCondition = this.homey.flow.getConditionCard(
       'cond_price_below_avg',
     );
@@ -239,6 +265,12 @@ export class HomeDevice extends Device {
       this.#priceMinMaxComparator(args, { lowest: false }),
     );
 
+    this.#currentPriceAmongLowestWithinHoursCondition =
+      this.homey.flow.getConditionCard('price_among_lowest_during_hours');
+    this.#currentPriceAmongLowestWithinHoursCondition.registerRunListener(
+      (args) => this.#priceMinMaxComparator(args, { lowest: true }),
+    );
+
     this.#currentPriceAmongLowestWithinTimeFrameCondition =
       this.homey.flow.getConditionCard('price_among_lowest_during_time');
     this.#currentPriceAmongLowestWithinTimeFrameCondition.registerRunListener(
@@ -275,14 +307,39 @@ export class HomeDevice extends Device {
         .catch(console.error);
     }
 
+    if (!this.hasCapability('measure_price_average'))
+      await this.addCapability('measure_price_average');
+
     if (!this.hasCapability('measure_price_lowest'))
       await this.addCapability('measure_price_lowest');
 
     if (!this.hasCapability('measure_price_highest'))
       await this.addCapability('measure_price_highest');
 
+    if (!this.hasCapability('measure_energy_current'))
+      await this.addCapability('measure_energy_current');
+
+    if (!this.hasCapability('measure_energy_average'))
+      await this.addCapability('measure_energy_average');
+
+    if (!this.hasCapability('measure_energy_lowest'))
+      await this.addCapability('measure_energy_lowest');
+
+    if (!this.hasCapability('measure_energy_highest'))
+      await this.addCapability('measure_energy_highest');
+
+    if (!this.hasCapability('measure_negative_price_time_remaining'))
+      await this.addCapability('measure_negative_price_time_remaining');
+
+    if (!this.hasCapability('time_price_lowest'))
+      await this.addCapability('time_price_lowest');
+
+    if (!this.hasCapability('time_price_highest'))
+      await this.addCapability('time_price_highest');
+
     this.log(`Tibber home device ${this.getName()} has been initialized`);
     await this.#updateData();
+    this.#negativeEnergyTimeUpdater();
     return undefined;
   }
 
@@ -324,10 +381,13 @@ export class HomeDevice extends Device {
         await this.#generateConsumptionReport(now);
       }
 
-      const nextUpdateTime = moment()
-        .add(1, 'hour')
-        .startOf('hour')
-        .add(randomBetweenRange(0, 2.5 * 60), 'seconds');
+      // calculate time to next 15 min slot
+      const minutesToAdd = (15 - (now.minute() % 15)) % 15 || 15;
+      const nextUpdateTime = now
+        .clone()
+        .add(minutesToAdd, 'minutes') // jump to next 15-min slot
+        .startOf('minute')
+        .add(randomBetweenRange(0, 3), 'seconds'); // add small jitter
 
       this.log(
         `Next time to run update is at system time ${nextUpdateTime.format()}`,
@@ -371,21 +431,22 @@ export class HomeDevice extends Device {
   }
 
   async #handlePrice(now: moment.Moment) {
-    this.#prices.today = this.#api.hourlyPrices.filter((p) =>
-      p.startsAt.tz('Europe/Oslo').isSame(now, 'day'),
-    );
+    this.#prices.today = this.#api.quarterPrices
+      .filter((p) => p.startsAt.tz(this.#timeZone).isSame(now, 'day'))
+      .sort((a, b) => a.startsAt.diff(b.startsAt));
 
     // NOTE: this also updates capability values
     this.#updateLowestAndHighestPrice(now);
 
-    const currentHour = now.clone().startOf('hour');
+    const currentSlot = getCurrentSlot(now);
 
     const currentPrice = this.#prices.today.find((p) =>
-      currentHour.isSame(p.startsAt),
+      currentSlot.isSame(p.startsAt),
     );
+
     if (currentPrice === undefined) {
       this.log(
-        `Error finding current price info for system time ${currentHour.format()}. Abort.`,
+        `Error finding current price info for system time ${currentSlot.format()}. Abort.`,
         this.#prices.today,
       );
       return;
@@ -395,18 +456,20 @@ export class HomeDevice extends Device {
       driverId: 'home',
       deviceId: this.getData().id,
       now,
-      currentHour,
+      currentSlot,
       currentPrice,
       lowestToday: this.#prices.lowestToday,
       highestToday: this.#prices.highestToday,
       pricesToday: this.#prices.today,
-      hourlyPrices: this.#api.hourlyPrices,
+      quarterPrices: this.#api.quarterPrices,
     });
 
     const shouldUpdate =
       currentPrice.startsAt !== this.#prices.latest?.startsAt;
 
     if (shouldUpdate) {
+      const turnNegative =
+        currentPrice.energy < 0 && (this.#prices.latest?.energy ?? 0) >= 0;
       this.#prices.latest = currentPrice;
 
       if (currentPrice.total !== null) {
@@ -418,6 +481,10 @@ export class HomeDevice extends Device {
           this.setCapabilityValue(
             'measure_price_info_level',
             currentPrice.level,
+          ).catch(console.error),
+          this.setCapabilityValue(
+            'measure_energy_current',
+            Number(currentPrice.energy),
           ).catch(console.error),
         ];
 
@@ -457,6 +524,46 @@ export class HomeDevice extends Device {
           .trigger(this, currentPrice)
           .catch(console.error);
         this.log('Triggering price_changed', currentPrice);
+
+        if (turnNegative) {
+          let diffHoursRounded = 0;
+          const nextPrice = this.#prices.today.find(
+            (price) =>
+              price.startsAt.isAfter(currentPrice.startsAt) &&
+              price.energy >= 0,
+          );
+          if (nextPrice) {
+            this.#negativePriceEndsAt = nextPrice.startsAt.clone();
+            const diffMinutesPrecise = moment
+              .duration(nextPrice.startsAt.diff(now))
+              .asMinutes();
+            diffHoursRounded = Math.round(diffMinutesPrecise / 15) / 4;
+            this.log(
+              `Next non-negative energy price starts at ${nextPrice.startsAt.format()} which is in ${diffHoursRounded.toFixed(
+                2,
+              )} hour(s) from now.`,
+            );
+          } else {
+            // No upcoming non-negative energy price, so compute time to midnight
+            const midnight = now.clone().add(1, 'day').startOf('day');
+            this.#negativePriceEndsAt = midnight;
+            const diffMinutesPrecise = moment
+              .duration(midnight.diff(now))
+              .asMinutes();
+            diffHoursRounded = Math.round(diffMinutesPrecise / 15) / 4;
+            this.log(
+              `No upcoming non-negative energy price found. Time to midnight: ${diffHoursRounded.toFixed(
+                2,
+              )} hour(s).`,
+            );
+          }
+          this.#negativePriceTrigger
+            .trigger(this, {
+              duration: diffHoursRounded,
+            })
+            .catch(console.error);
+          this.log('Triggering negative_price, duration: ', diffHoursRounded);
+        }
 
         this.#priceBelowAvgTrigger
           .trigger(this, undefined, { below: true })
@@ -522,6 +629,52 @@ export class HomeDevice extends Device {
         }
       }
     }
+    this.#updateNegativeEnergyTime(now, currentPrice);
+  }
+
+  #updateNegativeEnergyTime(
+    now: moment.Moment,
+    currentPrice: TransformedPriceEntry,
+  ) {
+    const negativeTimeLeft =
+      currentPrice.energy < 0 && this.#negativePriceEndsAt
+        ? Math.max(
+            Math.round(
+              moment.duration(this.#negativePriceEndsAt.diff(now)).asMinutes(),
+            ),
+            0,
+          )
+        : 0;
+    this.setCapabilityValue(
+      'measure_negative_price_time_remaining',
+      negativeTimeLeft,
+    ).catch(console.error);
+    this.log(
+      'Set measure_negative_price_time_remaining capability to ',
+      negativeTimeLeft,
+    );
+  }
+
+  // Call updateNegativeEnergyTime every minute using the latest price info
+  #negativeEnergyTimeUpdater(): void {
+    const scheduleNextMinute = () => {
+      const now = moment();
+      const msToNextMinute =
+        60000 - (now.seconds() * 1000 + now.milliseconds());
+
+      this.homey.setTimeout(() => {
+        if (this.#prices.latest)
+          this.#updateNegativeEnergyTime(moment(), this.#prices.latest);
+
+        // Now start fixed 60s interval from the aligned point
+        this.homey.setInterval(() => {
+          if (this.#prices.latest)
+            this.#updateNegativeEnergyTime(moment(), this.#prices.latest);
+        }, 60000);
+      }, msToNextMinute);
+    };
+
+    scheduleNextMinute();
   }
 
   #updateLowestAndHighestPrice(now: moment.Moment) {
@@ -545,6 +698,20 @@ export class HomeDevice extends Device {
     this.#prices.lowestToday = min(this.#prices.today, (p) => p.total);
     this.#prices.highestToday = max(this.#prices.today, (p) => p.total);
 
+    const avgPrice = mean(this.#prices.today, (item) => item.total);
+    this.setCapabilityValue('measure_price_average', avgPrice)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_price_average' capability to", avgPrice);
+      });
+
+    const avgEnergy = mean(this.#prices.today, (item) => item.energy);
+    this.setCapabilityValue('measure_energy_average', avgEnergy)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_energy_average' capability to", avgEnergy);
+      });
+
     const lowestPrice = this.#prices.lowestToday?.total ?? null;
     this.setCapabilityValue('measure_price_lowest', lowestPrice)
       .catch(console.error)
@@ -552,11 +719,43 @@ export class HomeDevice extends Device {
         this.log("Set 'measure_price_lowest' capability to", lowestPrice);
       });
 
+    const lowestEnergy = this.#prices.lowestToday?.energy ?? null;
+    this.setCapabilityValue('measure_energy_lowest', lowestEnergy)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_energy_lowest' capability to", lowestEnergy);
+      });
+
     const highestPrice = this.#prices.highestToday?.total ?? null;
     this.setCapabilityValue('measure_price_highest', highestPrice)
       .catch(console.error)
       .finally(() => {
         this.log("Set 'measure_price_highest' capability to", highestPrice);
+      });
+
+    const highestEnergy = this.#prices.highestToday?.energy ?? null;
+    this.setCapabilityValue('measure_energy_highest', highestEnergy)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'measure_energy_highest' capability to", highestEnergy);
+      });
+
+    const lowestTime = this.#prices.lowestToday?.startsAt
+      ? this.#prices.lowestToday.startsAt.tz(this.#timeZone).format('HH:mm')
+      : null;
+    this.setCapabilityValue('time_price_lowest', lowestTime)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'time_price_lowest' capability to", lowestTime);
+      });
+
+    const highestTime = this.#prices.highestToday?.startsAt
+      ? this.#prices.highestToday.startsAt.tz(this.#timeZone).format('HH:mm')
+      : null;
+    this.setCapabilityValue('time_price_highest', highestTime)
+      .catch(console.error)
+      .finally(() => {
+        this.log("Set 'time_price_highest' capability to", highestTime);
       });
   }
 
@@ -773,7 +972,7 @@ export class HomeDevice extends Device {
     const now = moment();
     return averagePrice(
       this.log,
-      this.#api.hourlyPrices,
+      this.#api.quarterPrices,
       this.#prices,
       now,
       options,
@@ -784,14 +983,14 @@ export class HomeDevice extends Device {
   #priceMinMaxComparator(
     options: {
       hours?: number;
-      ranked_hours?: number;
+      ranked_slots?: number;
     },
     args: { lowest: boolean },
   ): boolean {
     const now = moment();
     return priceExtremes(
       this.log,
-      this.#api.hourlyPrices,
+      this.#api.quarterPrices,
       this.#prices,
       now,
       options,
@@ -800,16 +999,14 @@ export class HomeDevice extends Device {
   }
 
   #lowestPricesWithinTimeFrame(options: {
-    ranked_hours: number;
+    ranked_slots: number;
     start_time: TimeString;
     end_time: TimeString;
   }): boolean {
-    // we need to parse times w/o tz info here, so we need to assume a tz.
-    // consider moving into the helper function
-    const now = moment().tz('Europe/Oslo');
+    const now = moment().tz(this.#timeZone);
     return lowestPricesWithinTimeFrame(
       this.log,
-      this.#api.hourlyPrices,
+      this.#api.quarterPrices,
       this.#prices,
       now,
       options,
@@ -850,20 +1047,20 @@ export class HomeDevice extends Device {
 
   getDeviceData() {
     const now = moment();
-    const currentHour = now.clone().startOf('hour');
+    const currentSlot = getCurrentSlot(now);
     const currentPrice =
-      this.#prices.today.find((p) => currentHour.isSame(p.startsAt)) || 0;
+      this.#prices.today.find((p) => currentSlot.isSame(p.startsAt)) || 0;
 
     return {
       driverId: 'home',
       deviceId: this.getData().id,
       now,
-      currentHour,
+      currentSlot,
       currentPrice,
       lowestToday: this.#prices.lowestToday,
       highestToday: this.#prices.highestToday,
       pricesToday: this.#prices.today,
-      hourlyPrices: this.#api.hourlyPrices,
+      quarterPrices: this.#api.quarterPrices,
     };
   }
 }

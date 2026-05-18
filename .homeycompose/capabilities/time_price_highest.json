@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Highest Price Time"
+  },
+  "description": {
+    "en": "The time when the highest electricity price occurs."
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/drivers/home/assets/clock.svg"
+}

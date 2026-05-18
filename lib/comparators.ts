@@ -19,9 +19,11 @@ export interface AveragePriceArguments {
   below: boolean;
 }
 
+const SLOTS_PER_HOUR = 4;
+
 export const averagePrice = (
   logger: (...args: unknown[]) => void,
-  hourlyPrices: readonly TransformedPriceEntry[],
+  quarterPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
   now: moment.Moment,
   options: AveragePriceOptions,
@@ -30,22 +32,22 @@ export const averagePrice = (
   const { hours, percentage } = options;
   if (hours === 0) return false;
 
+  const slotCount = Math.floor(hours * SLOTS_PER_HOUR);
+
   const prices =
     hours !== undefined
       ? takeFromStartOrEnd(
-          hourlyPrices.filter((p) =>
-            hours! > 0
-              ? p.startsAt.isAfter(now)
-              : p.startsAt.isBefore(now, 'hour'),
+          quarterPrices.filter((p) =>
+            hours! > 0 ? p.startsAt.isAfter(now) : p.startsAt.isBefore(now),
           ),
-          hours,
+          slotCount,
         )
       : priceData.today;
 
   const avgPrice = mean(prices, (item) => item.total);
 
   if (Number.isNaN(avgPrice)) {
-    logger(`Cannot determine condition. No prices for next hours available.`);
+    logger(`Cannot determine condition. No prices for next slots available.`);
     return false;
   }
 
@@ -68,7 +70,7 @@ export const averagePrice = (
 
 export interface PriceExtremesOptions {
   hours?: number;
-  ranked_hours?: number;
+  ranked_slots?: number;
 }
 
 export interface PriceExtremesArguments {
@@ -77,56 +79,60 @@ export interface PriceExtremesArguments {
 
 export const priceExtremes = (
   logger: (...args: unknown[]) => void,
-  hourlyPrices: readonly TransformedPriceEntry[],
+  quarterPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
   now: moment.Moment,
   options: PriceExtremesOptions,
   { lowest }: PriceExtremesArguments,
 ): boolean => {
-  const { hours, ranked_hours: rankedHours } = options;
-  if (hours === 0 || rankedHours === 0) return false;
+  const { hours, ranked_slots: rankedSlots } = options;
+  if (hours === 0 || rankedSlots === 0) return false;
+
+  const slotCount = hours ? hours * SLOTS_PER_HOUR : undefined;
+  const currentSlot = now.clone().startOf('minute');
+  currentSlot.minutes(Math.floor(currentSlot.minutes() / 15) * 15);
+
 
   const prices =
-    hours !== undefined
+    slotCount !== undefined
       ? takeFromStartOrEnd(
-          hourlyPrices.filter((p) =>
-            hours! > 0
-              ? p.startsAt.isAfter(now)
-              : p.startsAt.isBefore(now, 'hour'),
+          quarterPrices.filter((p) =>
+            hours! > 0 ? p.startsAt.isSameOrAfter(currentSlot) : p.startsAt.isSameOrBefore(currentSlot),
           ),
-          hours,
+          slotCount,
         )
       : priceData.today;
 
   if (!prices.length) {
-    logger(`Cannot determine condition. No prices for next hours available.`);
+    logger(`Cannot determine condition. No prices for next slots available.`);
     return false;
   }
 
-  if (priceData.latest === undefined) {
+  if (!priceData.latest) {
     logger(`Cannot determine condition. The last price is undefined`);
     return false;
   }
 
   let conditionMet;
-  if (rankedHours !== undefined) {
+  if (rankedSlots !== undefined) {
     const sortedPrices = sort(prices).asc((p) => p.total);
-    const currentHourRank = sortedPrices.findIndex(
-      (p) => p.startsAt === priceData.latest?.startsAt,
+    const currentSlotRank = sortedPrices.findIndex((p) =>
+      p.startsAt.isSame(priceData.latest!.startsAt),
     );
-    if (currentHourRank < 0) {
-      logger(`Could not find the current hour rank among today's hours`);
+
+    if (currentSlotRank < 0) {
+      logger(`Could not find the current slot rank among today's slots`);
       return false;
     }
 
     conditionMet = lowest
-      ? currentHourRank < rankedHours
-      : currentHourRank >= sortedPrices.length - rankedHours;
+      ? currentSlotRank < rankedSlots
+      : currentSlotRank >= sortedPrices.length - rankedSlots;
 
     logger(
       `${priceData.latest.total} is among the ${
         lowest ? 'lowest' : 'highest'
-      } ${options.ranked_hours} hours today = ${conditionMet}`,
+      } ${rankedSlots} slots today = ${conditionMet}`,
     );
   } else {
     const toCompare = lowest
@@ -141,7 +147,7 @@ export const priceExtremes = (
       `${priceData.latest.total} is ${
         lowest ? 'lower than the lowest' : 'higher than the highest'
       } (${toCompare}) ${
-        options.hours ? `among the next ${options.hours} hours` : 'today'
+        hours ? `among the next ${hours} hours` : 'today'
       } = ${conditionMet}`,
     );
   }
@@ -150,30 +156,31 @@ export const priceExtremes = (
 };
 
 export interface LowestPricesWithinTimeFrameOptions {
-  ranked_hours: number;
+  ranked_slots: number;
   start_time: TimeString;
   end_time: TimeString;
 }
 
 export const lowestPricesWithinTimeFrame = (
   logger: (...args: unknown[]) => void,
-  hourlyPrices: readonly TransformedPriceEntry[],
+  quarterPrices: readonly TransformedPriceEntry[],
   priceData: PriceData,
   now: moment.Moment,
   options: LowestPricesWithinTimeFrameOptions,
 ): boolean => {
   const {
-    ranked_hours: rankedHours,
+    ranked_slots: rankedSlots,
     start_time: startTime,
     end_time: endTime,
   } = options;
 
-  if (rankedHours === 0) return false;
+  if (rankedSlots === 0) return false;
 
-  const nonAdjustedStart = parseTimeString(startTime);
+  const timeZone = now.tz() || 'Europe/Oslo';
+  const nonAdjustedStart = parseTimeString(startTime, timeZone);
   let start = nonAdjustedStart;
 
-  const nonAdjustedEnd = parseTimeString(endTime);
+  const nonAdjustedEnd = parseTimeString(endTime, timeZone);
   let end = nonAdjustedEnd;
 
   const periodStretchesOverMidnight = nonAdjustedStart.isAfter(nonAdjustedEnd);
@@ -192,33 +199,34 @@ export const lowestPricesWithinTimeFrame = (
     return false;
   }
 
-  const pricesWithinTimeFrame = hourlyPrices.filter(
-    (p) => p.startsAt.isSameOrAfter(start, 'hour') && p.startsAt.isBefore(end),
+  const pricesWithinTimeFrame = quarterPrices.filter(
+    (p) => p.startsAt.isSameOrAfter(start) && p.startsAt.isBefore(end),
   );
 
   if (!pricesWithinTimeFrame.length) {
-    logger(`Cannot determine condition. No prices for next hours available.`);
+    logger(`Cannot determine condition. No prices in the time window.`);
     return false;
   }
 
-  if (priceData.latest === undefined) {
+  if (!priceData.latest) {
     logger(`Cannot determine condition. The last price is undefined`);
     return false;
   }
 
-  const sortedHours = sort(pricesWithinTimeFrame).asc((p) => p.total);
-  const currentHourRank = sortedHours.findIndex(
-    (p) => p.startsAt === priceData.latest?.startsAt,
+  const sortedSlots = sort(pricesWithinTimeFrame).asc((p) => p.total);
+  const currentSlotRank = sortedSlots.findIndex((p) =>
+    p.startsAt.isSame(priceData.latest!.startsAt),
   );
-  if (currentHourRank < 0) {
-    logger(`Could not find the current hour rank among today's hours`);
+
+  if (currentSlotRank < 0) {
+    logger(`Could not find the current slot rank among window prices`);
     return false;
   }
 
-  const conditionMet = currentHourRank < rankedHours;
+  const conditionMet = currentSlotRank < rankedSlots;
 
   logger(
-    `${priceData.latest.total} is among the lowest ${rankedHours}
+    `${priceData.latest.total} is among the lowest ${rankedSlots}
       prices between ${start} and ${end} = ${conditionMet}`,
   );
 

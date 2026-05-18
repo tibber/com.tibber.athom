@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Lowest Price Time"
+  },
+  "description": {
+    "en": "The time when the lowest electricity price occurs."
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/drivers/home/assets/clock.svg"
+}

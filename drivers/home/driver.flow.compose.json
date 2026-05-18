@@ -41,6 +41,22 @@
       "platforms": ["local", "cloud"]
     },
     {
+      "id": "negative_price",
+      "title": {
+        "en": "Energy Price become negative"
+      },
+      "tokens": [
+        {
+          "name": "duration",
+          "type": "number",
+          "title": {
+            "en": "duration in hours"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
+    {
       "id": "price_below_avg",
       "title": {
         "en": "Current price is [x] percent below average of the next [y] hours"
@@ -214,14 +230,14 @@
         "en": "Current price is one of today's lowest [x] prices"
       },
       "titleFormatted": {
-        "en": "Current price is one of today's lowest [[ranked_hours]] prices"
+        "en": "Current price is one of today's lowest [[ranked_slots]] prices"
       },
       "args": [
         {
-          "name": "ranked_hours",
+          "name": "ranked_slots",
           "type": "number",
           "title": {
-            "en": "Hours"
+            "en": "Slots"
           },
           "placeholder": {
             "en": "1"
@@ -236,14 +252,14 @@
         "en": "Current price is one of today's highest [x] prices"
       },
       "titleFormatted": {
-        "en": "Current price is one of today's highest [[ranked_hours]] prices"
+        "en": "Current price is one of today's highest [[ranked_slots]] prices"
       },
       "args": [
         {
-          "name": "ranked_hours",
+          "name": "ranked_slots",
           "type": "number",
           "title": {
-            "en": "Hours"
+            "en": "Slots"
           },
           "placeholder": {
             "en": "1"
@@ -283,20 +299,20 @@
         "en": "Current price is one of the [x] lowest prices between [y] and [z]"
       },
       "titleFormatted": {
-        "en": "Current price is one of the [[ranked_hours]] lowest prices between [[start_time]] and [[end_time]]"
+        "en": "Current price is one of the [[ranked_slots]] lowest prices between [[start_time]] and [[end_time]]"
       },
       "args": [
         {
-          "name": "ranked_hours",
+          "name": "ranked_slots",
           "type": "number",
           "title": {
-            "en": "Amount of lowest hours"
+            "en": "Amount of lowest slots"
           },
           "placeholder": {
             "en": "1"
           },
           "min": 1,
-          "max": 24,
+          "max": 96,
           "step": 1
         },
         {
@@ -323,6 +339,41 @@
       "platforms": ["local", "cloud"]
     },
     {
+      "id": "price_among_lowest_during_hours",
+      "title": {
+        "en": "Current price is one of the [x] lowest prices next [y] hours"
+      },
+      "titleFormatted": {
+        "en": "Current price is one of the [[ranked_slots]] lowest prices next [[hours]] hours"
+      },
+      "args": [
+        {
+          "name": "ranked_slots",
+          "type": "number",
+          "title": {
+            "en": "Amount of lowest slots"
+          },
+          "placeholder": {
+            "en": "1"
+          },
+          "min": 1,
+          "max": 96,
+          "step": 1
+        },
+        {
+          "name": "hours",
+          "type": "number",
+          "title": {
+            "en": "Hours"
+          },
+          "placeholder": {
+            "en": "1"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
+    {
       "id": "current_price_below",
       "title": {
         "en": "Current price !{{below|above}}"
@@ -339,6 +390,28 @@
           },
           "placeholder": {
             "en": "0.2"
+          }
+        }
+      ],
+      "platforms": ["local", "cloud"]
+    },
+    {
+      "id": "current_energy_below",
+      "title": {
+        "en": "Current energy price !{{below|above}}"
+      },
+      "titleFormatted": {
+        "en": "Current energy price is !{{below|above}} [[energy_price]]"
+      },
+      "args": [
+        {
+          "name": "energy_price",
+          "type": "number",
+          "title": {
+            "en": "Energy Price"
+          },
+          "placeholder": {
+            "en": "0.002"
           }
         }
       ],
@@ -516,14 +589,14 @@
         "en": "Current price !{{is|isn't}} one of today's lowest [x] prices"
       },
       "titleFormatted": {
-        "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_hours]] prices"
+        "en": "Current price !{{is|isn't}} one of today's lowest [[ranked_slots]] prices"
       },
       "args": [
         {
-          "name": "ranked_hours",
+          "name": "ranked_slots",
           "type": "number",
           "title": {
-            "en": "Hours"
+            "en": "Slots"
           },
           "placeholder": {
             "en": "3"
@@ -538,14 +611,14 @@
         "en": "Current price !{{is|isn't}} one of today's highest [x] prices"
       },
       "titleFormatted": {
-        "en": "Current price !{{is|isn't}} one of today's highest [[ranked_hours]] prices"
+        "en": "Current price !{{is|isn't}} one of today's highest [[ranked_slots]] prices"
       },
       "args": [
         {
-          "name": "ranked_hours",
+          "name": "ranked_slots",
           "type": "number",
           "title": {
-            "en": "Hours"
+            "en": "Slots"
           },
           "placeholder": {
             "en": "3"

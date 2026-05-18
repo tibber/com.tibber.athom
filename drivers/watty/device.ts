@@ -302,7 +302,7 @@ class WattyDevice extends Device {
             () =>
               http.json<NordPoolPriceResult>(
                 `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=${currency},${currency},${currency},${currency}&endDate=${moment()
-                  .tz('Europe/Oslo')
+                  .tz(this.homey.clock.getTimezone())
                   .format('DD-MM-YYYY')}`,
               ),
           );
@@ -310,8 +310,12 @@ class WattyDevice extends Device {
             .filter(
               (row) =>
                 !row.IsExtraRow &&
-                moment.tz(row.StartTime, 'Europe/Oslo').isBefore(now) &&
-                moment.tz(row.EndTime, 'Europe/Oslo').isAfter(now),
+                moment
+                  .tz(row.StartTime, this.homey.clock.getTimezone())
+                  .isBefore(now) &&
+                moment
+                  .tz(row.EndTime, this.homey.clock.getTimezone())
+                  .isAfter(now),
             )
             .map((row) => row.Columns);
 

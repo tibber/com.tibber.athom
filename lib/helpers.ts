@@ -6,13 +6,21 @@ export const isSomeString = (value: unknown): boolean =>
 export const nonNullable = <T>(value: T): value is NonNullable<T> =>
   value !== null && value !== undefined;
 
-export const parseTimeString = (time: TimeString): moment.Moment => {
+export const parseTimeString = (
+  time: TimeString,
+  timeZone: string,
+): moment.Moment => {
   const [h, m] = time.split(':');
   return moment
-    .tz('Europe/Oslo')
-    .hour(Number(h))
-    .minute(Number(m))
+    .tz({ hour: Number(h), minute: Number(m) }, timeZone)
     .startOf('minute');
+};
+
+export const getCurrentSlot = (now: moment.Moment): moment.Moment => {
+  const clone = now.clone().startOf('minute');
+  const minute = clone.minute();
+  clone.minute(Math.floor(minute / 15) * 15);
+  return clone;
 };
 
 // takes from end of array if `quantity` is negative
