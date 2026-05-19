@@ -168,13 +168,24 @@ class WattyDevice extends Device {
   async subscribeCallback(result: LiveMeasurement) {
     this.#resubscribeDebounce();
 
-    this.homey.api
-      .realtime('data-update-event', {
-        driverId: 'pulse',
-        deviceId: this.getData().id,
-        liveMeasurement: result.data?.liveMeasurement,
-      })
-      .catch(console.error);
+    // Athom does not allow Web APIs on Homey Cloud, so skip the emit there
+    // (https://apps.developer.homey.app/advanced/web-api). The try/catch
+    // covers transient delivery failures on local platforms and synchronous
+    // throws from `this.homey.api` if the device is being torn down.
+    if (this.homey.platform !== 'cloud') {
+      try {
+        this.homey.api
+          .realtime('data-update-event', {
+            driverId: 'pulse',
+            deviceId: this.getData().id,
+            liveMeasurement: result.data?.liveMeasurement,
+          })
+          .catch((e: unknown) => this.log('Failed to emit realtime event', e));
+      } catch (e) {
+        this.log('Could not emit realtime event (device destroyed?)', e);
+        return;
+      }
+    }
 
     const power = result.data?.liveMeasurement?.power;
     const powerProduction = result.data?.liveMeasurement?.powerProduction;
@@ -390,7 +401,7 @@ class WattyDevice extends Device {
     this.destroy();
   }
 
-  onUninit() {
+  async onUninit() {
     this.destroy();
   }
 

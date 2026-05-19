@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "outDir": "build/",
+    "outDir": ".homeybuild/",
     "sourceMap": true,
     "removeComments": true,
     "typeRoots": ["./@types", "./node_modules/@types"]
@@ -19,5 +19,5 @@
     "./jest.config.js",
     "package.json"
   ],
-  "exclude": ["./build", "./app.json", "./package-lock.json"]
+  "exclude": ["./.homeybuild", "./app.json", "./package-lock.json"]
 }

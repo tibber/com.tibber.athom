@@ -2,7 +2,7 @@ import newrelic from 'newrelic';
 
 export interface TransactionAttributes {
   firmwareVersion?: string;
-  platformVersion?: string;
+  platformVersion?: number;
   appVersion?: string;
 }
 

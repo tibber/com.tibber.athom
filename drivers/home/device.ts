@@ -391,17 +391,29 @@ export class HomeDevice extends Device {
       return;
     }
 
-    await this.homey.api.realtime('data-update-event', {
-      driverId: 'home',
-      deviceId: this.getData().id,
-      now,
-      currentHour,
-      currentPrice,
-      lowestToday: this.#prices.lowestToday,
-      highestToday: this.#prices.highestToday,
-      pricesToday: this.#prices.today,
-      hourlyPrices: this.#api.hourlyPrices,
-    });
+    // Athom does not allow Web APIs on Homey Cloud, so skip the emit there
+    // (https://apps.developer.homey.app/advanced/web-api). The try/catch
+    // covers transient delivery failures on local platforms and synchronous
+    // throws from `this.homey.api` if the device is being torn down.
+    if (this.homey.platform !== 'cloud') {
+      try {
+        this.homey.api
+          .realtime('data-update-event', {
+            driverId: 'home',
+            deviceId: this.getData().id,
+            now,
+            currentHour,
+            currentPrice,
+            lowestToday: this.#prices.lowestToday,
+            highestToday: this.#prices.highestToday,
+            pricesToday: this.#prices.today,
+            hourlyPrices: this.#api.hourlyPrices,
+          })
+          .catch((e: unknown) => this.log('Failed to emit realtime event', e));
+      } catch (e) {
+        this.log('Could not emit realtime event (app destroyed?)', e);
+      }
+    }
 
     const shouldUpdate =
       currentPrice.startsAt !== this.#prices.latest?.startsAt;

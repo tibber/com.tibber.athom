@@ -11,7 +11,7 @@ class PulseDriver extends Driver {
     this.log('Tibber Pulse driver has been initialized');
   }
 
-  onPair(session: PairSession) {
+  async onPair(session: PairSession) {
     this.#api = new TibberApi(this.log, this.homey.settings);
 
     session.setHandler('showView', async (view) => {

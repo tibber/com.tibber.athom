@@ -4,7 +4,7 @@
   "description": "Integration with Tibber",
   "main": "app.ts",
   "scripts": {
-    "clean": "del-cli ./build/**",
+    "clean": "del-cli ./.homeybuild/**",
     "lint": "eslint . --ext .js,.ts",
     "build": "tsc",
     "test": "jest"
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",
-    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.3",
+    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.12",
     "@types/jest": "^29.4.0",
     "@types/lodash": "^4.14.191",
     "@types/newrelic": "^9.4.0",
