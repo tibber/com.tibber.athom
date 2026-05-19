@@ -202,5 +202,8 @@
   },
   "1.10.2": {
     "en": "Handle real-time event crash on Homey Cloud"
+  },
+  "1.10.3": {
+    "en": "Fixes crash on Homey Cloud that affected live data from Pulse and Watty. Pulse and Watty stay available more reliably when the Tibber API returns incomplete data. Security updates."
   }
 }
