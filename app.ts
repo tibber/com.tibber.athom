@@ -1,16 +1,10 @@
 import 'newrelic';
 import sourceMapSupport from 'source-map-support';
 import { App } from 'homey';
-import Homey from 'homey/lib/Homey';
 import { setGlobalAttributes } from './lib/newrelic-transaction';
 import * as appJson from './app.json';
 
 sourceMapSupport.install();
-
-type HomeyWithMissingTypings = Homey & {
-  platformVersion: string;
-  platform: string;
-};
 
 class TibberApp extends App {
   async onInit() {
@@ -18,7 +12,7 @@ class TibberApp extends App {
 
     // Init Debugger
     // Adjust the port if needed. If you are using VS Code, launch settings are in `.vscode/launch.json`
-    if ((this.homey as HomeyWithMissingTypings).platform === 'local') {
+    if (this.homey.platform === 'local') {
       if (process.env.WAIT_FOR_DEBUGGER === '1') {
         // eslint-disable-next-line global-require,@typescript-eslint/no-var-requires
         require('inspector').waitForDebugger();
@@ -32,8 +26,7 @@ class TibberApp extends App {
       }
     }
 
-    const { version: firmwareVersion, platformVersion } = this
-      .homey as HomeyWithMissingTypings;
+    const { version: firmwareVersion, platformVersion } = this.homey;
     const { version: appVersion } = appJson;
 
     this.log(`platformVersion:`, platformVersion);
