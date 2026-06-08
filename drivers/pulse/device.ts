@@ -157,6 +157,8 @@ class PulseDevice extends Device {
             `Real time consumption has been disabled for ${disabledHours} hours. Stopping retries.`,
           );
           this.#resubscribeDebounce.cancel();
+        } else {
+          this.#resubscribeDebounce();
         }
         return;
       }
@@ -164,6 +166,7 @@ class PulseDevice extends Device {
       if (this.#realtimeDisabledSince !== null) {
         this.#realtimeDisabledSince = null;
         this.#resetResubscribeDebounce(this.#resubscribeMaxWaitMilliseconds);
+        this.#resubscribeDebounce();
       }
     } catch (e) {
       this.log('Error fetching home features', e);
