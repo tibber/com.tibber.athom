@@ -26,6 +26,7 @@ class PulseDevice extends Device {
   #wsSubscription!: Subscription;
   #resubscribeDebounce!: _.DebouncedFunc<() => void>;
   #resubscribeMaxWaitMilliseconds!: number;
+  #realtimeDisabledSince: moment.Moment | null = null;
   #powerChangedTrigger!: FlowCardTriggerDevice;
   #consumptionChangedTrigger!: FlowCardTriggerDevice;
   #costChangedTrigger!: FlowCardTriggerDevice;
@@ -75,11 +76,7 @@ class PulseDevice extends Device {
     this.#resubscribeMaxWaitMilliseconds =
       (jitterSeconds + delaySeconds) * 1000;
 
-    // Resubscribe if no data for delay + jitter
-    this.#resubscribeDebounce = _.debounce(
-      this.#subscribeToLive.bind(this),
-      this.#resubscribeMaxWaitMilliseconds,
-    );
+    this.#resetResubscribeDebounce(this.#resubscribeMaxWaitMilliseconds);
     await this.#subscribeToLive();
   }
 
@@ -109,6 +106,14 @@ class PulseDevice extends Device {
     }
   }
 
+  #resetResubscribeDebounce(waitMs: number) {
+    this.#resubscribeDebounce?.cancel();
+    this.#resubscribeDebounce = _.debounce(
+      this.#subscribeToLive.bind(this),
+      waitMs,
+    );
+  }
+
   async #subscribeToLive() {
     this.#resubscribeDebounce();
 
@@ -131,16 +136,37 @@ class PulseDevice extends Device {
       websocketSubscriptionUrl = viewer.websocketSubscriptionUrl;
 
       if (viewer?.home?.features?.realTimeConsumptionEnabled === false) {
-        this.log(
-          `Home with id ${
-            this.#deviceId
-          } does not have real time consumption enabled. Set device unavailable`,
+        if (this.#realtimeDisabledSince === null) {
+          this.#realtimeDisabledSince = moment();
+          this.log(
+            `Home with id ${this.#deviceId} does not have real time consumption enabled. Will retry for 24 hours before giving up.`,
+          );
+          this.#resetResubscribeDebounce(60 * 60 * 1000);
+        }
+
+        const disabledHours = moment().diff(
+          this.#realtimeDisabledSince,
+          'hours',
         );
-        this.#resubscribeDebounce.cancel();
         await this.setUnavailable(
-          'Tibber home with specified id not found. Please re-add device.',
+          'Real time consumption is not enabled for this home.',
         );
+
+        if (disabledHours >= 24) {
+          this.log(
+            `Real time consumption has been disabled for ${disabledHours} hours. Stopping retries.`,
+          );
+          this.#resubscribeDebounce.cancel();
+        } else {
+          this.#resubscribeDebounce();
+        }
         return;
+      }
+
+      if (this.#realtimeDisabledSince !== null) {
+        this.#realtimeDisabledSince = null;
+        this.#resetResubscribeDebounce(this.#resubscribeMaxWaitMilliseconds);
+        this.#resubscribeDebounce();
       }
     } catch (e) {
       this.log('Error fetching home features', e);

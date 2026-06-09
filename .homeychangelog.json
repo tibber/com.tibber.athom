@@ -208,5 +208,8 @@
   },
   "1.10.4": {
     "en": "Maintenance update to ensure all Homey Cloud customers receive the recent fixes."
+  },
+  "1.10.5": {
+    "en": "Keep pulse watchdog running for 24 hours after last update to better handle cases where the Tibber API returns incomplete data for an extended period of time."
   }
 }
