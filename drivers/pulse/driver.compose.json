@@ -253,6 +253,47 @@
           ]
         }
       ]
+    },
+    {
+      "type": "group",
+        "label": {
+          "en": "Show/hide phases"
+        },
+        "children": [
+          {
+            "id": "show_phase_current_L1",
+            "type": "checkbox",
+            "label": {
+              "en": "Show current phase 1"
+            },
+            "value": true,
+            "hint": {
+              "en": "Show phase 1 current\nDisable to hide value from dashboard\n\nRemoves relevant flow cards and tokens\nDefault: true"
+            }
+          },
+          {
+            "id": "show_phase_current_L2",
+            "type": "checkbox",
+            "label": {
+              "en": "Show current phase 2"
+            },
+            "value": true,
+            "hint": {
+              "en": "Show phase 2 current\nDisable to hide value from dashboard\n\nRemoves relevant flow cards and tokens\nDefault: true"
+            }
+          },
+          {
+            "id": "show_phase_current_L3",
+            "type": "checkbox",
+            "label": {
+              "en": "Show current phase 3"
+            },
+            "value": true,
+            "hint": {
+              "en": "Show phase 3 current\nDisable to hide value from dashboard\n\nRemoves relevant flow cards and tokens\nDefault: true"
+            }
+          }
+        ]
     }
   ]
 }
