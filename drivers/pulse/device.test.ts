@@ -45,6 +45,7 @@ jest.mock('homey', () => ({ Device: FakeDevice, env: {} }), { virtual: true });
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PulseDeviceModule = require('./device');
+
 const PulseDevice: new () => FakeDevice & { onInit(): Promise<void> } =
   PulseDeviceModule;
 
@@ -87,7 +88,9 @@ describe('PulseDevice realTimeConsumptionEnabled=false handling', () => {
     // 1-hour debounce fires → another getHomeFeatures call
     await jest.advanceTimersByTimeAsync(60 * 60 * 1000 + 100);
 
-    expect(mockGetHomeFeatures.mock.calls.length).toBeGreaterThan(callsAfterInit);
+    expect(mockGetHomeFeatures.mock.calls.length).toBeGreaterThan(
+      callsAfterInit,
+    );
   });
 
   test('stops retrying after 24 hours of persistent false', async () => {

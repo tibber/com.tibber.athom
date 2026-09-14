@@ -45,4 +45,14 @@ module.exports = {
       { checksVoidReturn: false },
     ],
   },
+  overrides: [
+    {
+      // Test doubles are intentionally stateless stubs; the rule targets
+      // production class design and only produces noise here.
+      files: ['**/*.test.ts'],
+      rules: {
+        'class-methods-use-this': 'off',
+      },
+    },
+  ],
 };

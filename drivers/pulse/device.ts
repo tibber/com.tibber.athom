@@ -139,7 +139,9 @@ class PulseDevice extends Device {
         if (this.#realtimeDisabledSince === null) {
           this.#realtimeDisabledSince = moment();
           this.log(
-            `Home with id ${this.#deviceId} does not have real time consumption enabled. Will retry for 24 hours before giving up.`,
+            `Home with id ${
+              this.#deviceId
+            } does not have real time consumption enabled. Will retry for 24 hours before giving up.`,
           );
           this.#resetResubscribeDebounce(60 * 60 * 1000);
         }
