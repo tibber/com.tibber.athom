@@ -1,6 +1,6 @@
 import { Device, FlowCard, FlowCardTriggerDevice } from 'homey';
 import moment from 'moment-timezone';
-import { ClientError } from 'graphql-request/dist/types';
+import { ClientError } from 'graphql-request';
 import {
   ConsumptionData,
   ConsumptionNode,

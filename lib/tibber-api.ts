@@ -1,6 +1,5 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client/core';
-import { GraphQLClient } from 'graphql-request';
-import { ClientError } from 'graphql-request/dist/types';
+import { ClientError, GraphQLClient } from 'graphql-request';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import moment from 'moment-timezone';
