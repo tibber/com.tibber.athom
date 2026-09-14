@@ -1,5 +1,5 @@
 import PairSession from 'homey/lib/PairSession';
-import { ClientError } from 'graphql-request/dist/types';
+import { ClientError } from 'graphql-request';
 import { noticeError, startTransaction } from './newrelic-transaction';
 import { Home, Logger, TibberApi } from './tibber-api';
 
