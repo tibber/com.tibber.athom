@@ -1,0 +1,85 @@
+{
+  "name": {
+    "en": "Pulse CT"
+  },
+  "platforms": ["local"],
+  "connectivity": ["cloud"],
+  "class": "other",
+  "capabilities": [
+    "measure_power",
+    "meter_power",
+    "measure_current.L1",
+    "measure_current.L2",
+    "measure_current.L3",
+    "measure_voltage"
+  ],
+  "capabilitiesOptions": {
+    "meter_power": {
+      "title": {
+        "en": "Energy"
+      }
+    },
+    "measure_current.L1": {
+      "title": {
+        "en": "Current phase 1"
+      }
+    },
+    "measure_current.L2": {
+      "title": {
+        "en": "Current phase 2"
+      }
+    },
+    "measure_current.L3": {
+      "title": {
+        "en": "Current phase 3"
+      }
+    }
+  },
+  "images": {
+    "large": "/drivers/pulse-ct/assets/images/large.png",
+    "small": "/drivers/pulse-ct/assets/images/small.png"
+  },
+  "pair": [
+    {
+      "id": "loading",
+      "template": "loading"
+    },
+    {
+      "id": "login_oauth2",
+      "template": "login_oauth2",
+      "navigation": {
+        "next": "list_devices"
+      }
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "repair": [
+    {
+      "id": "login_oauth2",
+      "template": "login_oauth2"
+    }
+  ],
+  "settings": [
+    {
+      "id": "whole_home",
+      "type": "checkbox",
+      "value": false,
+      "label": {
+        "en": "Measures the whole home"
+      },
+      "hint": {
+        "en": "Turn on if this CT measures everything the home uses, like a CT on the main supply. Leave off for a CT on one circuit or appliance; Homey Energy then shows it as one of the home's consumers."
+      }
+    }
+  ]
+}
