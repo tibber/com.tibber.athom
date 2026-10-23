@@ -52,6 +52,13 @@ Integration with Tibber, with Pulse and Watty support.
 - Cost since midnight changed
 - Daily consumption is reported
 
+### Device: _**Pulse CT**_
+
+Live power, energy, current per phase and voltage from a Pulse CT, streamed from the
+[Tibber Data API](https://data-api.tibber.com/docs/devices/live-events/). The device shows up in Homey Energy as one
+of the home's consumers, or as the whole-home meter with the **Measures the whole home** setting. The Data API
+allows one live stream per home, which all Pulse CT devices in that home share.
+
 ---
 
 ## Homey app API
@@ -116,6 +123,16 @@ The process is as follows:
 Now the app uses your personal token for API access.
 
 Note that `env.json` is in `.gitignore` so there should be no risk of mistakenly committing the file to the repository.
+
+The Pulse CT driver uses the Tibber Data API, which has no personal access tokens. To run it, create a Data API client
+at https://data-api.tibber.com/clients/manage with the redirect URI `https://callback.athom.com/oauth2/callback/` and
+the `data-api-homes-read`, `data-api-meters-read` and `offline_access` scopes, and add it to `env.json`:
+
+```
+  { "DATA_API_CLIENT_ID": "...", "DATA_API_CLIENT_SECRET": "..." }
+```
+
+Leave out `DATA_API_CLIENT_SECRET` for a client without a secret; the login then uses PKCE.
 
 ### Debugging
 
