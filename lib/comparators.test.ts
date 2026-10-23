@@ -1,6 +1,6 @@
 import each from 'jest-each';
 import moment from 'moment-timezone';
-import { priceExtremes } from './comparators';
+import { lowestPricesWithinTimeFrame, priceExtremes } from './comparators';
 import { PriceData, TransformedPriceEntry } from './tibber-api';
 
 const logger = () => {};
@@ -113,6 +113,57 @@ describe('comparators', () => {
         );
         expect(actual).toBe(false);
       });
+
+      test('ranked hours still match when latest.startsAt is a cloned Moment', () => {
+        // Scheduled price re-fetch replaces hourlyPrices with new Moment
+        // instances. latest still points at the previous object for the same hour.
+        const now = moment('2023-02-01T00:17:06+01:00');
+        const data = priceData(now);
+        data.latest = {
+          ...data.latest!,
+          startsAt: data.latest!.startsAt.clone(),
+        };
+
+        const actual = priceExtremes(
+          logger,
+          hourlyPrices,
+          data,
+          now,
+          { ranked_hours: 1 },
+          { lowest: true },
+        );
+        expect(actual).toBe(true);
+      });
+    });
+  });
+
+  describe('lowestPricesWithinTimeFrame', () => {
+    test('still matches after price refresh clones Moment instances', () => {
+      // Mid-day Oslo so the 00:00–23:59 window always contains `now`
+      // (parseTimeString builds start/end on the current local date).
+      const now = moment.tz('Europe/Oslo').startOf('day').hour(12).minute(17);
+      const prices: TransformedPriceEntry[] = [];
+      for (let hour = 0; hour < 24; hour += 1) {
+        prices.push({
+          startsAt: now.clone().startOf('day').hour(hour),
+          total: hour === now.hour() ? 0.01 : hour + 1,
+          energy: hour + 1,
+          tax: 0,
+          level: 'NORMAL',
+        });
+      }
+      const current = prices.find((p) => p.startsAt.isSame(now, 'hour'))!;
+      const data: PriceData = {
+        today: prices,
+        latest: { ...current, startsAt: current.startsAt.clone() },
+      };
+
+      const actual = lowestPricesWithinTimeFrame(logger, prices, data, now, {
+        ranked_hours: 1,
+        start_time: '00:00',
+        end_time: '23:59',
+      });
+      expect(actual).toBe(true);
     });
   });
 });

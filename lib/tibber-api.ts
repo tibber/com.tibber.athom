@@ -234,6 +234,7 @@ export class TibberApi {
       ms: number,
       ...args: unknown[]
     ) => NodeJS.Timeout,
+    onPricesUpdated?: () => void | Promise<void>,
   ): Promise<void> {
     if (this.hourlyPrices.length === 0) {
       this.#log(`No price infos cached. Fetch prices immediately.`);
@@ -293,6 +294,15 @@ export class TibberApi {
           }
 
           this.hourlyPrices = data;
+          // Re-bind device `latest` / capabilities to entries in the new array.
+          try {
+            await onPricesUpdated?.();
+          } catch (refreshError) {
+            console.error(
+              'Failed to refresh current price after re-fetch',
+              refreshError,
+            );
+          }
         }, delay * 1000);
       });
     }

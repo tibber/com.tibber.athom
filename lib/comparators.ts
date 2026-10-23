@@ -10,6 +10,12 @@ import {
   TimeString,
 } from './helpers';
 
+/** Same clock hour — not Moment identity (`===` breaks after a price re-fetch). */
+const isSamePriceHour = (
+  a: moment.Moment | undefined,
+  b: moment.Moment | undefined,
+): boolean => Boolean(a && b && a.isSame(b, 'hour'));
+
 export interface AveragePriceOptions {
   hours: number;
   percentage: number;
@@ -111,8 +117,8 @@ export const priceExtremes = (
   let conditionMet;
   if (rankedHours !== undefined) {
     const sortedPrices = sort(prices).asc((p) => p.total);
-    const currentHourRank = sortedPrices.findIndex(
-      (p) => p.startsAt === priceData.latest?.startsAt,
+    const currentHourRank = sortedPrices.findIndex((p) =>
+      isSamePriceHour(p.startsAt, priceData.latest?.startsAt),
     );
     if (currentHourRank < 0) {
       logger(`Could not find the current hour rank among today's hours`);
@@ -207,8 +213,8 @@ export const lowestPricesWithinTimeFrame = (
   }
 
   const sortedHours = sort(pricesWithinTimeFrame).asc((p) => p.total);
-  const currentHourRank = sortedHours.findIndex(
-    (p) => p.startsAt === priceData.latest?.startsAt,
+  const currentHourRank = sortedHours.findIndex((p) =>
+    isSamePriceHour(p.startsAt, priceData.latest?.startsAt),
   );
   if (currentHourRank < 0) {
     logger(`Could not find the current hour rank among today's hours`);
