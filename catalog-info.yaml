@@ -6,10 +6,12 @@ metadata:
   annotations:
     github.com/project-slug: tibber/com.tibber.athom
     circleci.com/project-slug: gh/tibber/com.tibber.athom
+    roadie.io/use-codeowners: "true"
   tags:
   - typescript
 spec:
-  type: app
+  type: mobile-app
   lifecycle: production
+  owner: codeowners
   consumesApis:
   - tibber-api-api
