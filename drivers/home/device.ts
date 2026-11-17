@@ -306,8 +306,9 @@ export class HomeDevice extends Device {
       this.log(`Begin update`);
 
       await startTransaction('GetPriceInfo', 'API', () =>
-        this.#api.populateCachedPriceInfos((callback, ms, args) =>
-          this.homey.setTimeout(callback, ms, args),
+        this.#api.populateCachedPriceInfos(
+          (callback, ms, args) => this.homey.setTimeout(callback, ms, args),
+          () => this.#handlePrice(moment()),
         ),
       );
 
