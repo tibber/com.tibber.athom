@@ -1,5 +1,7 @@
 # Tibber
 
+[![Backstage](https://img.shields.io/badge/Backstage-catalog-9BF0E1?logo=backstage 'Backstage')](https://tibber.roadie.so/catalog/default/component/homey-app)
+
 Integration with Tibber, with Pulse and Watty support.
 
 ## Flow cards
